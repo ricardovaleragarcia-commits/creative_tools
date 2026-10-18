@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+node_modules/
+*.log
+artifacts/
+download/
+tuls-site.zip
+*.zip
