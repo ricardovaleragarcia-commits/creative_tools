@@ -47,6 +47,10 @@
 
   --fs: clamp(11px, 0.75vw, 13px);
   --footer-h: 56px;
+
+  /* Hueco entre el texto del footer y el borde inferior de la ventana.
+     La cabecera usa la misma medida arriba para quedar simétrica. */
+  --edge: clamp(8px, 0.75vw, 12px);
 }
 
 *,
@@ -107,7 +111,11 @@ a:hover {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: var(--gap);
   align-items: start;
-  padding-top: clamp(8px, 0.9vw, 14px);
+
+  /* Mismo hueco que el footer con el borde de abajo, descontando el
+     interlineado que queda por encima de las mayúsculas del logo:
+     así lo que se ve es la misma distancia en los dos extremos. */
+  padding-top: max(4px, calc(var(--edge) - 0.22em));
 }
 
 /* La tagline puede correr por encima de la segunda columna:
@@ -168,7 +176,7 @@ a:hover {
 .manifesto__text {
   grid-column: 3;
   margin: 0;
-  padding-left: 19%;
+  padding-left: 9.5%;
 }
 
 /* ------------------------------- tools ----------------------------- */
@@ -232,7 +240,7 @@ a.tool__media:focus-visible {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0 var(--pad) clamp(8px, 0.75vw, 12px);
+  padding: 0 var(--pad) var(--edge);
   pointer-events: none;
   z-index: 10;
 }
