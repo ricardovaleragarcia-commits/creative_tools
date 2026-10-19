@@ -1,9 +1,9 @@
 /* ------------------------------------------------------------------
    TulS — styles
-   Typeface: ABC Areal Semi-Mono + ABC Areal (Normal)
-   Drop your licensed files into /fonts using the names below.
-   If a file is missing the browser falls back to the next source
-   and finally to a system mono stack. Nothing breaks.
+   Typeface: ABC Areal Semi-Mono Regular (todo el texto)
+             ABC Areal Bold (solo el logo)
+   Los .woff2 van en /fonts. Si faltan, el navegador cae a un stack
+   monoespaciado del sistema y la página sigue funcionando.
 ------------------------------------------------------------------ */
 
 @font-face {
@@ -17,28 +17,7 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "ABC Areal Semi-Mono";
-  src:
-    url("fonts/ABCArealSemiMono-Bold.woff2") format("woff2"),
-    url("fonts/ABCArealSemiMono-Bold.otf") format("opentype"),
-    url("fonts/ABCArealSemiMono-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "ABC Areal";
-  src:
-    url("fonts/ABCAreal-Regular.woff2") format("woff2"),
-    url("fonts/ABCAreal-Regular.otf") format("opentype"),
-    url("fonts/ABCAreal-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
+/* Solo el wordmark: ABC Areal Bold. */
 @font-face {
   font-family: "ABC Areal";
   src:
@@ -56,8 +35,8 @@
   --muted: #111111;
   --card: #cfcfcf;
 
-  --pad: clamp(20px, 2.5vw, 40px);
-  --gap: clamp(16px, 1.5vw, 24px);
+  --pad: clamp(10px, 1.25vw, 20px);
+  --gap: clamp(8px, 0.75vw, 12px);
   --radius: 8px;
 
   --font-semi-mono: "ABC Areal Semi-Mono", ui-monospace, "SFMono-Regular",
@@ -66,8 +45,8 @@
     "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font: var(--font-semi-mono);
 
-  --fs: clamp(13px, 0.875vw, 15px);
-  --footer-h: 130px;
+  --fs: clamp(11px, 0.75vw, 13px);
+  --footer-h: 56px;
 }
 
 *,
@@ -128,11 +107,13 @@ a:hover {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: var(--gap);
   align-items: start;
-  row-gap: 1.75em;
-  padding-top: clamp(28px, 3vw, 46px);
+  padding-top: clamp(8px, 0.9vw, 14px);
 }
 
+/* La tagline puede correr por encima de la segunda columna:
+   el párrafo de intro va una fila más abajo. */
 .hero__brand {
+  grid-column: 1 / span 2;
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -142,6 +123,8 @@ a:hover {
 
 .logo {
   margin: 0;
+  /* Only the wordmark leaves Semi-Mono: ABC Areal Bold. */
+  font-family: var(--font-normal);
   font-size: 1.15em;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -155,13 +138,18 @@ a:hover {
 }
 
 .hero__intro {
-  margin: 1.75em 0 0;
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0.55em 0 0;
   max-width: 30em;
 }
 
 .hero__status {
+  grid-column: 3;
+  grid-row: 1;
   text-align: right;
   line-height: 1.35;
+  font-variant-numeric: tabular-nums;
 }
 
 .status-line {
@@ -181,7 +169,6 @@ a:hover {
   grid-column: 3;
   margin: 0;
   padding-left: 19%;
-  max-width: 32em;
 }
 
 /* ------------------------------- tools ----------------------------- */
@@ -231,7 +218,6 @@ a.tool__media:focus-visible {
 .tool__desc {
   margin: 1em 0 0;
   max-width: 44em;
-  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -246,18 +232,16 @@ a.tool__media:focus-visible {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0 var(--pad) clamp(16px, 2vw, 30px);
+  padding: 0 var(--pad) clamp(8px, 0.75vw, 12px);
   pointer-events: none;
   z-index: 10;
 }
 
 .site-footer__text {
   margin: 0;
-  column-count: 3;
-  column-gap: var(--gap);
   font-size: 0.95em;
-  font-weight: 700;
   line-height: 1.35;
+  text-wrap: pretty;
 }
 
 .site-footer a {
@@ -284,7 +268,6 @@ a.tool__media:focus-visible {
   }
 
   .site-footer__text {
-    column-count: 1;
     font-weight: 400;
   }
 }
@@ -296,8 +279,18 @@ a.tool__media:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .hero__brand {
+    grid-column: 1 / -1;
+  }
+
+  .hero__intro {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
   .hero__status {
     grid-column: 2;
+    grid-row: 2;
   }
 
   .manifesto__text {
@@ -315,7 +308,14 @@ a.tool__media:focus-visible {
   }
 
   .hero {
-    row-gap: 1.5em;
+    row-gap: 1.25em;
+  }
+
+  .hero__brand,
+  .hero__intro,
+  .hero__status {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .hero__intro {
@@ -323,7 +323,6 @@ a.tool__media:focus-visible {
   }
 
   .hero__status {
-    grid-column: 1;
     text-align: left;
   }
 

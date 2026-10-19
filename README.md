@@ -1,8 +1,8 @@
 # TulS
 
 Sitio estático (HTML + CSS + JS, sin build) para la plataforma de herramientas experimentales **TulS**.
-El diseño reproduce el frame de referencia: tres columnas, tipografía ABC Areal Semi-Mono / Normal,
-tarjetas grises y una barra de créditos fija abajo.
+El diseño reproduce el frame de referencia: tres columnas, tipografía ABC Areal Semi-Mono Regular en
+todo el texto (el logo "TulS" va en ABC Areal Bold), tarjetas grises y una barra de créditos fija abajo.
 
 ## Archivos
 
@@ -11,39 +11,35 @@ index.html      Estructura: cabecera, manifiesto, grid de tools y footer
 styles.css      Estilos y @font-face (tamaños, columnas, responsive)
 tools.js        ← lista de herramientas (aquí se agregan más bloques)
 app.js          Renderiza las tarjetas a partir de tools.js
-fonts/          Coloca aquí los archivos de ABC Areal (ver fonts/README.md)
+fonts/          Webfonts incluidos (ABC Areal, ver fonts/README.md)
 README.md       Este archivo
 ```
 
-## 1. Tipografía (importante)
+## 1. Tipografía
 
-La fuente **no** viene incluida (es comercial). Copia tus archivos dentro de `fonts/` con estos nombres:
+ABC Areal es **gratis** (Dinamo lo publicó para todo el mundo). Los dos webfonts que usa el
+diseño ya vienen incluidos, subconjuntados a latino y en WOFF2:
 
 ```
-fonts/ABCArealSemiMono-Regular.woff2
-fonts/ABCArealSemiMono-Bold.woff2
-fonts/ABCAreal-Regular.woff2
-fonts/ABCAreal-Bold.woff2
+fonts/ABCArealSemiMono-Regular.woff2   24 KB   → todo el texto
+fonts/ABCAreal-Bold.woff2              25 KB   → solo el logo "TulS"
 ```
 
-- Si tus archivos son `.otf` o `.ttf`, puedes usarlos tal cual con esos nombres
-  (`ABCArealSemiMono-Regular.otf`, etc.): el CSS ya incluye esas rutas.
-- Si tus nombres son distintos, o renombras los archivos o cambias las rutas en el bloque
-  `@font-face` al inicio de `styles.css`.
-- Si falta algún archivo, el navegador salta a la siguiente fuente y termina en una monoespaciada
-  del sistema, así que la web nunca se rompe.
-- `.woff2` es lo recomendado para web (pesa mucho menos). Puedes convertir con
-  [fonttools](https://github.com/fonttools/fonttools) o cualquier conversor local.
-- La licencia de ABC Areal es de Dinamo; para publicar necesitas una licencia web que permita
-  self-hosting. No subas la fuente al repo si tu licencia no lo permite (en ese caso usa
-  `fonts/README.md` para documentarlo y sirve la fuente desde otro origen).
+Se generaron desde los estáticos de la licencia (`Semi Mono Regular` y `Areal Bold`); en
+[`fonts/README.md`](fonts/README.md) está el comando para regenerarlos si añades glifos fuera
+del rango latino. La variable superfamily no se usa: pesa 857 KB y no aporta nada aquí.
 
-Todo el texto usa Semi-Mono por defecto. Si quieres usar la versión **Normal** en algo,
-añade la clase `font-normal` o cambia `--font` en `styles.css`:
+Todo el texto va en **Semi-Mono Regular** (400) y solo el logo en **Areal Bold** (700).
+Si necesitas cambiar un bloque de familia hay dos variables en `styles.css`:
 
 ```css
-.min-clase { font-family: var(--font-normal); }
+--font-semi-mono: "ABC Areal Semi-Mono", ...;
+--font-normal:    "ABC Areal", ...;
 ```
+
+**ABC Areal © Dinamo** (<https://abcdinamo.com/typefaces/areal>), fuente gratuita. Se incluye
+en el repo para que el sitio sea autocontenido; los webfonts se pueden sustituir por los
+oficiales con el mismo nombre de archivo.
 
 ## 2. Agregar más bloques de tools
 
@@ -65,7 +61,19 @@ bloque gris del diseño. Puedes usar `imageAlt` para el texto alternativo.
 El grid es de 3 columnas en escritorio, 2 en tablet y 1 en móvil. El footer de créditos es fijo
 (se superpone al contenido, como en la referencia); en móvil pasa a estático para no tapar nada.
 
-## 3. Ver la web en local
+## 3. Cronómetro y número de tools
+
+Arriba a la derecha hay dos líneas:
+
+- **`#site-timer`** — cronómetro `on site 00:00:00`. Cuenta desde que se carga la página; no se
+guarda entre visitas.
+- **`#tools-count`** — cuántas tools hay publicadas: `Currently 6 tools on`.
+
+Las dos funcionan solas. El cronómetro arranca al cargar y el contador se calcula a partir de
+`tools.js`, así que **se actualiza al añadir o quitar tools**: no hay nada que mantener a mano ni
+peticiones de red, y la página sigue funcionando con `file://`.
+
+## 4. Ver la web en local
 
 No necesita instalación ni dependencias:
 
@@ -74,9 +82,10 @@ python3 -m http.server 3000
 # abre http://localhost:3000
 ```
 
-También funciona abriendo `index.html` directamente (no hay `fetch`, los datos van en `tools.js`).
+También funciona abriendo `index.html` directamente: los datos van en `tools.js` y el cronómetro
+no necesita red.
 
-## 4. Subir a GitHub / publicar
+## 5. Subir a GitHub / publicar
 
 ```bash
 git init

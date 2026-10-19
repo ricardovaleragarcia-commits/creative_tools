@@ -51,3 +51,49 @@
 
   grid.replaceChildren(fragment);
 })();
+
+/* ------------------------------------------------------------------
+   Cronómetro de sesión + número de tools
+   ------------------------------------------------------------------
+   El cronómetro cuenta desde que se carga la página.
+
+   La segunda línea cuenta las tools publicadas en tools.js, así que se
+   actualiza sola al añadir o quitar entradas: no hay nada que mantener.
+------------------------------------------------------------------ */
+
+(function () {
+  "use strict";
+
+  var timer = document.getElementById("site-timer");
+  var toolsCount = document.getElementById("tools-count");
+  var started = Date.now();
+
+  function pad(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+  function renderTimer() {
+    if (!timer) return;
+    var total = Math.max(0, Math.floor((Date.now() - started) / 1000));
+    timer.textContent =
+      "on site " +
+      pad(Math.floor(total / 3600)) +
+      ":" +
+      pad(Math.floor((total % 3600) / 60)) +
+      ":" +
+      pad(total % 60);
+  }
+
+  renderTimer();
+  window.setInterval(renderTimer, 1000);
+
+  if (!toolsCount) return;
+
+  var tools = Array.isArray(window.TOOLS) ? window.TOOLS : [];
+  var total = tools.filter(function (tool) {
+    return tool && tool.title;
+  }).length;
+
+  toolsCount.textContent =
+    "Currently " + total + (total === 1 ? " tool on" : " tools on");
+})();
