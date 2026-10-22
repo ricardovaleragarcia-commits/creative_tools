@@ -32,12 +32,22 @@ h1, h2, p { margin: 0; font: inherit; }
 .no { font-feature-settings: "ordn" 1; }
 .grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap); }
 
-/* Credits bar: fixed, over the content, like the design */
+/* Credits bar: fixed, over the content, like the design.
+   On the landing it sits at the left; inside a tool it sits at the right (.credits--end).
+   Cross-document view transitions slide it between the two without a cut (Chrome 126+, Safari 18.2+;
+   other browsers simply jump). Everything else swaps instantly. */
+@view-transition { navigation: auto; }
 .credits {
-  position: fixed; left: 15px; right: 15px; bottom: 14px; z-index: 10;
+  position: fixed; left: 15px; bottom: 14px; z-index: 10;
+  width: max-content; max-width: calc(100% - 30px);
   display: flex; flex-wrap: wrap; align-items: center; gap: 0 .5em;
   font-size: var(--fs-foot); line-height: 1; pointer-events: none;
+  view-transition-name: credits;
 }
+.credits--end { left: auto; right: 15px; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(credits) { animation-duration: .8s; animation-timing-function: cubic-bezier(.65, 0, .35, 1); }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(credits) { animation-duration: .01s; } }
 .credits > * { pointer-events: auto; }
 .credits a { display: inline-flex; align-items: center; height: 1em; }
 .credits img { width: .9em; height: .9em; display: block; }

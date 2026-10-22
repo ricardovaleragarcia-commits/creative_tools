@@ -4,7 +4,9 @@
   var menu = document.querySelector(".menu");
   if (!menu) return;
   var PAD = 44, on = false;
+  var narrow = matchMedia("(max-width: 900px)");   // on wide screens the credits sit at the right, away from the menu
   function check() {
+    if (!narrow.matches) { if (on) { on = false; menu.style.paddingBottom = ""; } return; }
     var over = menu.scrollHeight - (on ? PAD : 0) > menu.clientHeight + 1;
     if (over !== on) { on = over; menu.style.paddingBottom = on ? (5 + PAD) + "px" : ""; }
   }
