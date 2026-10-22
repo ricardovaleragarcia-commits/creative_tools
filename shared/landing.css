@@ -15,3 +15,8 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
   .tool { grid-column: span 3; }
 }
 @media (max-width: 560px) { .tool { grid-column: 1 / -1; } }
+
+/* names for the screen transition (see theme.css) */
+.head__title { view-transition-name: vt-title; }
+.head__a { view-transition-name: vt-intro; }
+.head__b { view-transition-name: vt-note; }
