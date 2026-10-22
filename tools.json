@@ -7,15 +7,15 @@
   },
   {
     "title": "Tool 02",
-    "description": "Short Description",
+    "description": "Shapes that multiply, fall and fill the frame, exported as a seamless loop.",
     "cover": "",
-    "href": ""
+    "href": "tools/shape-multiplier/"
   },
   {
     "title": "Tool 03",
-    "description": "Short Description",
+    "description": "Reveal text or SVG logos letter by letter with a traveling mask.",
     "cover": "",
-    "href": ""
+    "href": "tools/text-reveal/"
   },
   {
     "title": "Tool 04",
