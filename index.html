@@ -1,62 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TulS — Playing a round</title>
-  <meta name="description" content="An open-source platform of experimental tools to generate movements, collisions, actions, and more.">
-  <meta name="theme-color" content="#fcfcfc">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d0d0d0'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='700' text-anchor='middle' fill='%23111111'%3ET%3C/text%3E%3C/svg%3E">
-
-  <!-- Tools data first, then the renderer. -->
-  <script src="tools.js" defer></script>
-  <script src="app.js" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative tools</title>
+<meta name="description" content="An open-source library of experimental tools for generating motion and interactions.">
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="stylesheet" href="shared/landing.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2716%27/%3E%3C/svg%3E">
 </head>
 <body>
-  <div class="page">
-    <header class="hero">
-      <div class="hero__col hero__brand">
-        <h1 class="logo">TulS</h1>
-        <p class="tagline">Playing a round creative tools for creatives and non-creatives work fields's people</p>
-      </div>
-
-      <p class="hero__col hero__intro">
-        This is an open-source platform of experimental tools to generate movements, collisions, actions, and more.
-      </p>
-
-      <div class="hero__col hero__status">
-        <span class="status-line" id="site-timer">on site 00:00:00</span>
-        <span class="status-line" id="tools-count">Currently 6 tools on</span>
-      </div>
-    </header>
-
-    <section class="manifesto">
-      <p class="manifesto__text">
-        Inside each tool there is a place to leave any comment you want, that will help to improve
-        the tools, add more functionalities for the people to enjoy and being able to use and all done
-        by me so you don't have to worry about :)
-      </p>
-    </section>
-
-    <main id="tools" class="tools" aria-label="Tools"></main>
-
-    <noscript>
-      <p class="noscript">This page needs JavaScript enabled to list the tools.</p>
-    </noscript>
-  </div>
-
-  <footer class="site-footer" aria-label="Credits">
-    <p class="site-footer__text">
-      Open-source platform made by Ricardo Jesús Valera García |
-      Contact: <a href="mailto:ricardo.valera.garcia@gmail.com">ricardo.valera.garcia@gmail.com</a>
-      – Website: <a href="https://ricardovalera.garcia.com" target="_blank" rel="noopener">ricardovalera.garcia.com</a>
-      – Instagram: <a href="https://instagram.com/ricardovalera.garcia" target="_blank" rel="noopener">@ricardovalera.garcia</a>
-      – LinkedIn: <a href="https://www.linkedin.com/in/ricardovalera.garcia" target="_blank" rel="noopener">@ricardovalera.garcia</a>
-    </p>
-  </footer>
+<header class="head grid6">
+  <h1 class="title head__title">Creative tools for both creatives and non-creatives</h1>
+  <p class="small head__a">An open-source library of experimental tools for generating motion and interactions.</p>
+  <p class="small head__b">Leave comments inside any tool to suggest new features or improvements. I build and maintain it all, so enjoy exploring!</p>
+</header>
+<main id="tools" class="tools grid6" aria-label="Tools"></main>
+<footer id="credits" class="credits"></footer>
+<script src="shared/landing.js"></script>
+<script src="shared/credits.js"></script>
 </body>
 </html>

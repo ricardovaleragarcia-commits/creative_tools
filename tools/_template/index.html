@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tool name — Creative tools</title>
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../../shared/tool.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2716%27/%3E%3C/svg%3E">
+</head>
+<body class="toolpage">
+<header class="toolhead">
+  <a class="title back" href="../../">back</a>
+  <p class="small instructions">Instructions to use the tool in every detail and more texts related.</p>
+</header>
+<div class="toolgrid grid6">
+  <aside class="menu" aria-label="Controls">
+    <!-- Each control group is a .block (add .full for a full-width one). -->
+    <div class="block"><label>Control A</label></div>
+    <div class="block"><label>Control B</label></div>
+    <div class="block full"><label>Wide control</label></div>
+  </aside>
+  <section class="stage" aria-label="Artwork">
+    <!-- --ar = width / height of the real artwork frame (4:5 = 0.8). Change it from JS for other ratios. -->
+    <div class="artwork" id="artwork" style="--ar:0.8"></div>
+  </section>
+</div>
+<footer id="credits" class="credits"></footer>
+<script src="../../shared/credits.js"></script>
+</body>
+</html>

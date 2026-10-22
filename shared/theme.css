@@ -1,0 +1,44 @@
+/* Creative tools — shared identity (landing + every tool). Source: Figma "Creative Tools". */
+@font-face {
+  font-family: "ABC Areal";
+  src: url("../fonts/ABCAreal-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --bg: #fff;
+  --ink: #000;
+  --panel: #e5e5e5;      /* cards and panels */
+  --block: #f2f2f2;      /* menu blocks inside panels */
+  --gap: 5px;            /* grid gap and outer padding */
+  --font: "ABC Areal", "Helvetica Neue", Arial, sans-serif;
+  --fs-s: 12px;          /* small text, also tool menu text */
+  --fs-l: 32px;          /* titles */
+  --fs-foot: 24px;       /* credits bar */
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 700 var(--fs-s)/1 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+h1, h2, p { margin: 0; font: inherit; }
+.title { font-size: var(--fs-l); line-height: 1; text-wrap: pretty; }
+.small { font-size: var(--fs-s); line-height: 1; }
+.no { font-feature-settings: "ordn" 1; }
+.grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap); }
+
+/* Credits bar: fixed, over the content, like the design */
+.credits {
+  position: fixed; left: 15px; right: 15px; bottom: 14px; z-index: 10;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 .5em;
+  font-size: var(--fs-foot); line-height: 1; pointer-events: none;
+}
+.credits > * { pointer-events: auto; }
+.credits a { display: inline-flex; align-items: center; height: 1em; }
+.credits svg { width: .9em; height: .9em; fill: currentColor; display: block; }
+.credits a:hover { opacity: .55; }
+@media (max-width: 900px) { :root { --fs-l: 24px; --fs-foot: 16px; } }

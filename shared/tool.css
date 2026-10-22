@@ -1,0 +1,33 @@
+/* Tool interface: 6-col platform grid -> menu 2 cols, artwork 4 cols. Fits screen height. */
+.toolpage { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.toolhead { padding: var(--gap) var(--gap) 0; height: 85px; flex: none; position: relative; }
+.toolhead .back { display: inline-block; }
+.toolhead .instructions { position: absolute; left: var(--gap); top: 61px; max-width: 952px; }
+.toolgrid { flex: 1; min-height: 0; padding-top: var(--gap); }
+.menu {
+  grid-column: 1 / span 2; background: var(--panel); min-height: 0; overflow: auto;
+  padding: var(--gap); display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+  /* blocks fill the whole menu height (5px margin all around); rows share the free space */
+  grid-auto-rows: minmax(80px, 1fr);
+}
+.block { background: var(--block); border: .5px solid #000; border-radius: 5px; padding: 8px; min-height: 80px; }
+.block.full { grid-column: 1 / -1; }
+.block label { display: block; font-size: var(--fs-s); line-height: 1; }
+.menu, .menu button, .menu select, .menu input { font: 700 var(--fs-s)/1.2 var(--font); color: #000; }
+.stage {
+  grid-column: 3 / span 4; background: var(--panel); min-height: 0; overflow: hidden;
+  container-type: size; display: grid; place-items: center;
+}
+.artwork {
+  --pad-x: 17.6cqw; --pad-y: 8.6cqh;   /* matches the Figma margins (168px / 80px) */
+  background: #000; position: relative; overflow: hidden; aspect-ratio: var(--ar, .8);
+  width: min(calc(100cqw - 2 * var(--pad-x)), calc((100cqh - 2 * var(--pad-y)) * var(--ar, .8)));
+}
+.artwork canvas, .artwork svg, .artwork video { width: 100%; height: 100%; display: block; }
+@media (max-width: 900px) {
+  .toolpage { height: auto; overflow: visible; }
+  .toolgrid { display: flex; flex-direction: column-reverse; }
+  .menu, .stage { grid-column: auto; }
+  .stage { height: 70vw; min-height: 320px; --pad: 5; }
+  .artwork { --pad-x: 4cqw; --pad-y: 4cqh; }
+}
