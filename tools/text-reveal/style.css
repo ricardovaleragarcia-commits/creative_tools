@@ -1,0 +1,4 @@
+.menu textarea { width: 100%; min-height: 64px; resize: vertical; font: 700 var(--fs-s)/1.3 var(--font); color: #000; background: #fff; border: .5px solid #000; border-radius: 5px; padding: 6px 8px; }
+.btns.col { flex-direction: column; }
+.btns.col > button { width: 100%; }
+#curve { width: 100%; aspect-ratio: 1; touch-action: none; border: .5px solid #000; border-radius: 5px; background: #fff; cursor: pointer; display: block; }
