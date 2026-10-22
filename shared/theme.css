@@ -39,6 +39,7 @@ h1, h2, p { margin: 0; font: inherit; }
 }
 .credits > * { pointer-events: auto; }
 .credits a { display: inline-flex; align-items: center; height: 1em; }
+.credits img { width: .9em; height: .9em; display: block; }
 .credits svg { width: .9em; height: .9em; fill: currentColor; display: block; }
 .credits a:hover { opacity: .55; }
 @media (max-width: 900px) { :root { --fs-l: 24px; --fs-foot: 16px; } }
