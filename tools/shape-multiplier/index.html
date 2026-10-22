@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape multiplier — Creative tools</title>
+<link rel="icon" type="image/png" href="../../shared/favicon-64.png">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../../shared/tool.css">
+<link rel="stylesheet" href="../../shared/tool-controls.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="toolpage">
+<header class="toolhead">
+  <a class="title back" href="../../">back</a>
+  <p class="small instructions">Shapes multiply inside the frame, fall with gravity and never overlap. Set the sequence of copies, choose the frame and colors, then export a seamless loop as video, animated HTML or Lottie. Upload your own PNG or SVG with a transparent background to use another shape.</p>
+</header>
+
+<div class="toolgrid grid6">
+  <aside class="menu" aria-label="Controls">
+
+    <div class="block full">
+      <div class="t">Shape</div>
+      <button class="btn" id="pick">Use my PNG / SVG…</button>
+      <input type="file" id="file" accept="image/png,image/webp,image/svg+xml" hidden>
+      <div class="note" id="shapenote">Default shape: 6-point star. Upload a PNG or SVG with a transparent background to use its silhouette for collisions (reload the page to go back to the star).</div>
+    </div>
+
+    <div class="block full">
+      <div class="t">Sequence</div>
+      <label class="row-l">Copies per step <input type="text" id="seq" value="1,3,5,10" aria-label="Number of copies at each step, comma separated, up to 100"></label>
+      <label class="row-l">Numbers mean <select id="mode"><option value="total">Total copies</option><option value="new">New copies per step</option></select></label>
+      <div class="note">At the start of each step all copies appear at once in the tightest layout, then gravity settles them. At the end everything disappears at once, so it loops cleanly. Up to 100 copies per step; 60 or fewer keeps the motion smooth.</div>
+    </div>
+
+    <div class="block"><div class="t">Step duration <output class="v" id="stepDurv"></output></div><input type="range" id="stepDur" min="0.1" max="6" step="0.05" value="2.4"></div>
+    <div class="block"><div class="t">Final pause <output class="v" id="holdv"></output></div><input type="range" id="hold" min="0" max="8" step="0.1" value="2.5"></div>
+
+    <div class="block"><div class="t">Gravity <output class="v" id="gravityv"></output></div><input type="range" id="gravity" min="-4" max="4" step="0.1" value="1.8"></div>
+    <div class="block"><div class="t">Bounce <output class="v" id="bouncev"></output></div><input type="range" id="bounce" min="0" max="0.7" step="0.01" value="0.12"></div>
+    <div class="block"><div class="t">Friction <output class="v" id="frictionv"></output></div><input type="range" id="friction" min="0" max="1" step="0.02" value="0.5"></div>
+    <div class="block"><div class="t">Shake on appear <output class="v" id="shakev"></output></div><input type="range" id="shake" min="0" max="5" step="0.1" value="0"></div>
+
+    <div class="block"><div class="t">Frame</div><select id="ratio"><option value="4:5">4:5</option><option value="1:1">1:1</option><option value="3:4">3:4</option><option value="9:16">9:16</option></select></div>
+    <div class="block"><div class="t">Minimum gap <output class="v" id="gapv"></output></div><input type="range" id="gap" min="0" max="12" step="0.5" value="2"></div>
+    <div class="block full">
+      <div class="note" id="fillread"></div>
+      <div class="note" id="perfwarn" hidden>For better performance, keep copies per step at 60 or fewer. Above 60 the animation may stutter.</div>
+      <div class="note">Size is automatic: for each number of copies the tool searches for the largest size (and best angle and arrangement) that fits inside the frame.</div>
+    </div>
+
+    <div class="block full" id="bgEd"></div>
+    <div class="block full" id="fillEd"></div>
+    <div class="block full">
+      <label class="chk"><input type="checkbox" id="alpha">Transparent background in PNG / HTML / Lottie</label>
+      <div class="note" id="fillnote">Gradients run from the first stop to the last along the chosen angle (0° = top to bottom).</div>
+    </div>
+
+    <div class="block full">
+      <div class="t">Export</div>
+      <select id="fmt">
+        <option value="video">Video (MP4 or WebM)</option>
+        <option value="html">Animated HTML (standalone, loops)</option>
+        <option value="lottie">Lottie JSON (editable)</option>
+        <option value="png">PNG image (current frame)</option>
+        <option value="svg">SVG (the shape)</option>
+      </select>
+      <button class="btn solid" id="export">Export</button>
+      <div class="note" id="fmtnote"></div>
+      <div class="note" id="status" role="status"></div>
+    </div>
+
+    <div class="block full"><div class="btns fill"><button id="play">Pause</button><button id="reset">Restart</button></div></div>
+  </aside>
+
+  <section class="stage" aria-label="Artwork">
+    <div class="artwork" id="art" style="--ar:0.8"><canvas id="cv" width="800" height="1000" aria-label="Shapes falling and stacking inside a frame without overlapping"></canvas></div>
+  </section>
+</div>
+
+<footer id="credits" class="credits"></footer>
+<script src="../../shared/vendor/matter-0.19.0.min.js"></script>
+<script src="../../shared/vendor/poly-decomp.min.js"></script>
+<script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
+<script src="../../shared/video-export.js"></script>
+<script src="packer.js"></script>
+<script src="physics.js"></script>
+<script src="draw-export.js"></script>
+<script src="ui.js"></script>
+<script src="../../shared/credits.js"></script>
+<script src="../../shared/smooth-scroll.js"></script>
+<script src="../../shared/tool.js"></script>
+</body>
+</html>
