@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text &amp; SVG reveal — Creative tools</title>
+<link rel="icon" type="image/png" href="../../shared/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&family=Oswald:wght@700&family=Playfair+Display:wght@700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../../shared/tool.css">
+<link rel="stylesheet" href="../../shared/tool-controls.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="toolpage">
+<header class="toolhead">
+  <a class="title back" href="../../">back</a>
+  <p class="small instructions">Type up to 20 letters or upload a vector logo (SVG). Each letter is revealed by a mask that travels along its own shape. Shape the timing with the curve, pick a format and export a seamless MP4 loop.</p>
+</header>
+
+<div class="toolgrid grid6">
+  <aside class="menu" aria-label="Controls">
+
+    <div class="block full">
+      <div class="t">Text <span class="note" id="count"></span></div>
+      <textarea id="text" aria-label="Text (max 20 letters, Enter for a new line)">HELLO</textarea>
+    </div>
+
+    <div class="block full">
+      <div class="t">…or upload an SVG logo</div>
+      <input type="file" id="svgFile" accept=".svg,image/svg+xml">
+      <div class="note" id="svgNote"></div>
+      <button class="btn" id="clearSvg" style="display:none">Back to text</button>
+      <label class="chk" id="keepRow" style="display:none"><input type="checkbox" id="keep">Keep the SVG's original colors</label>
+    </div>
+
+    <div class="block full">
+      <div class="t">Typeface</div>
+      <select id="font">
+        <optgroup label="System (standard)">
+          <option value="Arial, Helvetica, sans-serif">Arial</option>
+          <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+          <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Courier New', Courier, monospace">Courier New</option>
+          <option value="Verdana, Geneva, sans-serif">Verdana</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+          <option value="Impact, sans-serif">Impact</option>
+        </optgroup>
+        <optgroup label="Google Fonts (free)">
+          <option value="'Montserrat', sans-serif">Montserrat</option>
+          <option value="'Playfair Display', serif">Playfair Display</option>
+          <option value="'Oswald', sans-serif">Oswald</option>
+          <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+          <option value="'Space Mono', monospace">Space Mono</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="block"><div class="t">Text color</div><input type="color" id="fg" value="#ffffff"></div>
+    <div class="block"><div class="t">Background</div><input type="color" id="bg" value="#111111"></div>
+
+    <div class="block"><div class="t">Front softness <output id="suv">0.12</output></div><input type="range" id="suav" min="0.02" max="0.4" step="0.01" value="0.12"></div>
+    <div class="block"><div class="t">Letter offset <output id="stv">0.00</output></div><input type="range" id="st" min="0" max="0.6" step="0.01" value="0"></div>
+    <div class="block full"><div class="t">Speed <output id="spv">1.00</output></div><input type="range" id="sp" min="0.25" max="3" step="0.05" value="1"></div>
+
+    <div class="block">
+      <div class="t">Animation curve</div>
+      <canvas id="curve" width="200" height="200" aria-label="Easing curve: drag the two points"></canvas>
+    </div>
+    <div class="block">
+      <div class="t">Presets</div>
+      <div class="btns col">
+        <button data-c="0.33,0.33,0.67,0.67">Linear</button>
+        <button data-c="0.42,0,0.58,1">Smooth</button>
+        <button data-c="0.45,0.05,0.15,1">Organic</button>
+        <button data-c="0.8,0,0.3,1">Dynamic</button>
+      </div>
+      <div class="note">Drag the two points on the curve to shape the timing.</div>
+    </div>
+
+    <div class="block full">
+      <div class="t">Format</div>
+      <div class="btns fill" id="ratios"></div>
+    </div>
+
+    <div class="block full"><div class="btns fill"><button id="play">Pause</button><button id="reshuffle">Shuffle starts</button></div></div>
+
+    <div class="block full">
+      <div class="t">Export loop</div>
+      <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
+      <button class="btn solid" id="dl">Export loop (MP4)</button>
+      <div class="note" id="status"></div>
+    </div>
+  </aside>
+
+  <section class="stage" aria-label="Artwork">
+    <div class="artwork" id="art" style="--ar:1"><canvas id="preview"></canvas></div>
+  </section>
+</div>
+
+<footer id="credits" class="credits"></footer>
+<script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
+<script src="../../shared/video-export.js"></script>
+<script src="text.js"></script>
+<script src="../../shared/credits.js"></script>
+<script src="../../shared/smooth-scroll.js"></script>
+<script src="../../shared/tool.js"></script>
+</body>
+</html>

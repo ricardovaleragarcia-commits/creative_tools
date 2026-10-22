@@ -13,9 +13,9 @@
   },
   {
     "title": "Tool 03",
-    "description": "Short Description",
+    "description": "Reveal text or SVG logos letter by letter with a traveling mask.",
     "cover": "",
-    "href": ""
+    "href": "tools/text-reveal/"
   },
   {
     "title": "Tool 04",
