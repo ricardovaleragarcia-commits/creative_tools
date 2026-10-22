@@ -52,7 +52,7 @@
     var t0 = performance.now();
     await new Promise(function (resolve) {
       (function step(now) {
-        var t = (now - t0) / 1000;
+        var t = Math.max(0, (performance.now() - t0) / 1000);   // rAF timestamps can precede t0
         if (t >= o.period) { resolve(); return; }
         o.renderAt(t); o.status("Recording in real time… " + t.toFixed(1) + " / " + o.period + " s");
         requestAnimationFrame(step);
