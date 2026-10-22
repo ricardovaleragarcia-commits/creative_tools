@@ -1,0 +1,417 @@
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const linearHex = h => new THREE.Color(h).convertSRGBToLinear();
+
+// Medidas reales en mm (CD: 120 mm, 1,2 mm, agujero 15 mm · LP 12": 300 mm, ~1,5 mm, agujero 7,2 mm, etiqueta ~100 mm)
+const CD = {R: 60,  T: 1.2, HOLE: 7.5,  HUB: 11.5, HUB_H: 0.6};
+const LP = {R: 150, T: 1.5, HOLE: 3.62, LABEL: 50};
+$('specs').textContent = 'Real sizes: CD 120 mm × 1.2 mm (hole 15 mm) · 12" LP 300 mm × ~1.5 mm (hole 7.2 mm, label ~100 mm).';
+
+const RATIOS = {'1:1': [1080,1080], '3:4': [1080,1440], '4:5': [1080,1350], '9:16': [1080,1920], '16:9': [1920,1080]};
+const PERIOD = {frontal: 4, girar: 3.5, 'volteo-y': 6, 'volteo-x': 6, balanceo: 5};
+let RATIO_KEY = '1:1';
+
+// ---------- Escena ----------
+const viewer = $('viewer'), stage = $('stage'), canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.LinearToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 2.5, 12);
+camera.position.set(0, 0, 5.4);
+
+// Entorno sin rectángulos: los destellos son manchas redondas y suaves (no se ven como cuadrados)
+function envCanvas(dark){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 512);
+  if(dark){ g.addColorStop(0, '#2a2d35'); g.addColorStop(0.5, '#0c0d11'); g.addColorStop(1, '#050507'); }
+  else { g.addColorStop(0, '#ffffff'); g.addColorStop(0.42, '#dfe4ec'); g.addColorStop(0.55, '#8d939e'); g.addColorStop(1, '#3b3f48'); }
+  x.fillStyle = g; x.fillRect(0, 0, 1024, 512);
+  for(const u of [0.16, 0.38, 0.62, 0.84]){   // centros a >0.107 del borde: ningún destello queda cortado en la costura del mapa
+    const cx = u*1024, cy = 150, rg = x.createRadialGradient(cx, cy, 0, cx, cy, 110);
+    const a = dark ? 0.85 : 1;
+    rg.addColorStop(0, `rgba(255,255,255,${a})`); rg.addColorStop(0.5, `rgba(255,255,255,${a*0.6})`); rg.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = rg; x.fillRect(cx - 110, cy - 110, 220, 220);
+  }
+  return c;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+function envFrom(dark){
+  const t = new THREE.CanvasTexture(envCanvas(dark)); t.mapping = THREE.EquirectangularReflectionMapping;
+  t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter;
+  return {tex: t, map: pmrem.fromEquirectangular(t).texture};
+}
+const envBright = envFrom(false), envDark = envFrom(true);
+
+// Luces: ambiente, principal, contraluz y dos focales (superior e inferior), ambas con sombra
+scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+const key = new THREE.DirectionalLight(0xffffff, 0.8); key.position.set(2, 4, 5); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffffff, 0.4); rim.position.set(-3, 1, -2); scene.add(rim);
+function makeSpot(){
+  const s = new THREE.SpotLight(0xffffff, 1.5, 0, Math.PI/5, 0.6, 1);
+  s.castShadow = true; s.shadow.mapSize.set(1024, 1024); s.shadow.bias = -0.0008; s.shadow.radius = 6;
+  scene.add(s); scene.add(s.target); s.target.position.set(0, 0, 0);
+  return s;
+}
+const topSpot = makeSpot(), botSpot = makeSpot();
+function placeSpots(){
+  const a = (+$('topAng').value)*Math.PI/180, b = (+$('botAng').value)*Math.PI/180;
+  topSpot.position.set(Math.sin(a)*6, 5, Math.cos(a)*6);
+  botSpot.position.set(Math.sin(b)*6, -5, Math.cos(b)*6);
+}
+placeSpots();
+
+// Fondo que recibe las sombras (transparente salvo la sombra)
+const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({opacity: 0.22}));
+backdrop.position.set(0, 0, -1.2); backdrop.receiveShadow = true; scene.add(backdrop);
+
+// ---------- Texturas ----------
+function placeholderCover(back){
+  const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
+  x.clearRect(0,0,1024,1024);
+  const g = x.createRadialGradient(512,512,80,512,512,512);
+  if(back){ g.addColorStop(0,'#7fd3ff'); g.addColorStop(1,'#2563eb'); } else { g.addColorStop(0,'#ff5fa2'); g.addColorStop(1,'#c2185b'); }
+  x.fillStyle = g; x.beginPath(); x.arc(512,512,500,0,Math.PI*2); x.fill();
+  x.fillStyle = '#fff'; x.font = 'bold 120px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(back ? 'REVERSO' : 'FRENTE', 512, 512);
+  return c;
+}
+function placeholderLabel(back){
+  const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
+  x.fillStyle = back ? '#2b2b2b' : '#e9c98a'; x.beginPath(); x.arc(256,256,250,0,Math.PI*2); x.fill();
+  x.fillStyle = back ? '#e9c98a' : '#222'; x.font = 'bold 72px Georgia'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(back ? 'LADO B' : 'LADO A', 256, 262);
+  return c;
+}
+function grooveCanvas(){
+  const c = document.createElement('canvas'); c.width = c.height = 2048; const x = c.getContext('2d');
+  x.fillStyle = '#7a7a7a'; x.fillRect(0, 0, 2048, 2048);
+  for(let r = 340; r < 1024; r += 0.8){
+    const v = Math.round(120 + Math.random()*20);
+    x.strokeStyle = `rgb(${v},${v},${v})`; x.lineWidth = 0.5;
+    x.beginPath(); x.arc(1024, 1024, r, 0, Math.PI*2); x.stroke();
+  }
+  return c;
+}
+// Detalle del vinilo en coordenadas polares (u = ángulo, v = radio), en DOS texturas:
+//  - anillos finos (emisiva, suave, iguales en todo el ángulo)
+//  - polvo y rayones (capa aparte con su propio deslizador): NO son iguales en todo el ángulo, y por eso se ve girar el disco
+// No hay relieve ni mapa de rugosidad: esos dos generaban destellos blancos que dependían del tamaño de pantalla.
+function dataTex(data, WT, HT){
+  const t = new THREE.DataTexture(data, WT, HT, THREE.RGBAFormat);
+  t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping;
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  t.needsUpdate = true;
+  return t;
+}
+function detailTextures(){
+  const WT = 1024, HT = 2048, ring = new Uint8Array(WT*HT*4), dust = new Uint8Array(WT*HT*4);
+  const inner = LP.HOLE, outer = LP.R, r0 = LP.LABEL, r1 = outer - 2, RINGS = 170, mmRow = (outer - inner)/HT;
+  const hash = n => { const v = Math.sin(n*127.1 + 311.7)*43758.5453; return v - Math.floor(v); };
+  const vnoise = x => { const k = Math.floor(x), f = x - k, w = f*f*(3 - 2*f); return hash(k)*(1 - w) + hash(k + 1)*w; };   // transición suave entre anillos
+  let seed = 20261015; const rnd = () => (seed = (seed*1664525 + 1013904223) >>> 0)/4294967296;   // determinista: el disco siempre es el mismo
+  for(let j = 0; j < HT; j++){
+    const r = inner + (j + 0.5)*mmRow; let v = 0;
+    if(r > r0 && r < r1){ const q = (r - r0)/(r1 - r0); v = 255*(0.06 + 0.18*(0.65*vnoise(q*RINGS) + 0.35*vnoise(q*RINGS/4 + 91.7))); }
+    for(let i = 0; i < WT; i++){ const o = (j*WT + i)*4; ring[o] = ring[o+1] = ring[o+2] = v; ring[o+3] = 255; dust[o+3] = 255; }
+  }
+  const put = (i, j, val) => {
+    if(j < 0 || j >= HT) return;
+    i = ((i % WT) + WT) % WT; const o = (j*WT + i)*4, nv = Math.max(dust[o], val);
+    dust[o] = dust[o+1] = dust[o+2] = nv;
+  };
+  for(let n = 0; n < 420; n++){                                      // polvo: motas redondas de 0.4-2 mm
+    const r = r0 + 4 + rnd()*(r1 - r0 - 6), a = rnd()*WT, s = 0.2 + rnd()*rnd()*0.8;   // radio de la mota en mm
+    const rx = Math.max(0.9, s/(2*Math.PI*r/WT)), ry = Math.max(0.9, s/mmRow), peak = 255*(0.45 + 0.55*rnd()), j0 = Math.round((r - inner)/mmRow);
+    for(let dj = -Math.ceil(ry); dj <= Math.ceil(ry); dj++) for(let di = -Math.ceil(rx); di <= Math.ceil(rx); di++){
+      const d = (di/rx)**2 + (dj/ry)**2; if(d <= 1) put(Math.round(a) + di, j0 + dj, peak*(1 - d*0.6));
+    }
+  }
+  for(let n = 0; n < 12; n++){                                       // rayones: arcos finos y tenues
+    const r = r0 + 6 + rnd()*(r1 - r0 - 12), a0 = rnd()*WT, L = (14 + rnd()*56)/(2*Math.PI*r/WT), drift = (rnd() - 0.5)*30;
+    const j0 = Math.round((r - inner)/mmRow), val = 255*(0.2 + 0.25*rnd());
+    for(let k = 0; k < L; k++){ const j = j0 + Math.round(drift*k/L); for(let t = 0; t < 4; t++) put(Math.round(a0) + k, j + t, val); }
+  }
+  return {ring: dataTex(ring, WT, HT), dust: dataTex(dust, WT, HT)};
+}
+const detailTexs = detailTextures(), detailTex = detailTexs.ring, dustTex = detailTexs.dust;
+const coverFrontTex = new THREE.CanvasTexture(placeholderCover(false));
+const coverBackTex  = new THREE.CanvasTexture(placeholderCover(true));
+function labelTex(back){ const t = new THREE.CanvasTexture(placeholderLabel(back)); t.encoding = THREE.sRGBEncoding; return t; }
+function loadTexture(file, done, srgb){
+  const r = new FileReader();
+  r.onload = () => { const img = new Image(); img.onload = () => { const t = new THREE.Texture(img); if(srgb) t.encoding = THREE.sRGBEncoding; t.needsUpdate = true; done(t); }; img.src = r.result; };
+  r.readAsDataURL(file);
+}
+
+// ---------- CD: plata con arcoíris difractivo ----------
+const U = {
+  uEnv: {value: envBright.tex}, uIri: {value: 0.9}, uTrans: {value: 0.3}, uExp: {value: 1},
+  uLight: {value: new THREE.Vector3(2, 4, 5).normalize()}, uCam: {value: new THREE.Vector3()}
+};
+const FACE_VS = `
+  varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW;
+  void main(){
+    vUv = uv; vL = position.xy;
+    vN = normalize(mat3(modelMatrix) * normal);
+    vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }`;
+const FACE_FS = `
+  uniform sampler2D uMap; uniform sampler2D uEnv;
+  uniform float uIri, uTrans, uExp; uniform vec3 uLight, uCam;
+  varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW;
+  vec3 pal(float t){ return 0.5 + 0.5*cos(6.28318*(t + vec3(0.0, 0.33, 0.67))); }
+  vec3 env(vec3 r){
+    float u = atan(r.z, r.x)/6.28318 + 0.5;
+    float v = asin(clamp(r.y, -1.0, 1.0))/3.14159 + 0.5;
+    return texture2D(uEnv, vec2(u, v)).rgb;
+  }
+  void main(){
+    vec3 n = normalize(vN); if(!gl_FrontFacing) n = -n;
+    vec3 V = normalize(uCam - vW);
+    vec3 R = reflect(-V, n);
+    float nv = clamp(dot(n, V), 0.0, 1.0);
+    float rn = clamp(length(vL)/60.0, 0.0, 1.0);
+    float ang = atan(vL.y, vL.x);
+    float ph = ang*0.95 + nv*1.1 + R.x*0.9 + R.y*0.35 + rn*0.35;
+    float streak = 0.6 + 0.4*pow(abs(cos(3.0*ang + 2.0*R.y)), 3.0);
+    vec3 film = mix(pal(ph), vec3(1.0), 0.32);
+    vec3 e = env(R);
+    vec3 silver = vec3(0.72, 0.75, 0.80) * (0.5 + 0.45*e);
+    vec3 foil = mix(silver, film*streak*(0.8 + 0.35*e), uIri*0.7);
+    float spec = pow(max(dot(R, uLight), 0.0), 40.0);
+    vec4 t = texture2D(uMap, vUv);
+    vec3 cover = t.rgb*(0.9 + 0.2*e) + spec*0.3;
+    float fres = pow(1.0 - nv, 2.0);
+    vec3 col = mix(foil + spec*0.6, cover, t.a);
+    float alpha = mix(1.0 - uTrans*(1.0 - fres), 1.0, t.a);
+    gl_FragColor = vec4(col*uExp, alpha);
+  }`;
+function faceMat(map){
+  return new THREE.ShaderMaterial({
+    uniforms: {...U, uMap: {value: map}}, side: THREE.DoubleSide,
+    transparent: true, vertexShader: FACE_VS, fragmentShader: FACE_FS
+  });
+}
+const cdFrontMat = faceMat(coverFrontTex), cdBackMat = faceMat(coverBackTex);
+const cdBodyMat = new THREE.MeshStandardMaterial({color: 0xdfe3ea, metalness: 1, roughness: 0.2, envMap: envBright.map, side: THREE.DoubleSide});
+
+// ---------- Vinilo ----------
+const vColorLin = linearHex($('vColor').value);
+const vinylBodyMat = new THREE.MeshPhysicalMaterial({color: vColorLin, roughness: 0.35, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMap: envDark.map, envMapIntensity: 1.0, side: THREE.DoubleSide});
+const vinylFaceMat = new THREE.MeshPhysicalMaterial({color: vColorLin, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMap: envDark.map, envMapIntensity: 1.0, emissive: new THREE.Color(1, 1, 1), emissiveMap: detailTex, emissiveIntensity: 0.05, bumpMap: detailTex, bumpScale: 0.003, side: THREE.DoubleSide});
+const dustMat = new THREE.MeshBasicMaterial({map: dustTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.07, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide});
+const labelFrontMat = new THREE.MeshStandardMaterial({map: labelTex(false), transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
+const labelBackMat  = new THREE.MeshStandardMaterial({map: labelTex(true),  transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
+
+// ---------- Geometría ----------
+function lathe(profile){
+  const g = new THREE.LatheGeometry(profile.map(p => new THREE.Vector2(p[0], p[1])), 192);
+  g.rotateX(Math.PI/2);
+  return g;
+}
+function annulus(inner, outer, seg = 256, mirror = false, polar = false){
+  const pos = [], uv = [], idx = [];
+  for(let i = 0; i <= seg; i++){
+    const a = i/seg*Math.PI*2, c = Math.cos(a), s2 = Math.sin(a);
+    pos.push(inner*c, inner*s2, 0, outer*c, outer*s2, 0);
+    const u1 = (inner*c/outer + 1)/2, v1 = (inner*s2/outer + 1)/2, u2 = (c + 1)/2, v2 = (s2 + 1)/2;
+    if(polar) uv.push(i/seg, 0, i/seg, 1); else uv.push(mirror ? 1-u1 : u1, v1, mirror ? 1-u2 : u2, v2);
+  }
+  for(let i = 0; i < seg; i++){ const a = i*2, b = a+1, c2 = a+2, d = a+3; idx.push(a, b, c2, b, d, c2); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+function face(geo, mat, z, back){
+  const m = new THREE.Mesh(geo, mat); m.position.z = z; if(back) m.rotation.y = Math.PI; return m;
+}
+function buildCD(){
+  const g = new THREE.Group(), {R, T, HOLE, HUB, HUB_H} = CD, h = T/2;
+  g.add(new THREE.Mesh(lathe([[R, -h], [R, h]]), cdBodyMat));
+  g.add(new THREE.Mesh(lathe([[HUB, h], [HUB, h + HUB_H], [HOLE, h + HUB_H]]), cdBodyMat));
+  g.add(new THREE.Mesh(lathe([[HOLE, -h - HUB_H], [HUB, -h - HUB_H], [HUB, -h]]), cdBodyMat));
+  g.add(face(annulus(HUB, R), cdFrontMat, h + 0.02, false));
+  g.add(face(annulus(HUB, R, 256, false), cdBackMat, -h - 0.02, true));
+  g.scale.setScalar(1/R);
+  return g;
+}
+function buildVinyl(){
+  const g = new THREE.Group(), {R, T, HOLE, LABEL} = LP, h = T/2;
+  g.add(new THREE.Mesh(lathe([[R, -h], [R, h]]), vinylBodyMat));
+  g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, h + 0.02, false));
+  g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, -h - 0.02, true));
+  g.add(face(annulus(HOLE, R, 256, false, true), dustMat, h + 0.06, false));
+  g.add(face(annulus(HOLE, R, 256, false, true), dustMat, -h - 0.06, true));
+  g.add(face(annulus(HOLE, LABEL), labelFrontMat, h + 0.2, false));
+  g.add(face(annulus(HOLE, LABEL, 256, false), labelBackMat, -h - 0.2, true));
+  g.scale.setScalar(1/R);
+  return g;
+}
+const cdGroup = buildCD(), vinylGroup = buildVinyl();
+vinylGroup.visible = false;
+const disc = new THREE.Group();
+disc.add(cdGroup, vinylGroup);
+scene.add(disc);
+disc.traverse(o => { if(o.isMesh){ o.castShadow = o.material !== dustMat; o.receiveShadow = false; } });   // la capa de polvo no proyecta sombra
+
+// ---------- Estado ----------
+let mode = 'cd', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
+let userRx = 0, userRy = 0, dragging = false, lx = 0, ly = 0;
+const TILT = {x: 0.22, y: -0.3};
+let BASE = {x: 0.22, y: -0.3}, centered = false;   // BASE se acerca suavemente a TILT o a la vista de frente
+
+function setMode(m){
+  mode = m;
+  cdGroup.visible = m === 'cd'; vinylGroup.visible = m === 'vinyl';
+  $('tCD').classList.toggle('on', m === 'cd'); $('tVN').classList.toggle('on', m === 'vinyl');
+  $('optCD').hidden = m !== 'cd'; $('optVN').hidden = m !== 'vinyl';
+}
+$('tCD').onclick = () => setMode('cd');
+$('tVN').onclick = () => setMode('vinyl');
+
+// Cada animación es periódica: su último fotograma enlaza con el primero
+function pose(name, t){
+  const P = PERIOD[name] || 4, ph = 2*Math.PI*(t/P);
+  switch(name){
+    case 'girar':    return {x: BASE.x, y: BASE.y, z: ph};
+    case 'volteo-y': return {x: BASE.x, y: BASE.y + ph, z: 0};
+    case 'volteo-x': return {x: BASE.x + ph, y: BASE.y, z: 0};
+    case 'balanceo': return {x: BASE.x + 0.12*Math.sin(ph*2), y: BASE.y + 0.8*Math.sin(ph), z: 0};
+    default:         return {x: BASE.x, y: BASE.y, z: 0};
+  }
+}
+document.querySelectorAll('#anims button').forEach(b => b.onclick = () => {
+  animName = b.dataset.a; tAnim = 0;
+  document.querySelectorAll('#anims button').forEach(x => x.classList.toggle('on', x === b));
+});
+document.querySelectorAll('#ratios button').forEach(b => b.onclick = () => {
+  RATIO_KEY = b.dataset.r;
+  document.querySelectorAll('#ratios button').forEach(x => x.classList.toggle('on', x === b));
+  layoutStage();
+});
+$('center').onclick = () => { centered = !centered; $('center').textContent = centered ? 'Tilt' : 'Front view'; };
+$('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent = animPlaying ? 'Pause' : 'Resume'; };
+
+// Imágenes
+$('fCoverF').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => cdFrontMat.uniforms.uMap.value = t, false); };
+$('fCoverB').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => cdBackMat.uniforms.uMap.value = t, false); };
+$('fLabelF').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { labelFrontMat.map = t; labelFrontMat.needsUpdate = true; }, true); };
+$('fLabelB').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { labelBackMat.map = t; labelBackMat.needsUpdate = true; }, true); };
+
+// Ajustes
+$('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); vinylFaceMat.color.copy(c); };
+// reflectividad: más alta = más brillo de entorno y barniz; más baja = superficie mate
+function applyGloss(v){
+  for(const m of [vinylBodyMat, vinylFaceMat]){
+    m.envMapIntensity = v*1.67;
+    m.clearcoat = Math.min(1, v*1.4);
+  }
+  vinylBodyMat.roughness = 0.5 - 0.25*v;
+  vinylFaceMat.roughness = 0.45 - 0.25*v;
+  for(const m of [labelFrontMat, labelBackMat]){ m.envMapIntensity = 0.1 + v*0.6; m.roughness = 0.75 - 0.2*v; m.needsUpdate = true; }
+  vinylBodyMat.needsUpdate = vinylFaceMat.needsUpdate = true;
+}
+$('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.opacity = 0.14*(+e.target.value); };
+$('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
+applyGloss(0.5);
+$('iri').oninput = e => U.uIri.value = +e.target.value;
+$('trans').oninput = e => U.uTrans.value = +e.target.value;
+function setBg(hex){ stage.style.background = hex; renderer.setClearColor(new THREE.Color(hex), 1); }
+$('bg').oninput = e => setBg(e.target.value);
+setBg($('bg').value);
+
+// Luces
+$('bright').oninput = e => $('brv').textContent = (+e.target.value).toFixed(2);
+$('topAng').oninput = e => { $('tpav').textContent = e.target.value + '°'; placeSpots(); };
+$('topI').oninput = e => $('tpiv').textContent = (+e.target.value).toFixed(2);
+$('botAng').oninput = e => { $('bpav').textContent = e.target.value + '°'; placeSpots(); };
+$('botI').oninput = e => $('bpiv').textContent = (+e.target.value).toFixed(2);
+
+// ---------- Inclinar manteniendo el clic ----------
+stage.addEventListener('pointerdown', e => { dragging = true; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointermove', e => {
+  if(!dragging) return;
+  const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
+  userRy = clamp(userRy + dx*0.01, -1.4, 1.4);
+  userRx = clamp(userRx + dy*0.01, -1.4, 1.4);
+});
+const endDrag = () => dragging = false;
+stage.addEventListener('pointerup', endDrag);
+stage.addEventListener('pointercancel', endDrag);
+
+// ---------- Tamaño del escenario según el formato ----------
+function layoutStage(){
+  const [W, H] = RATIOS[RATIO_KEY], ar = W/H;
+  stage.style.setProperty('--ar', ar);              // CSS sizes the artwork frame to fit the panel
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if(!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = ar;
+  // vertical formats: the disc must fit the width, so the camera moves back
+  camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*ar));
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(() => { if(!exporting) layoutStage(); }).observe(viewer);
+layoutStage();
+
+// ---------- Renderizado de un fotograma ----------
+function applyLights(){
+  const bright = +$('bright').value;
+  renderer.toneMappingExposure = bright; U.uExp.value = bright;
+  topSpot.visible = $('topOn').checked; topSpot.castShadow = topSpot.visible;
+  topSpot.intensity = +$('topI').value;
+  botSpot.visible = $('botOn').checked; botSpot.castShadow = botSpot.visible;
+  botSpot.intensity = +$('botI').value;
+  // el brillo del CD sigue la luz superior (o la principal si no hay focal)
+  if(topSpot.visible) U.uLight.value.copy(topSpot.position).normalize(); else U.uLight.value.set(2, 4, 5).normalize();
+}
+function renderAt(t){
+  const p = pose(animName, t);
+  disc.rotation.set(p.x + userRx, p.y + userRy, p.z);
+  U.uCam.value.copy(camera.position);
+  applyLights();
+  renderer.render(scene, camera);
+}
+
+// ---------- Bucle de vista previa ----------
+function frame(now){
+  const dt = Math.min(0.1, (now - lastT)/1000); lastT = now;
+  if(!exporting){
+    if(animPlaying) tAnim += dt;
+    const tgt = centered ? {x: 0, y: 0} : TILT;
+    BASE.x += (tgt.x - BASE.x)*0.1; BASE.y += (tgt.y - BASE.y)*0.1;
+    if(centered){ userRx *= 0.85; userRy *= 0.85; }
+    else if(!dragging && !$('keep').checked){ userRx *= 0.92; userRy *= 0.92; }
+    renderAt(tAnim);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---------- Export loop (shared exporter) ----------
+$('exp').onclick = async () => {
+  if(exporting) return;
+  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W, H] = RATIOS[RATIO_KEY], status = t => $('status').textContent = t;
+  exporting = true; $('exp').disabled = true;
+  try{
+    renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+    camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix();
+    const out = await VideoExport.run({canvas, renderAt, period: P, fps: FPS, width: W, height: H, status});
+    const name = `disc-${mode}-${animName}-${RATIO_KEY.replace(':','x')}.${out.ext}`;
+    const result = await VideoExport.save(name, out.blob);
+    const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', rejected_extension: 'Format not allowed', too_large: 'The file is too large'};
+    status(`${msgs[result] || 'Could not save'}: ${name} · ${W}×${H} · ${P} s loop · ${out.note}`);
+  }catch(err){ status(err && err.message || 'Export failed'); }
+  finally {
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); layoutStage();
+    exporting = false; $('exp').disabled = false;
+  }
+};
