@@ -1,14 +1,23 @@
-/* Tool screen (Figma "Desktop - 4"): left 1/3 = dark panel with "back", instructions and the controls;
-   right 2/3 = main color with the tool name on top and the stage below. Gaps 5px everywhere. */
-.toolpage { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: var(--main); }
-.toolhead { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: 0 var(--gap) 0 0; flex: none; }
-.toolhead__side { background: var(--dark); padding: var(--gap); min-height: 0; }
+/* Tool screen: left 1/3 = dark panel (back + instructions on top, controls below), right 2/3 = the tool's card
+   color, starting at the same height as the first row of tools on the landing. Tool name sits on top of it.
+   Gaps 5px; the left panel touches the top, left and bottom of the window. */
+.toolpage {
+  height: 100vh; height: 100dvh; overflow: hidden; background: var(--main);
+  display: grid; grid-template-columns: 1fr 2fr; grid-template-rows: auto minmax(0, 1fr);
+  column-gap: var(--gap); padding: 0 var(--gap) 0 0;
+}
+.toolhead { display: contents; }
+.toolhead__side { grid-column: 1; grid-row: 1; background: var(--dark); padding: var(--gap); }
 .toolhead .back { display: inline-block; font-size: 36px; font-weight: 500; line-height: .9; }
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
-.toolhead__title { font-size: 24px; font-weight: 700; line-height: 1; padding: var(--gap) 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.toolgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: 0 var(--gap) 0 0; }
+.toolhead__title {
+  grid-column: 2; grid-row: 1; align-self: start; justify-self: start; position: relative; z-index: 1;
+  margin: var(--gap) var(--gap) 0; font-size: 24px; font-weight: 700; line-height: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 2 * var(--gap));
+}
+.toolgrid { display: contents; }
 .menu {
-  grid-column: 1; background: var(--dark); min-height: 0; overflow: auto; color: var(--ink);
+  grid-column: 1; grid-row: 2; background: var(--dark); min-height: 0; overflow: auto; color: var(--ink);
   padding: var(--gap); display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); align-content: stretch;
   /* blocks fill the whole panel height (5px margin all around); rows share the free space */
   grid-auto-rows: minmax(min-content, 1fr);
@@ -17,47 +26,27 @@
 .block.full { grid-column: 1 / -1; }
 .block label { display: block; font-size: var(--fs-s); line-height: 1; }
 .menu, .menu button, .menu select, .menu input { font: 700 var(--fs-s)/1.2 var(--font); color: var(--ink); }
-.stage {
-  grid-column: 2; background: var(--card, var(--main)); min-height: 0; overflow: hidden; position: relative; margin-bottom: var(--gap);
-  container-type: size; display: grid; place-items: center;
-}
-/* Card color of each tool (CT1..CT4 = c1..c4 of the palette), shown behind the frame when the workspace is on */
+/* Card color of each tool (CT1..CT4 = c1..c4 of the palette) */
 html[data-card="1"] { --card: var(--c1); }
 html[data-card="2"] { --card: var(--c2); }
 html[data-card="3"] { --card: var(--c3); }
 html[data-card="4"] { --card: var(--c4); }
-/* Workspace off: the whole stage becomes the frame's own background; crop marks show where the 4:5 frame ends */
-.stage.is-off { background: var(--frame-bg); }
+.stage {
+  grid-column: 2; grid-row: 1 / span 2; margin: var(--gap) 0; background: var(--card, var(--main));
+  min-height: 0; overflow: hidden; position: relative; container-type: size; display: grid; place-items: center;
+}
 .artwork {
   --pad-x: 17.6cqw; --pad-y: 8.6cqh;   /* matches the Figma margins (168px / 80px) */
   background: #000; position: relative; overflow: hidden; aspect-ratio: var(--ar, .8);
   width: min(calc(100cqw - 2 * var(--pad-x)), calc((100cqh - 2 * var(--pad-y)) * var(--ar, .8)));
 }
-.stage.is-off .artwork { background: var(--frame-bg); }
 .artwork canvas, .artwork svg, .artwork video { width: 100%; height: 100%; display: block; }
-/* Crop marks: the box is the frame plus 16px on every side, so the ticks sit outside the frame corners
-   (backgrounds are clipped to their own box, so the box must be bigger than the ticks). */
-.crop {
-  display: none; position: absolute; pointer-events: none; color: #fff; mix-blend-mode: difference;
-  left: calc(var(--fx, 0px) - 16px); top: calc(var(--fy, 0px) - 16px);
-  width: calc(var(--fw, 0px) + 32px); height: calc(var(--fh, 0px) + 32px);
-  background:
-    linear-gradient(currentColor, currentColor) 4px 16px / 10px 1px no-repeat,
-    linear-gradient(currentColor, currentColor) 16px 4px / 1px 10px no-repeat,
-    linear-gradient(currentColor, currentColor) calc(100% - 14px) 16px / 10px 1px no-repeat,
-    linear-gradient(currentColor, currentColor) calc(100% - 16px) 4px / 1px 10px no-repeat,
-    linear-gradient(currentColor, currentColor) 4px calc(100% - 16px) / 10px 1px no-repeat,
-    linear-gradient(currentColor, currentColor) 16px calc(100% - 14px) / 1px 10px no-repeat,
-    linear-gradient(currentColor, currentColor) calc(100% - 14px) calc(100% - 16px) / 10px 1px no-repeat,
-    linear-gradient(currentColor, currentColor) calc(100% - 16px) calc(100% - 14px) / 1px 10px no-repeat;
-}
-.stage.is-off .crop { display: block; }
 @media (max-width: 900px) {
-  .toolpage { height: auto; overflow: visible; }
-  .toolhead { grid-template-columns: 1fr; }
+  .toolpage { height: auto; overflow: visible; display: flex; flex-direction: column; padding: 0; }
+  .toolhead { display: block; }
+  .toolhead__title { display: none; }
   .toolgrid { display: flex; flex-direction: column-reverse; }
-  .menu, .stage { grid-column: auto; }
-  .stage { height: 70vw; min-height: 320px; }
+  .stage { margin: 0; height: 70vw; min-height: 320px; }
   .artwork { --pad-x: 4cqw; --pad-y: 4cqh; }
 }
 .artwork.interactive { cursor: grab; touch-action: none; }

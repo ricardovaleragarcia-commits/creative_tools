@@ -47,7 +47,7 @@ h1, h2, p { margin: 0; font: inherit; }
   font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
   view-transition-name: credits;
 }
-.credits--end { left: auto; right: 15px; align-items: flex-end; background: var(--main); padding: 5px; }
+.credits--end { left: auto; right: 15px; align-items: flex-end; }
 .credits > * { pointer-events: auto; }
 .credits a:hover { opacity: .55; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
