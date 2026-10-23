@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" class="is-tool" data-card="4">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff5959">
+<script src="../../shared/palette.js"></script>
+<title>CT4 — Text On Sphere — Creative tools</title>
+<link rel="icon" type="image/svg+xml" href="../../shared/site-icon.svg">
+<link rel="apple-touch-icon" href="../../shared/site-icon-180.png">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../../shared/tool.css">
+<link rel="stylesheet" href="../../shared/tool-controls.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="toolpage">
+<header class="toolhead">
+  <div class="toolhead__side">
+    <a class="title back" href="../../">← back</a>
+    <p class="small instructions">Type your text, pick a typeface and watch it wrap around the sphere. Choose a frame format, colors and a looping motion, click the preview to set the spin axis, then export a seamless MP4 loop, a PNG frame or standalone HTML code.</p>
+  </div>
+  <h1 class="title toolhead__title"></h1>
+</header>
+
+<div class="toolgrid">
+  <aside class="menu" aria-label="Controls">
+    <div class="block full"><div class="t">Text <span>Enter = new line</span></div><textarea data-k="text" rows="2">text</textarea></div>
+    <div class="block full"><div class="t">Typeface</div><select data-k="font" id="font"></select></div>
+    <div class="block"><div class="t">Text size</div><input type="range" data-k="tsize" min="20" max="160"></div>
+    <div class="block"><label class="chk"><input type="checkbox" data-k="repeat">Repeat text around</label></div>
+
+    <div class="block"><div class="t">Sphere size</div><input type="range" data-k="size" min="5" max="98"></div>
+    <div class="block"><div class="t">Axis tilt</div><input type="range" data-k="tilt" min="-60" max="60"></div>
+    <div class="block"><div class="t">Frame format</div><select data-k="ratio" id="ratio"></select></div>
+    <div class="block"><div class="t">Quality (short side, px)</div><select data-k="quality"><option value="540">540</option><option value="720">720</option><option value="1080">1080</option></select></div>
+
+    <div class="block"><div class="t">Frame background</div><input type="color" data-k="bg"></div>
+    <div class="block"><div class="t">Sphere</div><input type="color" data-k="sc"></div>
+    <div class="block"><div class="t">Text color</div><input type="color" data-k="tc"></div>
+    <div class="block"><div class="t">Border</div><input type="color" data-k="bc"></div>
+    <div class="block"><label class="chk"><input type="checkbox" data-k="border">Sphere border</label></div>
+    <div class="block"><div class="t">Border width</div><input type="range" data-k="bw" min="0.5" max="8" step="0.5"></div>
+
+    <div class="block"><div class="t">Motion</div>
+      <select data-k="mode">
+        <option value="giro">Continuous spin</option>
+        <option value="vaiven">Back and forth</option>
+        <option value="pulso">Pulse (variable speed)</option>
+        <option value="rebote">Bounce</option>
+      </select></div>
+    <div class="block"><div class="t">Direction</div><select data-k="dir"><option value="1">Right →</option><option value="-1">Left ←</option></select></div>
+    <div class="block full"><div class="t">Loop duration (s)</div><input type="range" data-k="T" min="2" max="20" step="0.5"></div>
+
+    <div class="block full">
+      <div class="t">Sphere motion</div>
+      <div class="btns fill">
+        <button type="button" data-fx="rebote">Bounce</button>
+        <button type="button" id="eje">Spin on axis</button>
+        <button type="button" data-fx="orbita">Orbit</button>
+        <button type="button" data-fx="pendulo">Pendulum</button>
+      </div>
+    </div>
+    <div class="block"><div class="t">Bounce variant</div>
+      <select data-k="bseed">
+        <option value="0">1 · Classic (×1)</option><option value="1">2 · Zigzag (×1)</option><option value="2">3 · Wide (×1)</option><option value="3">4 · Long arc (×2)</option><option value="4">5 · Slow drift (×2)</option><option value="5">6 · Grand tour (×3)</option><option value="6">7 · Diagonal (×1)</option><option value="7">8 · Tight (×2)</option><option value="8">9 · Epic (×3)</option><option value="9">10 · Edge hopper (×1)</option>
+      </select></div>
+    <div class="block"><div class="t">Axis angle</div><input type="range" data-k="axis" min="0" max="360"></div>
+    <div class="block full"><div class="t">Seconds per spin</div><input type="range" data-k="spin" min="2" max="20" step="0.5"></div>
+    <div class="block full"><div class="btns fill"><button type="button" id="rand">Random behavior</button><button type="button" id="play">Pause</button></div></div>
+
+    <div class="block full">
+      <div class="t">Export</div>
+      <button type="button" class="btn" id="png">PNG image (current frame)</button>
+      <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
+      <button type="button" class="btn solid" id="vid">Export loop (MP4)</button>
+      <button type="button" class="btn" id="code">HTML code</button>
+      <div class="note" id="status"></div>
+    </div>
+  </aside>
+
+  <section class="stage" aria-label="Artwork">
+    <div class="artwork" id="art" style="--ar:1"><canvas id="cv"></canvas></div>
+  </section>
+</div>
+
+<dialog id="dlg">
+  <div class="t">Standalone code</div>
+  <textarea id="src" readonly></textarea>
+  <div class="btns fill"><button type="button" id="cp">Copy</button><button type="button" id="dl">Download .html</button><button type="button" id="close">Close</button></div>
+</dialog>
+
+<footer id="credits" class="credits credits--end"></footer>
+<script src="../../shared/tool.js"></script>
+<script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
+<script src="../../shared/video-export.js"></script>
+<script src="sphere.js"></script>
+<script src="../../shared/credits.js"></script>
+<script src="../../shared/smooth-scroll.js"></script>
+</body>
+</html>

@@ -2,10 +2,10 @@
 .shell { display: grid; grid-template-columns: 1fr 2fr; gap: 0; padding: 0; min-height: 100vh; }
 .side {
   background: var(--dark); color: var(--ink); position: sticky; top: 0;
-  height: 100vh; padding: 15px; overflow: hidden;
+  height: 100vh; padding: 0; overflow: hidden; container-type: inline-size;
   display: flex; flex-direction: column;
 }
-.side__head { display: flex; flex-direction: column; gap: 14px; }
+.side__head { display: flex; flex-direction: column; gap: 14px; padding: 15px; }
 .head__title { font-size: 36px; font-weight: 500; line-height: .9; }
 .dots { position: absolute; inset: 0; pointer-events: none; }
 .dot {
@@ -23,8 +23,8 @@
 .dot[data-p="white"]  { background: #ffffff; }
 .dot[data-p="black"]  { background: #000000; }
 .side__ct {
-  position: absolute; left: -0.98px; bottom: 96px; margin: 0;
-  font: 300 300px/0.8 var(--font); letter-spacing: -8px; color: var(--ink); pointer-events: none; white-space: nowrap;
+  position: absolute; left: -0.82cqw; bottom: 88px; margin: 0;
+  font: 300 80.29cqw/.81 var(--font); letter-spacing: -.03em; color: var(--ink); pointer-events: none; white-space: nowrap;
 }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
@@ -51,7 +51,7 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
   .side { position: relative; top: 0; height: auto; min-height: 60vh; }
   .tools { padding: var(--gap); }
   .tools { grid-column: 1; grid-template-columns: 1fr 1fr; }
-  .side__ct { font-size: 200px; bottom: 88px; }
+  .side__ct { font-size: min(80.29cqw, 45vh); }
   .head__title { font-size: 24px; }
 }
 @media (max-width: 560px) { .tools { grid-template-columns: 1fr; } }
