@@ -2,7 +2,7 @@
 .shell { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: var(--gap); min-height: 100vh; }
 .side {
   background: var(--dark); color: var(--ink); position: sticky; top: var(--gap);
-  height: calc(100vh - 2 * var(--gap)); padding: var(--gap); overflow: hidden;
+  height: calc(100vh - 2 * var(--gap)); padding: 15px; overflow: hidden;
   display: flex; flex-direction: column;
 }
 .side__head { display: flex; flex-direction: column; gap: 14px; }
