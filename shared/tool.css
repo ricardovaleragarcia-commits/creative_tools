@@ -18,9 +18,14 @@
 .block label { display: block; font-size: var(--fs-s); line-height: 1; }
 .menu, .menu button, .menu select, .menu input { font: 700 var(--fs-s)/1.2 var(--font); color: var(--ink); }
 .stage {
-  grid-column: 2; background: var(--main); min-height: 0; overflow: hidden; position: relative; margin-bottom: var(--gap);
+  grid-column: 2; background: var(--card, var(--main)); min-height: 0; overflow: hidden; position: relative; margin-bottom: var(--gap);
   container-type: size; display: grid; place-items: center;
 }
+/* Card color of each tool (CT1..CT4 = c1..c4 of the palette), shown behind the frame when the workspace is on */
+html[data-card="1"] { --card: var(--c1); }
+html[data-card="2"] { --card: var(--c2); }
+html[data-card="3"] { --card: var(--c3); }
+html[data-card="4"] { --card: var(--c4); }
 /* Workspace off: the whole stage becomes the frame's own background; crop marks show where the 4:5 frame ends */
 .stage.is-off { background: var(--frame-bg); }
 .artwork {

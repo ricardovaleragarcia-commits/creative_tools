@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 454" preserveAspectRatio="xMidYMid slice">
+  <defs><mask id="hole"><rect width="470" height="454" fill="#fff"/><circle cx="235.2" cy="227.2" r="13.1" fill="#000"/></mask></defs>
+  <g mask="url(#hole)">
+    <circle cx="235.2" cy="227.2" r="213.6" fill="#d9d9d9"/>
+    <circle cx="235.2" cy="227.2" r="74.7" fill="#e6e6e6"/>
+  </g>
+</svg>

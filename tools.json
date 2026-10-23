@@ -1,38 +1,26 @@
 [
   {
-    "title": "Tool 01",
+    "title": "CT1 — CD/Vinyl Playground",
     "description": "CD and vinyl viewer with seamless loop video export.",
-    "cover": "",
+    "cover": "shared/covers/ct1-vinyl.svg",
     "href": "tools/disc-viewer/"
   },
   {
-    "title": "Tool 02",
+    "title": "CT2 — Multiplication and Gravity",
     "description": "Shapes that multiply, fall and fill the frame, exported as a seamless loop.",
-    "cover": "",
+    "cover": "shared/covers/ct2-stars.svg",
     "href": "tools/shape-multiplier/"
   },
   {
-    "title": "Tool 03",
+    "title": "CT3 — Text On Sphere",
+    "description": "Short Description",
+    "cover": "",
+    "href": ""
+  },
+  {
+    "title": "CT4 — Text Magician",
     "description": "Reveal text or SVG logos letter by letter with a traveling mask.",
     "cover": "",
     "href": "tools/text-reveal/"
-  },
-  {
-    "title": "Tool 04",
-    "description": "Short Description",
-    "cover": "",
-    "href": ""
-  },
-  {
-    "title": "Tool 05",
-    "description": "Short Description",
-    "cover": "",
-    "href": ""
-  },
-  {
-    "title": "Tool 06",
-    "description": "Short Description",
-    "cover": "",
-    "href": ""
   }
 ]
