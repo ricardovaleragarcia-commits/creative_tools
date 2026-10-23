@@ -1,12 +1,12 @@
 /* Tool screen (Figma "Desktop - 4"): left 1/3 = dark panel with "back", instructions and the controls;
    right 2/3 = main color with the tool name on top and the stage below. Gaps 5px everywhere. */
 .toolpage { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: var(--main); }
-.toolhead { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: var(--gap) var(--gap) 0; flex: none; }
+.toolhead { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: 0 var(--gap) 0 0; flex: none; }
 .toolhead__side { background: var(--dark); padding: var(--gap); min-height: 0; }
 .toolhead .back { display: inline-block; font-size: 36px; font-weight: 500; line-height: .9; }
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
 .toolhead__title { font-size: 24px; font-weight: 700; line-height: 1; padding: var(--gap) 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.toolgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: var(--gap); }
+.toolgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); padding: 0 var(--gap) 0 0; }
 .menu {
   grid-column: 1; background: var(--dark); min-height: 0; overflow: auto; color: var(--ink);
   padding: var(--gap); display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); align-content: stretch;
@@ -18,7 +18,7 @@
 .block label { display: block; font-size: var(--fs-s); line-height: 1; }
 .menu, .menu button, .menu select, .menu input { font: 700 var(--fs-s)/1.2 var(--font); color: var(--ink); }
 .stage {
-  grid-column: 2; background: var(--main); min-height: 0; overflow: hidden; position: relative;
+  grid-column: 2; background: var(--main); min-height: 0; overflow: hidden; position: relative; margin-bottom: var(--gap);
   container-type: size; display: grid; place-items: center;
 }
 /* Workspace off: the whole stage becomes the frame's own background; crop marks show where the 4:5 frame ends */
