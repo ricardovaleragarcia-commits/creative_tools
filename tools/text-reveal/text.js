@@ -4,7 +4,7 @@ const $ = id => document.getElementById(id);
 const prev = $('preview'), pctx = prev.getContext('2d');
 const octx = document.createElement('canvas').getContext('2d');
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-let ratio = '1:1', letters = [], bounds = null, srcKind = 'text', playing = true, playMs = 0, last = 0, timer = 0, recording = false;
+let ratio = '3:4', letters = [], bounds = null, srcKind = 'text', playing = true, playMs = 0, last = 0, timer = 0, recording = false;
 let CURVE = {x1:0.45, y1:0.05, x2:0.15, y2:1};
 const layerCanvases = {};
 

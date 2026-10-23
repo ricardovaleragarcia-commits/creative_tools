@@ -2,12 +2,12 @@
 .shell { display: grid; grid-template-columns: 1fr 2fr; gap: 0; padding: 0; min-height: 100vh; }
 .side {
   background: var(--dark); color: var(--ink); position: sticky; top: 0;
-  height: 100vh; padding: 0; overflow: hidden; container-type: inline-size;
+  height: 100vh; padding: 0; overflow: hidden;
   display: flex; flex-direction: column;
 }
 .side__head { display: flex; flex-direction: column; gap: 14px; padding: 15px; }
 .head__title { font-size: 36px; font-weight: 500; line-height: .9; }
-.dots { position: absolute; inset: 0; pointer-events: none; }
+.dots { position: absolute; left: 0; right: 0; top: 170px; bottom: 68px; pointer-events: none; }  /* free space between the intro text and the credits */
 .dot {
   position: absolute; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; padding: 0;
   border: 0; border-radius: 50%; cursor: pointer; pointer-events: auto;
@@ -22,10 +22,6 @@
 .dot[data-p="blue"]   { background: #2270ff; }
 .dot[data-p="white"]  { background: #ffffff; }
 .dot[data-p="black"]  { background: #000000; }
-.side__ct {
-  position: absolute; left: -0.82cqw; bottom: 88px; margin: 0;
-  font: 300 80.29cqw/.81 var(--font); letter-spacing: -.03em; color: var(--ink); pointer-events: none; white-space: nowrap;
-}
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
   align-content: start; row-gap: 36px; padding: var(--gap) var(--gap) 120px;
@@ -51,7 +47,6 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
   .side { position: relative; top: 0; height: auto; min-height: 60vh; }
   .tools { padding: var(--gap); }
   .tools { grid-column: 1; grid-template-columns: 1fr 1fr; }
-  .side__ct { font-size: min(80.29cqw, 45vh); }
   .head__title { font-size: 24px; }
 }
 @media (max-width: 560px) { .tools { grid-template-columns: 1fr; } }

@@ -22,19 +22,6 @@
   fetch("tools.json").then(function (r) { return r.json(); }).then(render)
     .catch(function () { grid.textContent = "Could not load tools.json (serve the folder over http)."; });
 
-  // big CT: as wide as its panel (CSS sizes it like the Figma); if the font in use is wider, shrink it to fit
-  var side = document.querySelector(".side"), ct = document.querySelector(".side__ct");
-  function fitCT() {
-    if (!side || !ct) return;
-    ct.style.fontSize = "";
-    var room = side.clientWidth - 6, r = ct.getBoundingClientRect(), s = side.getBoundingClientRect();
-    var used = r.right - s.left;
-    if (used > room) ct.style.fontSize = (parseFloat(getComputedStyle(ct).fontSize) * (room - (r.left - s.left)) / r.width) + "px";
-  }
-  fitCT();
-  addEventListener("resize", fitCT);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCT);
-
   // palette dots
   var dots = document.querySelectorAll(".dot");
   function mark() {

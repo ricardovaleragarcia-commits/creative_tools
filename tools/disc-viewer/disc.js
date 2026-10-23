@@ -9,7 +9,7 @@ $('specs').textContent = 'Real sizes: CD 120 mm × 1.2 mm (hole 15 mm) · 12" LP
 
 const RATIOS = {'1:1': [1080,1080], '3:4': [1080,1440], '4:5': [1080,1350], '9:16': [1080,1920], '16:9': [1920,1080]};
 const PERIOD = {frontal: 4, girar: 3.5, 'volteo-y': 6, 'volteo-x': 6, balanceo: 5};
-let RATIO_KEY = '1:1';
+let RATIO_KEY = '3:4';
 
 // ---------- Escena ----------
 const viewer = $('viewer'), stage = $('stage'), canvas = $('gl');

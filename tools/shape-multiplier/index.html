@@ -47,7 +47,7 @@
     <div class="block"><div class="t">Friction <output class="v" id="frictionv"></output></div><input type="range" id="friction" min="0" max="1" step="0.02" value="0.5"></div>
     <div class="block"><div class="t">Shake on appear <output class="v" id="shakev"></output></div><input type="range" id="shake" min="0" max="5" step="0.1" value="0"></div>
 
-    <div class="block"><div class="t">Frame</div><select id="ratio"><option value="4:5">4:5</option><option value="1:1">1:1</option><option value="3:4">3:4</option><option value="9:16">9:16</option></select></div>
+    <div class="block"><div class="t">Frame</div><select id="ratio"><option value="3:4" selected>3:4</option><option value="4:5">4:5</option><option value="1:1">1:1</option><option value="9:16">9:16</option></select></div>
     <div class="block"><div class="t">Minimum gap <output class="v" id="gapv"></output></div><input type="range" id="gap" min="0" max="12" step="0.5" value="2"></div>
     <div class="block full">
       <div class="note" id="fillread"></div>
@@ -80,7 +80,7 @@
   </aside>
 
   <section class="stage" aria-label="Artwork">
-    <div class="artwork" id="art" style="--ar:0.8"><canvas id="cv" width="800" height="1000" aria-label="Shapes falling and stacking inside a frame without overlapping"></canvas></div>
+    <div class="artwork" id="art" style="--ar:0.75"><canvas id="cv" width="750" height="1000" aria-label="Shapes falling and stacking inside a frame without overlapping"></canvas></div>
   </section>
 </div>
 
