@@ -5,18 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creative tools</title>
 <meta name="description" content="An open-source library of experimental tools for generating motion and interactions.">
+<script src="shared/palette.js"></script>
 <link rel="stylesheet" href="shared/theme.css">
 <link rel="stylesheet" href="shared/landing.css">
 <link rel="icon" type="image/svg+xml" href="shared/site-icon.svg">
 <link rel="apple-touch-icon" href="shared/site-icon-180.png">
 </head>
-<body>
-<header class="head grid6">
-  <h1 class="title head__title">Creative tools for both creatives and non-creatives</h1>
-  <p class="small head__a">An open-source library of experimental tools for generating motion and interactions.</p>
-  <p class="small head__b">Leave comments inside any tool to suggest new features or improvements. I build and maintain it all, so enjoy exploring!</p>
-</header>
-<main id="tools" class="tools grid6" aria-label="Tools"></main>
+<body class="landing">
+<div class="shell">
+  <aside class="side" aria-label="Introduction and palette">
+    <header class="side__head">
+      <h1 class="title head__title">Creative tools for both creatives and non-creatives</h1>
+      <p class="small head__a">An open-source library of experimental tools for generating different types of interactions.</p>
+      <p class="small head__b">Send your comments here to suggest new features or improvements. I build and maintain it all, so enjoy exploring!</p>
+    </header>
+    <!-- Each dot is one palette. Position is a percentage of the panel (from the Figma). -->
+    <div class="dots" id="dots" role="radiogroup" aria-label="Color palette">
+      <button class="dot" role="radio" data-p="red"    aria-label="Red"    style="left:4%;  top:50%"></button>
+      <button class="dot" role="radio" data-p="purple" aria-label="Purple" style="left:19%; top:40%"></button>
+      <button class="dot" role="radio" data-p="white"  aria-label="White"  style="left:59%; top:40%"></button>
+      <button class="dot" role="radio" data-p="blue"   aria-label="Blue"   style="left:59%; top:50%"></button>
+      <button class="dot" role="radio" data-p="green"  aria-label="Green"  style="left:77%; top:31%"></button>
+      <button class="dot" role="radio" data-p="orange" aria-label="Orange" style="left:82%; top:36%"></button>
+      <button class="dot" role="radio" data-p="black"  aria-label="Black"  style="left:96%; top:31%"></button>
+    </div>
+    <p class="side__ct" aria-hidden="true">CT</p>
+  </aside>
+  <main id="tools" class="tools" aria-label="Tools"></main>
+</div>
 <footer id="credits" class="credits"></footer>
 <script src="shared/landing.js"></script>
 <script src="shared/credits.js"></script>

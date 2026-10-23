@@ -22,7 +22,12 @@ try{var saved=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
     if(saved.alpha!=null)$('alpha').checked=!!saved.alpha;
   }
 }catch(e){}
+function bgCss(st){
+  if(st.mode==='solid')return st.color;
+  return 'linear-gradient('+st.angle+'deg,'+st.stops.map(function(s){return s.c+' '+Math.round(s.p*100)+'%'}).join(',')+')';
+}
 function saveSettings(){
+  if(window.setFrameBg)window.setFrameBg(bgCss(bgStyle));
   try{localStorage.setItem(STORE_KEY,JSON.stringify({
     P:{gravity:$('gravity').value,bounce:$('bounce').value,friction:$('friction').value,gap:$('gap').value,shake:$('shake').value,stepDur:$('stepDur').value,hold:$('hold').value,seq:$('seq').value,mode:$('mode').value},
     bg:bgStyle,fill:fillStyle,alpha:$('alpha').checked}))}catch(e){}

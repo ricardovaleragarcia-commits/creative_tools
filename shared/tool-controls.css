@@ -1,4 +1,5 @@
-/* Controls inside the tool menu blocks. Same 12px bold type, 0.5pt black strokes, #f2f2f2 blocks. */
+/* Controls inside the tool menu blocks. 12px bold, no strokes; blocks keep the 5px gaps.
+   A selected button is filled with the ink color (the text color of the palette). */
 .group { display: contents; }
 .block { display: flex; flex-direction: column; gap: 8px; }
 .block .t { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-s); line-height: 1; }
@@ -6,19 +7,19 @@
 .btns { display: flex; flex-wrap: wrap; gap: 4px; }
 .btns.fill > button { flex: 1 1 0; }
 .btn, .btns button, .block select, .block input[type=file]::file-selector-button {
-  font: 700 var(--fs-s)/1 var(--font); color: #000; background: transparent; border: .5px solid #000;
+  font: 700 var(--fs-s)/1 var(--font); color: var(--ink); background: transparent; border: 0;
   border-radius: 5px; padding: 6px 8px; cursor: pointer; text-align: center;
 }
-.btn:hover, .btns button:hover, .block select:hover, .block input[type=file]::file-selector-button:hover { background: #e5e5e5; }
-.btns button.on, .btn.on { background: #000; color: #fff; }
+.btn:hover, .btns button:hover, .block select:hover, .block input[type=file]::file-selector-button:hover { background: color-mix(in srgb, var(--ink) 14%, transparent); }
+.btns button.on, .btn.on { background: var(--ink); color: var(--dark); }
 .btn:disabled { opacity: .45; cursor: default; }
-.btn.solid { background: #000; color: #fff; padding: 9px 8px; }
-.btn.solid:hover { background: #333; }
-.block select { width: 100%; background: #fff; }
-.block input[type=file] { font: 700 var(--fs-s)/1.2 var(--font); width: 100%; }
-.block input[type=file]::file-selector-button { margin-right: 8px; }
-.block input[type=color] { width: 100%; height: 26px; border: .5px solid #000; border-radius: 5px; padding: 0; background: none; cursor: pointer; }
-.block input[type=checkbox] { accent-color: #000; margin: 0 6px 0 0; }
+.btn.solid { background: var(--ink); color: var(--dark); padding: 9px 8px; }
+.btn.solid:hover { opacity: .85; }
+.block select { width: 100%; background: var(--main); }
+.block input[type=file] { font: 700 var(--fs-s)/1.2 var(--font); width: 100%; color: var(--ink); }
+.block input[type=file]::file-selector-button { margin-right: 8px; background: var(--main); }
+.block input[type=color] { width: 100%; height: 26px; border: 0; border-radius: 5px; padding: 0; background: none; cursor: pointer; }
+.block input[type=checkbox] { accent-color: var(--ink); margin: 0 6px 0 0; }
 .block .chk { display: flex; align-items: center; font-size: var(--fs-s); line-height: 1; cursor: pointer; }
-.block input[type=range] { width: 100%; margin: 0; accent-color: #000; }
+.block input[type=range] { width: 100%; margin: 0; accent-color: var(--ink); }
 .block .note { font-size: var(--fs-s); line-height: 1.25; font-weight: 700; opacity: .6; }

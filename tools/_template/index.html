@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../shared/palette.js"></script>
 <title>Tool name — Creative tools</title>
 <link rel="stylesheet" href="../../shared/theme.css">
 <link rel="stylesheet" href="../../shared/tool.css">
@@ -11,8 +12,11 @@
 </head>
 <body class="toolpage">
 <header class="toolhead">
-  <a class="title back" href="../../">back</a>
-  <p class="small instructions">Instructions to use the tool in every detail and more texts related.</p>
+  <div class="toolhead__side">
+    <a class="title back" href="../../">back</a>
+    <p class="small instructions">Instructions to use the tool in every detail and more texts related.</p>
+  </div>
+  <h1 class="title toolhead__title"></h1>
 </header>
 <div class="toolgrid grid6">
   <aside class="menu" aria-label="Controls">
@@ -27,8 +31,8 @@
   </section>
 </div>
 <footer id="credits" class="credits credits--end"></footer>
+<script src="../../shared/tool.js"></script>
 <script src="../../shared/credits.js"></script>
 <script src="../../shared/smooth-scroll.js"></script>
-<script src="../../shared/tool.js"></script>
 </body>
 </html>

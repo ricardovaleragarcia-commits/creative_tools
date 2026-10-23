@@ -292,6 +292,7 @@ function letterCache(L, W, H){
 // t: progreso lineal global 0..1
 function renderFrame(ctx, W, H, t){
   const bg = $('bg').value, fg = $('fg').value, keep = $('keep').checked;
+  if(window.setFrameBg) window.setFrameBg(bg);
   const F = Math.max(0.02, +$('suav').value), stag = +$('st').value;
   ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);

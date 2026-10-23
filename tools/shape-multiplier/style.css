@@ -1,6 +1,6 @@
 /* Shape multiplier — extra controls (color editors, labels). Base look comes from shared/tool-controls.css */
 .menu label.row-l { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); line-height: 1.2; }
-.menu input[type=text] { flex: 1; min-width: 0; font: 700 var(--fs-s)/1 var(--font); padding: 6px 8px; border: .5px solid #000; border-radius: 5px; background: #fff; }
+.menu input[type=text] { flex: 1; min-width: 0; font: 700 var(--fs-s)/1 var(--font); padding: 6px 8px; border: 0; border-radius: 5px; background: var(--main); }
 .menu .btn { width: 100%; }
 .menu label.row-l input[type=range] { flex: 1; min-width: 0; }
 .menu .v, .menu .pct { font-size: var(--fs-s); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -9,13 +9,13 @@
 .style-ed .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: var(--fs-s); line-height: 1; }
 .style-ed .head select { width: auto; flex: 0 0 auto; }
 .style-ed .row { display: flex; gap: 6px; flex-wrap: wrap; }
-.style-ed button { font: 700 var(--fs-s)/1 var(--font); color: #000; background: transparent; border: .5px solid #000; border-radius: 5px; padding: 5px 8px; cursor: pointer; }
+.style-ed button { font: 700 var(--fs-s)/1 var(--font); color: var(--ink); background: transparent; border: 0; border-radius: 5px; padding: 5px 8px; cursor: pointer; }
 .style-ed button:hover { background: #e5e5e5; }
 .style-ed button:disabled { opacity: .45; cursor: default; }
 .style-ed label { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); }
-.style-ed input[type=range] { flex: 1; min-width: 0; accent-color: #000; }
-.style-ed input[type=color] { width: 34px; height: 24px; padding: 0; border: .5px solid #000; border-radius: 5px; background: none; cursor: pointer; }
-.gbar { height: 14px; border-radius: 5px; border: .5px solid #000; }
+.style-ed input[type=range] { flex: 1; min-width: 0; accent-color: var(--ink); }
+.style-ed input[type=color] { width: 34px; height: 24px; padding: 0; border: 0; border-radius: 5px; background: none; cursor: pointer; }
+.gbar { height: 14px; border-radius: 5px; border: 0; }
 .stop { display: grid; grid-template-columns: 34px 1fr 36px 24px; gap: 6px; align-items: center; }
 .stop button { padding: 2px 0; line-height: 1; }
 .menu .small-note { font-size: var(--fs-s); line-height: 1.25; opacity: .6; }

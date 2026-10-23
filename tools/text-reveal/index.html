@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../shared/palette.js"></script>
 <title>Text &amp; SVG reveal — Creative tools</title>
 <link rel="icon" type="image/svg+xml" href="../../shared/site-icon.svg">
 <link rel="apple-touch-icon" href="../../shared/site-icon-180.png">
@@ -16,8 +17,11 @@
 </head>
 <body class="toolpage">
 <header class="toolhead">
-  <a class="title back" href="../../">back</a>
-  <p class="small instructions">Type up to 20 letters or upload a vector logo (SVG). Each letter is revealed by a mask that travels along its own shape. Shape the timing with the curve, pick a format and export a seamless MP4 loop.</p>
+  <div class="toolhead__side">
+    <a class="title back" href="../../">back</a>
+    <p class="small instructions">Type up to 20 letters or upload a vector logo (SVG). Each letter is revealed by a mask that travels along its own shape. Shape the timing with the curve, pick a format and export a seamless MP4 loop.</p>
+  </div>
+  <h1 class="title toolhead__title"></h1>
 </header>
 
 <div class="toolgrid grid6">
@@ -102,11 +106,11 @@
 </div>
 
 <footer id="credits" class="credits credits--end"></footer>
+<script src="../../shared/tool.js"></script>
 <script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
 <script src="../../shared/video-export.js"></script>
 <script src="text.js"></script>
 <script src="../../shared/credits.js"></script>
 <script src="../../shared/smooth-scroll.js"></script>
-<script src="../../shared/tool.js"></script>
 </body>
 </html>

@@ -324,7 +324,7 @@ $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2)
 applyGloss(0.5);
 $('iri').oninput = e => U.uIri.value = +e.target.value;
 $('trans').oninput = e => U.uTrans.value = +e.target.value;
-function setBg(hex){ stage.style.background = hex; renderer.setClearColor(new THREE.Color(hex), 1); }
+function setBg(hex){ if(window.setFrameBg) window.setFrameBg(hex); renderer.setClearColor(new THREE.Color(hex), 1); }
 $('bg').oninput = e => setBg(e.target.value);
 setBg($('bg').value);
 
