@@ -12,7 +12,7 @@
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
 .toolhead__title {
   grid-column: 2; grid-row: 1; align-self: start; justify-self: start; position: relative; z-index: 1;
-  margin: var(--gap) var(--gap) 0; font-size: 24px; font-weight: 700; line-height: 1.25; padding-bottom: 2px;
+  margin: var(--gap) var(--gap) 0; font-size: 24px; font-weight: 700; line-height: 32px; height: 32px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 2 * var(--gap));
 }
 .toolgrid { display: contents; }
@@ -32,7 +32,7 @@ html[data-card="2"] { --card: var(--c2); }
 html[data-card="3"] { --card: var(--c3); }
 html[data-card="4"] { --card: var(--c4); }
 .stage {
-  grid-column: 2; grid-row: 1 / span 2; margin: var(--gap) 0; background: var(--card, var(--main));
+  grid-column: 2; grid-row: 1 / span 2; margin: var(--cover-top) 0 var(--gap); background: var(--card, var(--main));
   min-height: 0; overflow: hidden; position: relative; container-type: size; display: grid; place-items: center;
 }
 .artwork {
