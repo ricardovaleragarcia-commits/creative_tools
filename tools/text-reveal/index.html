@@ -8,9 +8,6 @@
 <title>CT3 — Text Reveal — Creative tools</title>
 <link rel="icon" type="image/svg+xml" href="../../shared/site-icon.svg">
 <link rel="apple-touch-icon" href="../../shared/site-icon-180.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&family=Oswald:wght@700&family=Playfair+Display:wght@700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../shared/theme.css">
 <link rel="stylesheet" href="../../shared/tool.css">
 <link rel="stylesheet" href="../../shared/tool-controls.css">
@@ -20,7 +17,7 @@
 <header class="toolhead">
   <div class="toolhead__side">
     <a class="title back" href="../../">← back</a>
-    <p class="small instructions">Type up to 20 letters or upload a vector logo (SVG). Each letter is revealed by a mask that travels along its own shape. Shape the timing with the curve, pick a format and export a seamless MP4 loop.</p>
+    <p class="small instructions">Type up to 20 letters or upload a vector logo (SVG). The outline of each letter is drawn like a pen stroke and then filled in. Pick a typeface, shape the timing with the curve, and export a seamless MP4 loop.</p>
   </div>
   <h1 class="title toolhead__title"></h1>
 </header>
@@ -44,32 +41,36 @@
     <div class="block full">
       <div class="t">Typeface</div>
       <select id="font">
-        <optgroup label="System (standard)">
-          <option value="Arial, Helvetica, sans-serif">Arial</option>
-          <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-          <option value="'Times New Roman', Times, serif">Times New Roman</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="'Courier New', Courier, monospace">Courier New</option>
-          <option value="Verdana, Geneva, sans-serif">Verdana</option>
-          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-          <option value="Impact, sans-serif">Impact</option>
-        </optgroup>
-        <optgroup label="Google Fonts (free)">
-          <option value="'Montserrat', sans-serif">Montserrat</option>
-          <option value="'Playfair Display', serif">Playfair Display</option>
-          <option value="'Oswald', sans-serif">Oswald</option>
-          <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
-          <option value="'Space Mono', monospace">Space Mono</option>
-        </optgroup>
+        <option value="montserrat-latin-300-normal.woff">Montserrat Light</option>
+        <option value="montserrat-latin-700-normal.woff">Montserrat Bold</option>
+        <option value="playfair-display-latin-400-normal.woff">Playfair Display</option>
+        <option value="playfair-display-latin-700-normal.woff">Playfair Display Bold</option>
+        <option value="oswald-latin-700-normal.woff">Oswald Bold</option>
+        <option value="bebas-neue-latin-400-normal.woff">Bebas Neue</option>
+        <option value="space-mono-latin-700-normal.woff">Space Mono Bold</option>
       </select>
+      <label class="note">…or use your own font file (TTF, OTF, WOFF)</label>
+      <input type="file" id="fontFile" accept=".ttf,.otf,.woff">
     </div>
 
-    <div class="block"><div class="t">Text color</div><input type="color" id="fg" value="#ffffff"></div>
+    <div class="block"><div class="t">Line color</div><input type="color" id="lc" value="#ffffff"></div>
+    <div class="block"><div class="t">Fill color</div><input type="color" id="fc" value="#ffffff"></div>
     <div class="block"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
+    <div class="block"><div class="t">Line weight <output></output></div><input type="range" id="lw" min="0.5" max="6" step="0.1" value="2"></div>
 
-    <div class="block"><div class="t">Front softness <output id="suv">0.12</output></div><input type="range" id="suav" min="0.02" max="0.4" step="0.01" value="0.12"></div>
-    <div class="block"><div class="t">Letter offset <output id="stv">0.00</output></div><input type="range" id="st" min="0" max="0.6" step="0.01" value="0"></div>
-    <div class="block full"><div class="t">Speed <output id="spv">1.00</output></div><input type="range" id="sp" min="0.25" max="3" step="0.05" value="1"></div>
+    <div class="block"><div class="t">Order</div>
+      <select id="order"><option value="ltr">Left to right</option><option value="rtl">Right to left</option><option value="center">Center out</option><option value="rand">Random</option></select></div>
+    <div class="block"><div class="t">Draw direction</div>
+      <select id="dir"><option value="cw">Clockwise</option><option value="ccw">Counter-clockwise</option></select></div>
+    <div class="block"><div class="t">Fill</div>
+      <select id="fillm"><option value="fade">Fade in</option><option value="wipe">Wipe up</option><option value="none">None (outline only)</option></select></div>
+    <div class="block"><div class="t">Outline after fill</div>
+      <select id="outm"><option value="fade">Fade out</option><option value="keep">Keep</option></select></div>
+
+    <div class="block"><div class="t">Draw time <output></output></div><input type="range" id="dr" min="0.5" max="4" step="0.05" value="1.8"></div>
+    <div class="block"><div class="t">Letter delay <output></output></div><input type="range" id="sg" min="0" max="3" step="0.05" value="0.9"></div>
+    <div class="block"><div class="t">Fill time <output></output></div><input type="range" id="fd" min="0.2" max="2" step="0.05" value="0.8"></div>
+    <div class="block"><div class="t">Hold <output></output></div><input type="range" id="hold" min="0" max="3" step="0.05" value="1.2"></div>
 
     <div class="block">
       <div class="t">Animation curve</div>
@@ -83,7 +84,7 @@
         <button data-c="0.45,0.05,0.15,1">Organic</button>
         <button data-c="0.8,0,0.3,1">Dynamic</button>
       </div>
-      <div class="note">Drag the two points on the curve to shape the timing.</div>
+      <div class="note">Drag the two points on the curve to shape the drawing speed.</div>
     </div>
 
     <div class="block full">
@@ -91,13 +92,13 @@
       <div class="btns fill" id="ratios"></div>
     </div>
 
-    <div class="block full"><div class="btns fill"><button id="play">Pause</button><button id="reshuffle">Shuffle starts</button></div></div>
+    <div class="block full"><div class="btns fill"><button id="play">Pause</button><button id="reshuffle">Shuffle order</button></div></div>
 
     <div class="block full">
       <div class="t">Export loop</div>
       <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
       <button class="btn solid" id="dl">Export loop (MP4)</button>
-      <div class="note" id="status"></div>
+      <div class="note" id="status" aria-live="polite"></div>
     </div>
   </aside>
 
@@ -107,6 +108,8 @@
 </div>
 
 <script src="../../shared/tool.js"></script>
+<script src="../../shared/vendor/opentype-1.3.4.min.js"></script>
+<script src="../../shared/persist.js"></script>
 <script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
 <script src="../../shared/video-export.js"></script>
 <script src="text.js"></script>
