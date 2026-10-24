@@ -26,7 +26,7 @@
 <div class="toolgrid grid6">
   <aside class="menu" aria-label="Controls">
 
-    <div class="block full">
+    <div class="block full" data-sec="Disc &amp; style" data-open>
       <div class="t">Disc</div>
       <div class="btns fill"><button id="tVN" class="on">Vinyl</button><button id="tCD">CD</button></div>
     </div>
@@ -36,7 +36,7 @@
       <div class="btns fill"><button id="sPlain" class="on">Plain colors</button><button id="sReal">Realistic</button></div>
     </div>
 
-    <div class="block full">
+    <div class="block full" data-sec="Format &amp; motion" data-open>
       <div class="t">Format</div>
       <div class="btns fill" id="ratios">
         <button data-r="1:1">1:1</button><button data-r="3:4" class="on">3:4</button><button data-r="4:5">4:5</button><button data-r="9:16">9:16</button><button data-r="16:9">16:9</button>
@@ -53,7 +53,9 @@
 
     <div class="block full"><div class="t">Zoom <output id="zv">100%</output></div><div class="zrow"><button id="zOut" aria-label="Smaller">−</button><input type="range" id="zoom" min="0.3" max="2.5" step="0.01" value="1"><button id="zIn" aria-label="Bigger">+</button></div></div>
 
-    <div class="block"><div class="t">Label · front (PNG)</div><input type="file" id="fLabF" accept="image/png,image/webp,image/jpeg"></div>
+    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
+
+    <div class="block" data-sec="Labels &amp; colors" data-open><div class="t">Label · front (PNG)</div><input type="file" id="fLabF" accept="image/png,image/webp,image/jpeg"></div>
     <div class="block"><div class="t">Label · back</div><input type="file" id="fLabB" accept="image/png,image/webp,image/jpeg"></div>
 
     <div class="group" id="optPlain">
@@ -72,7 +74,7 @@
       <div class="block full"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
     </div>
 
-    <div class="group" id="optLights">
+    <div class="group" data-sec="Lights" id="optLights">
     <div class="block full"><div class="t">Brightness <output id="brv">1.00</output></div><input type="range" id="bright" min="0.4" max="2.2" step="0.01" value="1"></div>
 
     <div class="block full">
@@ -88,9 +90,7 @@
 
     </div>
 
-    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
-
-    <div class="block full">
+    <div class="block full" data-sec="Export">
       <div class="t">Export loop</div>
       <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
       <button class="btn solid" id="exp">Export loop (MP4)</button>
