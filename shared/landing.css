@@ -38,9 +38,9 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 .tool:nth-child(4n)   .tool__cover { --cover: var(--c4); }
 
 /* transition names (see theme.css) */
-.head__title { view-transition-name: vt-title; }
-.head__a { view-transition-name: vt-intro; }
-.head__b { view-transition-name: vt-note; }
+.head__title, .head__a, .head__b { animation: rise-in .7s var(--vt-ease) .3s both; }
+.head__a { animation-delay: .38s; } .head__b { animation-delay: .46s; }
+.dot { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.4s + var(--i, 0) * 50ms); }
 
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }

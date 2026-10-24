@@ -10,6 +10,8 @@
   var title = page.querySelector(".toolhead__title");
   if (title) title.textContent = document.title.replace(/\s*[—-]\s*Creative tools\s*$/, "");
 
+  menu.querySelectorAll(".block").forEach(function (b, i) { b.style.setProperty("--i", i); });
+
   window.setFrameBg = function (css) { stage.style.setProperty("--frame-bg", css); };
 
   var PAD = 44, pad = false;

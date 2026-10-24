@@ -51,3 +51,10 @@ html[data-card="4"] { --card: var(--c4); }
 }
 .artwork.interactive { cursor: grab; touch-action: none; }
 .artwork.interactive:active { cursor: grabbing; }
+
+/* motion: stage is the shared element, texts and controls rise in */
+.stage { view-transition-name: tool-stage; }
+.toolhead .back { animation: rise-in .7s var(--vt-ease) .3s both; }
+.toolhead .instructions { animation: rise-in .7s var(--vt-ease) .4s both; }
+.toolhead__title { animation: rise-in .7s var(--vt-ease) .45s both; }
+.menu .block { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.45s + var(--i, 0) * 45ms); }

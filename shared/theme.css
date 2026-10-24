@@ -53,16 +53,28 @@ h1, h2, p { margin: 0; font: inherit; }
 .credits a:hover { opacity: .55; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
 
-/* ---- Screen transitions (landing <-> tool) ----
-   The tool screen no longer rises/drops: pages swap in place. Header texts and the credits bar still move. */
-:root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .8s; }
-::view-transition-group(credits) { animation-duration: var(--vt-time); animation-timing-function: var(--vt-ease); }
-::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-old(vt-title), ::view-transition-old(vt-intro), ::view-transition-old(vt-note) { animation: vt-up-out var(--vt-time) var(--vt-ease) both; }
-::view-transition-new(vt-title), ::view-transition-new(vt-intro), ::view-transition-new(vt-note) { animation: vt-down-in var(--vt-time) var(--vt-ease) both; }
-@keyframes vt-up-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-240px); opacity: 0; } }
-@keyframes vt-down-in { from { transform: translateY(-240px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* ---- Motion ----
+   1. landing <-> tool: the card cover and the tool stage are one shared element (name "tool-stage") that grows/shrinks;
+      the rest of the old page fades out, the dark left panel stays put, the credits bar slides across.
+   2. entrances: texts rise in, tool controls stagger in.
+   3. palette dot: the new palette spreads as a circle from the clicked dot (same-document transition, class .pal-vt). */
+:root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .75s; }
+::view-transition-group(credits), ::view-transition-group(tool-stage) { animation-duration: var(--vt-time); animation-timing-function: var(--vt-ease); }
+:root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .45s ease both; }
+:root:not(.pal-vt)::view-transition-new(root) { animation: none; }
+::view-transition-old(tool-stage) { animation: vt-fade-out var(--vt-time) var(--vt-ease) both; height: 100%; object-fit: cover; }
+::view-transition-new(tool-stage) { animation: vt-fade-in var(--vt-time) var(--vt-ease) both; height: 100%; object-fit: cover; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+/* palette reveal: root old/new are driven from JS (clip-path circle) */
+.pal-vt *, .pal-vt { transition: none !important; }
+.pal-vt::view-transition-old(root), .pal-vt::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.pal-vt .credits, .pal-vt .tool__cover { view-transition-name: none !important; }
+
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: .01s !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: .01s !important; animation-delay: 0s !important; }
+  * { animation-duration: .01s !important; animation-delay: 0s !important; }
 }
 @media (max-width: 900px) { :root { --fs-l: 24px; --fs-foot: 16px; } }

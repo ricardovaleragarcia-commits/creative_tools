@@ -19,7 +19,14 @@
     });
     grid.replaceChildren(f);
   }
-  fetch("tools.json").then(function (r) { return r.json(); }).then(render)
+  var cachedTxt = null;
+  try { cachedTxt = localStorage.getItem("ct-tools"); if (cachedTxt) render(JSON.parse(cachedTxt)); } catch (e) { cachedTxt = null; }
+  fetch("tools.json").then(function (r) { return r.text(); })
+    .then(function (txt) {
+      if (txt === cachedTxt) return;               // already drawn from the cache: don't redraw
+      render(JSON.parse(txt));
+      try { localStorage.setItem("ct-tools", txt); } catch (e) {}
+    })
     .catch(function () { grid.textContent = "Could not load tools.json (serve the folder over http)."; });
 
   // palette dots
@@ -31,8 +38,41 @@
       d.setAttribute("aria-checked", on ? "true" : "false");
     });
   }
-  dots.forEach(function (d) {
-    d.addEventListener("click", function () { window.CTPalette.set(d.getAttribute("data-p")); mark(); });
+  dots.forEach(function (d, i) {
+    d.style.setProperty("--i", i);
+    d.addEventListener("click", function () {
+      var p = d.getAttribute("data-p"), root = document.documentElement;
+      if (p === root.getAttribute("data-palette")) return;
+      var apply = function () { window.CTPalette.set(p); mark(); };
+      var calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!document.startViewTransition || calm) { apply(); return; }
+      var r = d.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      var rad = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      root.classList.add("pal-vt");
+      var t = document.startViewTransition(apply);
+      t.ready.then(function () {
+        root.animate({ clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + rad + "px at " + x + "px " + y + "px)"] },
+          { duration: 800, easing: "cubic-bezier(.65,0,.35,1)", pseudoElement: "::view-transition-new(root)" });
+      }).catch(function () {});
+      t.finished.finally(function () { root.classList.remove("pal-vt"); });
+    });
+  });
+
+  // shared element: the clicked cover grows into the tool stage (and back)
+  function nameCover(a) { var c = a && a.querySelector(".tool__cover"); if (c) c.style.viewTransitionName = "tool-stage"; }
+  function cardFor(url) {
+    var path = new URL(url, location.href).pathname.replace(/index\.html$/, "");
+    return Array.prototype.find.call(document.querySelectorAll("a.tool"), function (a) {
+      return new URL(a.href).pathname.replace(/index\.html$/, "") === path;
+    });
+  }
+  addEventListener("pageswap", function (e) {
+    if (!e.viewTransition || !e.activation) return;
+    nameCover(cardFor(e.activation.entry.url));
+  });
+  addEventListener("pagereveal", function (e) {
+    if (!e.viewTransition || !navigation.activation || !navigation.activation.from) return;
+    nameCover(cardFor(navigation.activation.from.url));
   });
   mark();
 })();
