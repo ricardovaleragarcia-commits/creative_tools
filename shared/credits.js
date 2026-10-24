@@ -3,7 +3,7 @@
   var el = document.getElementById("credits");
   if (!el) return;
   var L = [
-    ["mail", "mailto:ricardo.valera.garcia@gmail.com"],
+    ["email", "mailto:ricardo.valera.garcia@gmail.com"],
     ["website", "https://ricardovaleragarcia.com"],
     ["instagram", "https://www.instagram.com/ricardovaleragarcia/"],
     ["linkedin", "https://www.linkedin.com/in/rvaleragarcia/"]

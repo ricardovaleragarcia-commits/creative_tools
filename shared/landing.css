@@ -37,6 +37,8 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 .tool:nth-child(4n+2) .tool__cover { --cover: var(--c2); }
 .tool:nth-child(4n+3) .tool__cover { --cover: var(--c3); }
 .tool:nth-child(4n)   .tool__cover { --cover: var(--c4); }
+.tool:nth-child(5) .tool__cover { --cover: var(--c5); }
+.tool:nth-child(6) .tool__cover { --cover: var(--c6); }
 
 /* transition names (see theme.css) */
 .head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
