@@ -120,10 +120,10 @@ function detailTextures(){
   // 1) dust: many tiny specks, few big ones, irregular (1-3 overlapping blobs)
   clipRing(A.x);
   for(let n = 0; n < 3200; n++){
-    const [x, y] = ringPoint(), s = (0.05 + 1.0*Math.pow(rnd(), 5))*PX, al = 0.25 + 0.75*rnd();
+    const [x, y] = ringPoint(), s = (0.04 + 0.35*Math.pow(rnd(), 5))*PX, al = 0.25 + 0.75*rnd();
     A.x.fillStyle = col(0, al);
     for(let k = 0, m = 1 + Math.floor(rnd()*3); k < m; k++){
-      A.x.beginPath(); A.x.ellipse(x + (rnd() - 0.5)*s, y + (rnd() - 0.5)*s, Math.max(0.6, s*(0.4 + rnd()*0.7)), Math.max(0.6, s*(0.3 + rnd()*0.6)), rnd()*Math.PI, 0, TAU); A.x.fill();
+      A.x.beginPath(); A.x.ellipse(x + (rnd() - 0.5)*s, y + (rnd() - 0.5)*s, Math.max(0.45, s*(0.4 + rnd()*0.7)), Math.max(0.45, s*(0.3 + rnd()*0.6)), rnd()*Math.PI, 0, TAU); A.x.fill();
     }
   }
   // 2) fibers: short curly threads
@@ -275,6 +275,27 @@ const dustMat = new THREE.ShaderMaterial({
   vertexShader: DUST_VS, fragmentShader: DUST_FS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
   polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide
 });
+
+// Groove layer: darkens grooves, hairlines, scratches and specks. Additive light is invisible on a light vinyl, so this one
+// multiplies instead; it scales with the vinyl's lightness (nothing on a black record, strong on a white one).
+const GRV_FS = `
+  uniform sampler2D uT1, uT2, uRing; uniform float uAmt, uLum;
+  varying vec2 vUv;
+  void main(){
+    vec4 a = texture2D(uT1, vUv), b = texture2D(uT2, vUv); float g = texture2D(uRing, vUv).r;
+    float band = clamp((g - 0.06)/0.18, 0.0, 1.0);
+    float d = 0.5*band + 0.9*a.g + 0.8*max(b.r, max(b.g, b.b)) + 0.35*a.r + 0.2*a.b;
+    float k = uAmt*smoothstep(0.08, 0.55, uLum);
+    gl_FragColor = vec4(0.0, 0.0, 0.0, clamp(d*k*0.55, 0.0, 0.8));
+  }`;
+const grooveMat = new THREE.ShaderMaterial({
+  uniforms: {uT1: {value: detailTexs.t1}, uT2: {value: detailTexs.t2}, uRing: {value: detailTex}, uAmt: {value: 0.5}, uLum: {value: 0}},
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: GRV_FS, transparent: true, depthWrite: false,
+  polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1, side: THREE.DoubleSide
+});
+const lumOf = hex => { const c = new THREE.Color(hex); return 0.2126*c.r + 0.7152*c.g + 0.0722*c.b; };   // sRGB lightness 0..1
+grooveMat.uniforms.uLum.value = lumOf($('vColor').value);
 const labelFrontMat = new THREE.MeshStandardMaterial({map: labelTex(false), transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 const labelBackMat  = new THREE.MeshStandardMaterial({map: labelTex(true),  transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 
@@ -317,6 +338,8 @@ function buildVinyl(){
   g.add(new THREE.Mesh(lathe([[R, -h], [R, h]]), vinylBodyMat));
   g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, h + 0.02, false));
   g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, -h - 0.02, true));
+  g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, h + 0.04, false));
+  g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, -h - 0.04, true));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, h + 0.06, false));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, -h - 0.06, true));
   g.add(face(annulus(HOLE, LABEL), labelFrontMat, h + 0.2, false));
@@ -399,7 +422,7 @@ $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent 
 
 
 // Ajustes
-$('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); vinylFaceMat.color.copy(c); };
+$('vColor').oninput = e => { grooveMat.uniforms.uLum.value = lumOf(e.target.value); const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); vinylFaceMat.color.copy(c); };
 // reflectividad: más alta = más brillo de entorno y barniz; más baja = superficie mate
 function applyGloss(v){
   for(const m of [vinylBodyMat, vinylFaceMat]){
@@ -412,6 +435,7 @@ function applyGloss(v){
   vinylBodyMat.needsUpdate = vinylFaceMat.needsUpdate = true;
 }
 $('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.uniforms.uAmt.value = +e.target.value; };
+$('grv').oninput = e => { $('grvv').textContent = (+e.target.value).toFixed(2); grooveMat.uniforms.uAmt.value = +e.target.value; };
 $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
 applyGloss(0.5);
 $('iri').oninput = e => U.uIri.value = +e.target.value;
