@@ -11,12 +11,13 @@
 <link rel="stylesheet" href="../../shared/theme.css">
 <link rel="stylesheet" href="../../shared/tool.css">
 <link rel="stylesheet" href="../../shared/tool-controls.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="toolpage">
 <header class="toolhead">
   <div class="toolhead__side">
     <a class="title back" href="../../">← back</a>
-    <p class="small instructions">Pick CD or vinyl, upload your PNG label, then hold and drag on the artwork to turn it: it stays where you leave it, and Front view brings it back. Choose a style, a format and an animation, and export a seamless MP4 loop for stories and reels.</p>
+    <p class="small instructions">Pick CD or vinyl, upload your PNG label, then hold and drag on the artwork to turn it: it stays where you leave it, and Front view brings it back. Scroll over the artwork to zoom, and place the lights on the dome pad. Choose a style, a format and an animation, and export a seamless MP4 loop for stories and reels.</p>
   </div>
   <h1 class="title toolhead__title"></h1>
 </header>
@@ -49,6 +50,8 @@
       <div class="btns fill"><button id="pause">Pause</button><button id="center">Front view</button></div>
     </div>
 
+    <div class="block full"><div class="t">Zoom <output id="zv">100%</output></div><div class="zrow"><button id="zOut" aria-label="Smaller">−</button><input type="range" id="zoom" min="0.3" max="2.5" step="0.01" value="1"><button id="zIn" aria-label="Bigger">+</button></div></div>
+
     <div class="block"><div class="t">Label · front (PNG)</div><input type="file" id="fLabF" accept="image/png,image/webp,image/jpeg"></div>
     <div class="block"><div class="t">Label · back</div><input type="file" id="fLabB" accept="image/png,image/webp,image/jpeg"></div>
 
@@ -71,15 +74,15 @@
     <div class="group" id="optLights">
     <div class="block full"><div class="t">Brightness <output id="brv">1.00</output></div><input type="range" id="bright" min="0.4" max="2.2" step="0.01" value="1"></div>
 
-    <div class="block">
-      <label class="chk"><input type="checkbox" id="topOn" checked>Top spotlight</label>
-      <div class="t">Position <output id="tpav">40°</output></div><input type="range" id="topAng" min="-180" max="180" step="1" value="40">
-      <div class="t">Intensity <output id="tpiv">1.50</output></div><input type="range" id="topI" min="0" max="4" step="0.05" value="1.5">
-    </div>
-    <div class="block">
-      <label class="chk"><input type="checkbox" id="botOn">Bottom spotlight</label>
-      <div class="t">Position <output id="bpav">-140°</output></div><input type="range" id="botAng" min="-180" max="180" step="1" value="-140">
-      <div class="t">Intensity <output id="bpiv">1.00</output></div><input type="range" id="botI" min="0" max="4" step="0.05" value="1">
+    <div class="block full">
+      <div class="t">Lights <output id="lhint">drag the dots</output></div>
+      <div class="lightpad" id="pad" aria-label="Light positions"><span class="lp-disc"></span></div>
+      <div class="btns fill" id="lsel"><button data-l="0" class="on">Light 1</button><button data-l="1">Light 2</button><button data-l="2">Light 3</button></div>
+      <div class="btns fill" id="lpre"><button data-p="studio">Studio</button><button data-p="top">Top</button><button data-p="side">Side</button><button data-p="rim">Rim</button><button data-p="drama">Drama</button></div>
+      <div class="lrow"><label class="chk"><input type="checkbox" id="lOn" checked>On</label><label class="chk"><input type="checkbox" id="lBack">Behind the disc</label><input type="color" id="lColor" value="#ffffff"></div>
+      <div class="t">Intensity <output id="liv">1.50</output></div><input type="range" id="lInt" min="0" max="4" step="0.05" value="1.5">
+      <div class="t">Softness <output id="lsv">0.60</output></div><input type="range" id="lSoft" min="0" max="1" step="0.01" value="0.6">
+      <div class="btns fill"><button id="aim">Place by clicking the disc</button></div>
     </div>
 
     </div>

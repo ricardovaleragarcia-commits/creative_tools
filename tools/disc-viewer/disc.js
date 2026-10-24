@@ -18,7 +18,7 @@ renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.LinearToneMapping;
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(30, 1, 2.5, 12);
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 14);
 camera.position.set(0, 0, 5.4);
 
 // Entorno sin rectángulos: los destellos son manchas redondas y suaves (no se ven como cuadrados)
@@ -53,13 +53,7 @@ function makeSpot(){
   scene.add(s); scene.add(s.target); s.target.position.set(0, 0, 0);
   return s;
 }
-const topSpot = makeSpot(), botSpot = makeSpot();
-function placeSpots(){
-  const a = (+$('topAng').value)*Math.PI/180, b = (+$('botAng').value)*Math.PI/180;
-  topSpot.position.set(Math.sin(a)*6, 5, Math.cos(a)*6);
-  botSpot.position.set(Math.sin(b)*6, -5, Math.cos(b)*6);
-}
-placeSpots();
+const spots = [makeSpot(), makeSpot(), makeSpot()];
 
 // ---------- Texturas ----------
 function placeholderCover(back){
@@ -349,20 +343,98 @@ setBg($('bg').value);
 
 // Luces
 $('bright').oninput = e => $('brv').textContent = (+e.target.value).toFixed(2);
-$('topAng').oninput = e => { $('tpav').textContent = e.target.value + '°'; placeSpots(); };
-$('topI').oninput = e => $('tpiv').textContent = (+e.target.value).toFixed(2);
-$('botAng').oninput = e => { $('bpav').textContent = e.target.value + '°'; placeSpots(); };
-$('botI').oninput = e => $('bpiv').textContent = (+e.target.value).toFixed(2);
+// ---------- Lights: up to 3, placed on a "dome" pad ----------
+// A light is a point (x, y) inside the unit circle as seen from the camera; z comes from the sphere, in front of the disc or behind it.
+const LIGHT_DIST = 7;
+const mkLight = (x, y, back, i, soft, on) => ({x, y, back: !!back, i, soft, on: on !== false, color: '#ffffff'});
+const PRESETS = {
+  studio: [mkLight(.5, .6, 0, 1.5, .6), mkLight(-.7, -.1, 0, .7, .8), mkLight(0, .2, 1, 1.2, .5)],
+  top:    [mkLight(0, .9, 0, 2, .5), mkLight(0, 0, 0, 1, .5, false), mkLight(0, 0, 1, 1, .5, false)],
+  side:   [mkLight(.9, .1, 0, 2, .4), mkLight(0, 0, 0, 1, .5, false), mkLight(0, 0, 1, 1, .5, false)],
+  rim:    [mkLight(-.5, .3, 1, 2.5, .3), mkLight(.5, .3, 1, 2.5, .3), mkLight(0, 0, 0, 1, .5, false)],
+  drama:  [mkLight(.85, -.3, 0, 3, .1), mkLight(0, 0, 0, 1, .5, false), mkLight(-.6, .3, 1, 1, .4)]
+};
+const lights = [mkLight(.52, .68, 0, 1.5, .6), mkLight(-.52, -.68, 1, 1, .6, false), mkLight(-.7, .1, 0, 1, .6, false)];
+let sel = 0, aimMode = false;
+const pad = $('pad'), PAD_R = 0.42;   // the unit circle has a radius of 42% of the pad width
+const lz = l => Math.sqrt(Math.max(0, 1 - l.x*l.x - l.y*l.y))*(l.back ? -1 : 1);
+const dots = lights.map((l, k) => {
+  const d = document.createElement('div'); d.className = 'lp-dot'; d.textContent = k + 1; pad.appendChild(d);
+  d.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); selectLight(k); d.setPointerCapture(e.pointerId); d._drag = true; });
+  d.addEventListener('pointermove', e => { if(d._drag) moveDot(k, e); });
+  d.addEventListener('pointerup', () => { d._drag = false; CTPersist.save(); });
+  return d;
+});
+function moveDot(k, e){
+  const r = pad.getBoundingClientRect(), R = r.width*PAD_R;
+  let x = (e.clientX - (r.left + r.width/2))/R, y = -(e.clientY - (r.top + r.height/2))/R;
+  const m = Math.hypot(x, y); if(m > 1){ x /= m; y /= m; }
+  lights[k].x = x; lights[k].y = y; drawPad();
+}
+function drawPad(){
+  lights.forEach((l, k) => {
+    const d = dots[k];
+    d.style.left = (50 + l.x*PAD_R*100) + '%'; d.style.top = (50 - l.y*PAD_R*100) + '%';
+    d.style.background = l.color; d.classList.toggle('back', l.back); d.classList.toggle('off', !l.on); d.classList.toggle('sel', k === sel);
+  });
+}
+function syncLightUI(){
+  const l = lights[sel];
+  $('lOn').checked = l.on; $('lBack').checked = l.back; $('lColor').value = l.color;
+  $('lInt').value = l.i; $('liv').textContent = l.i.toFixed(2); $('lSoft').value = l.soft; $('lsv').textContent = l.soft.toFixed(2);
+  document.querySelectorAll('#lsel button').forEach((b, k) => b.classList.toggle('on', k === sel));
+  drawPad();
+}
+function selectLight(k){ sel = k; syncLightUI(); }
+document.querySelectorAll('#lsel button').forEach(b => b.onclick = () => selectLight(+b.dataset.l));
+document.querySelectorAll('#lpre button').forEach(b => b.onclick = () => { PRESETS[b.dataset.p].forEach((l, k) => Object.assign(lights[k], l)); syncLightUI(); });
+$('lOn').onchange = e => { lights[sel].on = e.target.checked; drawPad(); };
+$('lBack').onchange = e => { lights[sel].back = e.target.checked; drawPad(); };
+$('lColor').oninput = e => { lights[sel].color = e.target.value; drawPad(); };
+$('lInt').oninput = e => { lights[sel].i = +e.target.value; $('liv').textContent = lights[sel].i.toFixed(2); };
+$('lSoft').oninput = e => { lights[sel].soft = +e.target.value; $('lsv').textContent = lights[sel].soft.toFixed(2); };
+// dragging on the empty pad moves the selected light there
+pad.addEventListener('pointerdown', e => { if(e.target !== pad && !e.target.classList.contains('lp-disc')) return; moveDot(sel, e); pad._drag = true; pad.setPointerCapture(e.pointerId); });
+pad.addEventListener('pointermove', e => { if(pad._drag) moveDot(sel, e); });
+pad.addEventListener('pointerup', () => { pad._drag = false; CTPersist.save(); });
+
+// "Place by clicking the disc": the highlight lands where you click (mirror reflection of the camera ray)
+$('aim').onclick = () => { aimMode = !aimMode; $('aim').classList.toggle('on', aimMode); stage.style.cursor = aimMode ? 'crosshair' : ''; };
+const raycaster = new THREE.Raycaster();
+function aimAt(cx, cy){
+  const r = stage.getBoundingClientRect();
+  raycaster.setFromCamera(new THREE.Vector2(((cx - r.left)/r.width)*2 - 1, -(((cy - r.top)/r.height)*2 - 1)), camera);
+  const n = new THREE.Vector3(0, 0, 1).applyQuaternion(disc.quaternion), o = raycaster.ray.origin, dir = raycaster.ray.direction;
+  const den = dir.dot(n); if(Math.abs(den) < 1e-3) return;
+  const P = o.clone().addScaledVector(dir, -o.dot(n)/den);
+  const V = camera.position.clone().sub(P).normalize(); if(V.dot(n) < 0) n.negate();
+  const L = V.clone().negate().reflect(n).normalize();                    // direction from the disc towards the light
+  lights[sel].x = L.x; lights[sel].y = L.y; lights[sel].back = L.z < 0; lights[sel].on = true;
+  syncLightUI();
+}
+
+// ---------- Zoom (slider, +/- buttons, mouse wheel on the artwork) ----------
+let zoomV = 1;
+function setZoom(v){ zoomV = clamp(v, 0.3, 2.5); $('zoom').value = zoomV; $('zv').textContent = Math.round(zoomV*100) + '%'; }
+$('zoom').oninput = e => setZoom(+e.target.value);
+$('zIn').onclick = () => setZoom(zoomV*1.12);
+$('zOut').onclick = () => setZoom(zoomV/1.12);
+stage.addEventListener('wheel', e => { e.preventDefault(); setZoom(zoomV*Math.exp(-e.deltaY*0.0015)); CTPersist.save(); }, {passive: false});
 
 // ---------- Girar manteniendo el clic: se queda donde sueltas ----------
-stage.addEventListener('pointerdown', e => { dragging = true; recenter = false; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointerdown', e => {
+  if(aimMode && style === 'real'){ dragging = true; aiming = true; aimAt(e.clientX, e.clientY); stage.setPointerCapture(e.pointerId); return; }
+  dragging = true; recenter = false; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId);
+});
 stage.addEventListener('pointermove', e => {
   if(!dragging) return;
+  if(aiming){ aimAt(e.clientX, e.clientY); return; }
   const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
   userRy += dx*0.01;
   userRx = clamp(userRx + dy*0.01, -1.5, 1.5);   // stays exactly where the mouse stopped
 });
-const endDrag = () => dragging = false;
+let aiming = false;
+const endDrag = () => { dragging = false; if(aiming){ aiming = false; CTPersist.save(); } };
 stage.addEventListener('pointerup', endDrag);
 stage.addEventListener('pointercancel', endDrag);
 
@@ -415,16 +487,19 @@ layoutStage();
 function applyLights(){
   const bright = style === 'plain' ? 1 : +$('bright').value;
   renderer.toneMappingExposure = bright; U.uExp.value = bright;
-  topSpot.visible = $('topOn').checked;
-  topSpot.intensity = +$('topI').value;
-  botSpot.visible = $('botOn').checked;
-  botSpot.intensity = +$('botI').value;
-  // el brillo del CD sigue la luz superior (o la principal si no hay focal)
-  if(topSpot.visible) U.uLight.value.copy(topSpot.position).normalize(); else U.uLight.value.set(2, 4, 5).normalize();
+  let first = -1;
+  lights.forEach((l, k) => {
+    const sp = spots[k]; sp.visible = l.on; sp.intensity = l.i; sp.color.set(l.color);
+    sp.penumbra = 0.1 + 0.9*l.soft; sp.position.set(l.x*LIGHT_DIST, l.y*LIGHT_DIST, lz(l)*LIGHT_DIST);
+    if(l.on && first < 0) first = k;
+  });
+  // the CD's glint follows the first light that is on (or the key light if none)
+  if(first >= 0) U.uLight.value.copy(spots[first].position).normalize(); else U.uLight.value.set(2, 4, 5).normalize();
 }
 function renderAt(t){
   const p = pose(animName, t);
   disc.rotation.set(p.x + userRx, p.y + userRy, p.z);
+  disc.scale.setScalar(zoomV);
   U.uCam.value.copy(camera.position);
   applyLights();
   renderer.render(scene, camera);
@@ -442,13 +517,17 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 
+syncLightUI();
+
 // ---------- Remember the settings and the images between visits ----------
 CTPersist.init('disc', {
-  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs}),
+  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV}),
   set: x => {
     if(x.mode) mode = x.mode; if(x.style) style = x.style; refresh();
     if(x.anim){ const b = document.querySelector(`#anims button[data-a="${x.anim}"]`); if(b) b.click(); }
     if(x.ratio){ const b = document.querySelector(`#ratios button[data-r="${x.ratio}"]`); if(b) b.click(); }
+    if(x.lights){ x.lights.forEach((l, k) => { if(lights[k]) Object.assign(lights[k], l); }); selectLight(x.sel || 0); }
+    if(x.zoom) setZoom(x.zoom);
     if(x.imgs){ if(x.imgs.F) setLabel('F', x.imgs.F); if(x.imgs.B) setLabel('B', x.imgs.B); }
   }
 });

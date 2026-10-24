@@ -1,0 +1,14 @@
+/* Disc tool: light pad + zoom row */
+.lightpad { position: relative; width: min(100%, 190px); aspect-ratio: 1; margin: 6px auto 8px; border-radius: 50%; background: var(--dark); touch-action: none; cursor: crosshair; }
+.lightpad::before, .lightpad::after { content: ""; position: absolute; background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.lightpad::before { left: 50%; top: 8%; bottom: 8%; width: 1px; } .lightpad::after { top: 50%; left: 8%; right: 8%; height: 1px; }
+.lp-disc { position: absolute; left: 50%; top: 50%; width: 28%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: color-mix(in srgb, var(--ink) 30%, transparent); }
+.lp-dot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 2px solid var(--ink); box-sizing: border-box; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; color: #000; cursor: grab; z-index: 1; }
+.lp-dot.back { background: transparent !important; color: var(--ink); border-style: dashed; }
+.lp-dot.off { opacity: .35; }
+.lp-dot.sel { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 45%, transparent); z-index: 2; }
+.lrow { display: flex; align-items: center; gap: 12px; margin: 6px 0; } .lrow input[type=color] { margin-left: auto; width: 44px; height: 24px; }
+#lpre button { padding-left: 2px; padding-right: 2px; }
+#aim.on { background: var(--ink); color: var(--dark); }
+.zrow { display: flex; align-items: center; gap: 8px; } .zrow input { flex: 1; } .zrow button { width: 28px; height: 28px; font-size: 18px; line-height: 1; }
