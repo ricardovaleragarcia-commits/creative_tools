@@ -1,4 +1,4 @@
-/* Soft exit: on a click to another page of the site, fade the page out for a moment, then navigate. */
+/* Soft exit: on a click to another page of the site, fade the page out for a moment (on the home the palette dots fall first), then navigate. */
 (function () {
   var root = document.documentElement;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -10,6 +10,6 @@
     var u = new URL(a.href, location.href);
     if (u.origin !== location.origin || u.pathname === location.pathname || a.hasAttribute("download")) return;
     e.preventDefault(); root.classList.add("leaving");
-    setTimeout(function () { location.href = a.href; }, 280);
+    setTimeout(function () { location.href = a.href; }, document.querySelector(".dot") ? 700 : 280);
   });
 })();
