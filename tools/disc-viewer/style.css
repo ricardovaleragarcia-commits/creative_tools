@@ -12,3 +12,10 @@
 #lpre button { padding-left: 2px; padding-right: 2px; }
 #aim.on { background: var(--ink); color: var(--dark); }
 .zrow { display: flex; align-items: center; gap: 8px; } .zrow input { flex: 1; } .zrow button { width: 28px; height: 28px; font-size: 18px; line-height: 1; }
+/* zoom − / +: drawn with bars so they are exactly centered in the button */
+.zrow .zb { position: relative; font-size: 0; padding: 0; }
+.zrow .zb::before, .zrow .zb::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 2px; margin: -1px 0 0 -6px; background: currentColor; border-radius: 1px; }
+.zrow .zb--minus::after { display: none; }
+.zrow .zb--plus::after { width: 2px; height: 12px; margin: -6px 0 0 -1px; }
+.zrow .zb { border: 0; border-radius: 5px; color: var(--ink); background: color-mix(in srgb, var(--ink) 14%, transparent); cursor: pointer; flex: none; }
+.zrow .zb:hover { background: color-mix(in srgb, var(--ink) 24%, transparent); }
