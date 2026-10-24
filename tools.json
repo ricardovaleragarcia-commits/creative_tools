@@ -22,5 +22,15 @@
     "description": "Wrap any text around a sphere and export a seamless spinning loop.",
     "cover": "shared/covers/ct4-text-on-sphere.svg",
     "href": "tools/text-on-sphere/"
+  },
+  {
+    "title": "CT5",
+    "description": "Coming Soon",
+    "cover": "shared/covers/ct5-coming-soon.svg"
+  },
+  {
+    "title": "CT6",
+    "description": "Coming Soon",
+    "cover": "shared/covers/ct6-coming-soon.svg"
   }
 ]
