@@ -73,10 +73,11 @@ function placeholderCover(back){
   return c;
 }
 function placeholderLabel(back){
+  // drawn darker on purpose: the default lights brighten it by ~1.42x, so it reads as the plain-colors label gray (#eaeaea) with gray text
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
-  x.fillStyle = back ? '#2b2b2b' : '#e9c98a'; x.beginPath(); x.arc(256,256,250,0,Math.PI*2); x.fill();
-  x.fillStyle = back ? '#e9c98a' : '#222'; x.font = 'bold 72px Georgia'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText(back ? 'LADO B' : 'LADO A', 256, 262);
+  x.fillStyle = '#a4a4a4'; x.beginPath(); x.arc(256,256,250,0,Math.PI*2); x.fill();
+  x.fillStyle = '#6c6c6c'; x.font = 'bold 64px "Helvetica Neue", Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(back ? 'SIDE B' : 'SIDE A', 256, 372);   // below the spindle hole
   return c;
 }
 function grooveCanvas(){
