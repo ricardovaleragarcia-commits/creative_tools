@@ -319,20 +319,26 @@ const GLIT_FS = `
   uniform vec3 uLight, uCam, uCol; uniform float uAmt, uLightK, uDens;
   varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW; varying vec3 vAx; varying vec3 vAy;
   float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453); }
-  void main(){
-    vec2 p = vL*uDens, cell = floor(p), f = fract(p);
-    float hb = h1(cell + 7.3), hx = h1(cell), hy = h1(cell + 19.7);
-    if(hb < 1.0 - uAmt) discard;                                             // not every cell holds a flake
-    float shape = smoothstep(0.38, 0.22, length(f - 0.5 - (vec2(hx, hy) - 0.5)*0.3));
-    vec3 n = normalize(vN); if(!gl_FrontFacing) n = -n;
-    n = normalize(n + ((hx - 0.5)*vAx + (hy - 0.5)*vAy)*1.3);                 // every flake is tilted its own way
-    vec3 V = normalize(uCam - vW), H = normalize(normalize(uLight) + V);
+  float layer(vec2 q, vec3 n0, vec3 H, vec3 ax, vec3 ay, float seed){
+    vec2 cell = floor(q), f = fract(q);
+    float hb = h1(cell + seed), hx = h1(cell + seed*1.7), hy = h1(cell + seed*2.9), hs = h1(cell + seed*4.1);
+    if(hb < 1.0 - uAmt) return 0.0;                                                  // not every cell holds a flake
+    vec2 c = 0.5 + (vec2(hx, hy) - 0.5)*0.55;                                         // flake sits anywhere in its cell
+    float rad = 0.10 + 0.13*hs;                                                       // flakes differ in size
+    float shape = smoothstep(rad, rad*0.55, length(f - c));
+    vec3 n = normalize(n0 + ((hx - 0.5)*ax + (hy - 0.5)*ay)*1.4);                      // every flake is tilted its own way
     float sp = pow(max(dot(n, H), 0.0), 70.0);
-    float v = shape*(sp*3.0 + 0.10*hb)*uLightK;
-    gl_FragColor = vec4(uCol*v, 1.0);
+    return shape*(sp*3.2 + 0.10*hb);
+  }
+  void main(){
+    vec3 n = normalize(vN); if(!gl_FrontFacing) n = -n;
+    vec3 V = normalize(uCam - vW), H = normalize(normalize(uLight) + V);
+    mat2 R = mat2(0.80, 0.60, -0.60, 0.80);                                            // second layer on a rotated grid: no visible lattice
+    float v = layer(vL*uDens, n, H, vAx, vAy, 7.3) + layer(R*vL*uDens*1.37, n, H, vAx, vAy, 31.9);
+    gl_FragColor = vec4(uCol*v*uLightK, 1.0);
   }`;
 const glitterMat = new THREE.ShaderMaterial({
-  uniforms: {uAmt: {value: 0}, uCol: {value: new THREE.Color(1, 0.95, 0.82)}, uDens: {value: 0.85}, uLight: U.uLight, uCam: U.uCam, uLightK: U.uLightK},
+  uniforms: {uAmt: {value: 0}, uCol: {value: new THREE.Color(1, 0.95, 0.82)}, uDens: {value: 1.1}, uLight: U.uLight, uCam: U.uCam, uLightK: U.uLightK},
   vertexShader: DUST_VS, fragmentShader: GLIT_FS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
   polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, side: THREE.DoubleSide
 });
@@ -351,7 +357,7 @@ function buildPattern(kind, c1, c2, seed){
     for(let j = 0; j < N; j++) for(let i = 0; i < N; i++){
       const px = i/N*3 + off[1], py = j/N*3 + off[2];
       const wx = fbm(px*1.3 + 5.2, py*1.3), wy = fbm(px*1.3, py*1.3 + 1.7);
-      const t = fbm(px + 2.6*wx, py + 2.6*wy), m = Math.min(1, Math.max(0, (t - 0.42)/0.16)), mm = m*m*(3 - 2*m), o = (j*N + i)*4;
+      const t = fbm(px + 2.6*wx, py + 2.6*wy), m = Math.min(1, Math.max(0, (t - 0.36)/0.28)), mm = m*m*(3 - 2*m), o = (j*N + i)*4;
       im.data[o] = (col1.r*(1 - mm) + col2.r*mm)*255; im.data[o+1] = (col1.g*(1 - mm) + col2.g*mm)*255; im.data[o+2] = (col1.b*(1 - mm) + col2.b*mm)*255; im.data[o+3] = 255;
     }
     x.putImageData(im, 0, 0);
