@@ -12,7 +12,7 @@
     "href": "tools/shape-multiplier/"
   },
   {
-    "title": "CT3 — Text Reveal",
+    "title": "CT3 — Text/SVG Reveal",
     "description": "Reveal text or SVG logos letter by letter with a traveling mask.",
     "cover": "shared/covers/ct3-text-reveal.svg",
     "href": "tools/text-reveal/"

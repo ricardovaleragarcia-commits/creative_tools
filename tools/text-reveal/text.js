@@ -1,4 +1,4 @@
-/* CT3 — Text Reveal. Outline draw -> fill.
+/* CT3 — Text/SVG Reveal. Outline draw -> fill.
    Every letter is turned into vector contours (opentype.js for text, own path parser for SVG),
    each contour is stroked progressively ("trim path"), then the letter is filled. */
 const FS = 120, MAXL = 20, EXIT = 0.5, FILL_AT = 0.6;
@@ -327,8 +327,9 @@ function setLetters(list, kind){
 function timing(){
   const Dr = +$('dr').value, Sg = +$('sg').value, Fd = +$('fd').value, Hold = +$('hold').value;
   const fillOn = $('fillm').value !== 'none', fadeOut = $('outm').value === 'fade' && fillOn;
-  const fillEnd = fillOn ? FILL_AT*Dr + Fd : 0, end = Math.max(Dr, fillEnd + (fadeOut ? 0.4 : 0));
-  return {Dr, Sg, Fd, Hold, fillOn, fadeOut, fillEnd, end, total: Sg + end + Hold + EXIT};
+  const fa = $('fillat').value === 'after' ? 1 : FILL_AT, fillStart = fa*Dr;
+  const fillEnd = fillOn ? fillStart + Fd : 0, end = Math.max(Dr, fillEnd + (fadeOut ? 0.4 : 0));
+  return {Dr, Sg, Fd, Hold, fillStart, fillOn, fadeOut, fillEnd, end, total: Sg + end + Hold + EXIT};
 }
 
 // ---------- Render ----------
@@ -356,7 +357,7 @@ function renderFrame(ctx, W, H, t){
     const lt = t - L.rank*T.Sg; if(lt <= 0) continue;
     const pDraw = ease(lt / T.Dr);
     let fillA = 0, outA = 1;
-    if(T.fillOn){ fillA = smooth((lt - FILL_AT*T.Dr)/T.Fd); if(T.fadeOut) outA = 1 - smooth((lt - T.fillEnd)/0.4); }
+    if(T.fillOn){ fillA = smooth((lt - T.fillStart)/T.Fd); if(T.fadeOut) outA = 1 - smooth((lt - T.fillEnd)/0.4); }
     // fill
     if(fillA > 0){
       ctx.globalAlpha = exit;
