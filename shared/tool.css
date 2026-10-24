@@ -56,5 +56,4 @@ html[data-card="4"] { --card: var(--c4); }
 .toolhead .back { animation: rise-in .8s var(--vt-ease) .35s both; }
 .toolhead .instructions { animation: rise-in .8s var(--vt-ease) .45s both; }
 .toolhead__title { animation: rise-in .8s var(--vt-ease) .5s both; }
-.menu .block { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }
-.stage { view-transition-name: main-t; }
+.menu .block { animation: fade-in .5s ease-out both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }
