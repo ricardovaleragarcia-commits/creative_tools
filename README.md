@@ -19,7 +19,7 @@ fonts/              (not used since the switch to Helvetica Neue)
 1. Copy `tools/_template/` to `tools/<name>/` and build the tool inside it. Controls go in `.block` elements
    in the left menu; the artwork goes in `#artwork` (set `--ar` = width / height of the frame, e.g. `0.8` for 4:5).
    Call `setFrameBg(css)` when the artwork background changes (it shows when the workspace is off).
-   Add the `<script src="../../shared/palette.js">` in <head> and `tool.js` right after the credits footer.
+   Add the `<script src="../../shared/palette.js">` in <head> and `tool.js` at the end of <body>.
 2. Add `{ "title": "...", "description": "...", "cover": "tools/<name>/cover.jpg", "href": "tools/<name>/" }` to `tools.json`.
 
 ## Run locally

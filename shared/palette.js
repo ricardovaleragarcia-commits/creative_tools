@@ -20,6 +20,8 @@
     themeColor(p);
   }
   window.CTPalette = { list: LIST, get: get, set: set };
+  // on reload / back-forward the entrance animations are skipped (they made everything flicker)
+  try { var nav = performance.getEntriesByType("navigation")[0]; if (nav && nav.type !== "navigate") document.documentElement.classList.add("no-intro"); } catch (e) {}
   var cur = get();
   document.documentElement.setAttribute("data-palette", cur);
   themeColor(cur);

@@ -39,7 +39,7 @@ h1, h2, p { margin: 0; font: inherit; }
 .grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap); }
 
 /* Credits bar: fixed, over the content. On the landing it sits in the dark panel at the left;
-   inside a tool it sits at the right (.credits--end). It rises in on every page. */
+   only on the landing. It rises in on arrival. */
 @view-transition { navigation: auto; }
 .credits {
   position: fixed; left: 15px; bottom: 14px; z-index: 10;
@@ -48,7 +48,6 @@ h1, h2, p { margin: 0; font: inherit; }
   font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
   animation: rise-in .8s var(--vt-ease) .7s both;
 }
-.credits--end { left: auto; right: 15px; align-items: flex-end; }
 .credits > * { pointer-events: auto; }
 .credits a:hover { opacity: .55; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
@@ -70,6 +69,7 @@ h1, h2, p { margin: 0; font: inherit; }
 .pal-vt .tools { view-transition-name: none; }
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
+html.no-intro *, html.no-intro *::before { animation: none !important; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 
 /* palette reveal: root old/new are driven from JS (clip-path circle) */
