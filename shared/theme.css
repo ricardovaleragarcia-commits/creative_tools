@@ -46,7 +46,7 @@ h1, h2, p { margin: 0; font: inherit; }
   width: max-content; max-width: calc(100% - 30px);
   display: flex; flex-direction: column; gap: 6px;
   font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
-  animation: rise-in .8s var(--vt-ease) .9s both;
+  animation: rise-in .8s var(--vt-ease) .7s both;
 }
 .credits--end { left: auto; right: 15px; align-items: flex-end; }
 .credits > * { pointer-events: auto; }
@@ -58,8 +58,16 @@ h1, h2, p { margin: 0; font: inherit; }
    2. entrances: texts rise in, tool controls stagger in.
    3. palette dot: the new palette spreads as a circle from the clicked dot (same-document transition, class .pal-vt). */
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .75s; }
-:root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .4s ease-in-out both; }
+:root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .3s ease both; }
 :root:not(.pal-vt)::view-transition-new(root) { animation: none; }
+/* the 2/3 area (landing grid / tool stage) is not a shared element: it melts out and the other melts in, overlapping */
+.tools { view-transition-name: main-l; }
+::view-transition-group(main-l), ::view-transition-group(main-t) { animation-duration: 0s; }
+::view-transition-old(main-l), ::view-transition-old(main-t) { animation: vt-melt-out .7s ease-in-out both; }
+::view-transition-new(main-l), ::view-transition-new(main-t) { animation: vt-melt-in 1s ease-out .2s both; }
+@keyframes vt-melt-out { to { opacity: 0; filter: blur(10px); transform: scale(1.02); } }
+@keyframes vt-melt-in { from { opacity: 0; filter: blur(12px); transform: scale(.98); } }
+.pal-vt .tools { view-transition-name: none; }
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }

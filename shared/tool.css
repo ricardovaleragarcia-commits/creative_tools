@@ -53,9 +53,8 @@ html[data-card="4"] { --card: var(--c4); }
 .artwork.interactive:active { cursor: grabbing; }
 
 /* motion: texts and controls rise in */
-.toolhead .back { animation: rise-in .8s var(--vt-ease) .6s both; }
-.toolhead .instructions { animation: rise-in .8s var(--vt-ease) .7s both; }
-.toolhead__title { animation: rise-in .8s var(--vt-ease) .75s both; }
-.menu .block { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.75s + var(--i, 0) * 45ms); }
-.stage { animation: stage-in 1s ease-out .4s both; }
-@keyframes stage-in { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+.toolhead .back { animation: rise-in .8s var(--vt-ease) .35s both; }
+.toolhead .instructions { animation: rise-in .8s var(--vt-ease) .45s both; }
+.toolhead__title { animation: rise-in .8s var(--vt-ease) .5s both; }
+.menu .block { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }
+.stage { view-transition-name: main-t; }
