@@ -102,11 +102,26 @@ function detailTextures(){
   const hash = n => { const v = Math.sin(n*127.1 + 311.7)*43758.5453; return v - Math.floor(v); };
   const vnoise = x => { const k = Math.floor(x), f = x - k, w = f*f*(3 - 2*f); return hash(k)*(1 - w) + hash(k + 1)*w; };   // transición suave entre anillos
   let seed = 20261015; const rnd = () => (seed = (seed*1664525 + 1013904223) >>> 0)/4294967296;   // determinista: el disco siempre es el mismo
-  for(let j = 0; j < HT; j++){
-    const r = inner + (j + 0.5)*mmRow; let v = 0;
-    if(r > r0 && r < r1){ const q = (r - r0)/(r1 - r0); v = 255*(0.06 + 0.18*(0.65*vnoise(q*RINGS) + 0.35*vnoise(q*RINGS/4 + 91.7))); }
-    for(let i = 0; i < WT; i++){ const o = (j*WT + i)*4; ring[o] = ring[o+1] = ring[o+2] = v; ring[o+3] = 255; }
+  // Smooth zones, as on a real record: run-out (dead wax) next to the label, the lead-in at the rim, and smooth bands (track gaps) between songs.
+  const SMOOTH = 255*0.03, smoothstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a)/(b - a))); return t*t*(3 - 2*t); };
+  const DEAD = 7, LEAD = 3.5;
+  function paintRing(gaps){
+    const gs = [];
+    const a0 = r0 + DEAD + 10, a1 = r1 - LEAD - 10;
+    for(let k = 0; k < gaps; k++) gs.push([a0 + (k + 0.5 + (hash(k*7.7 + 3.1) - 0.5)*0.5)/gaps*(a1 - a0), 0.6 + 0.9*hash(k*3.3 + 9.2)]);
+    for(let j = 0; j < HT; j++){
+      const r = inner + (j + 0.5)*mmRow; let v = 0;
+      if(r > r0 && r < r1){
+        const q = (r - r0)/(r1 - r0); v = 255*(0.06 + 0.18*(0.65*vnoise(q*RINGS) + 0.35*vnoise(q*RINGS/4 + 91.7)));
+        let f = 1 - smoothstep(r0 + DEAD - 0.4, r0 + DEAD + 0.4, r);          // run-out
+        f = Math.max(f, smoothstep(r1 - LEAD - 0.4, r1 - LEAD + 0.4, r));      // lead-in
+        for(const [c, w] of gs) f = Math.max(f, 1 - smoothstep(w/2 - 0.3, w/2 + 0.3, Math.abs(r - c)));   // track gaps
+        v = v + (SMOOTH - v)*f;
+      }
+      for(let i = 0; i < WT; i++){ const o = (j*WT + i)*4; ring[o] = ring[o+1] = ring[o+2] = v; ring[o+3] = 255; }
+    }
   }
+  paintRing(+$('gaps').value);
 
   // Wear is drawn on flat canvases (disc seen from above, 1 mm = PX px) and then unrolled into polar textures.
   //  tex1: R = dust specks + fibers · G = circular hairlines (follow the grooves) · B = soft smudges / fingerprints
@@ -171,7 +186,8 @@ function detailTextures(){
       t2[o] = db[s]; t2[o+1] = db[s+1]; t2[o+2] = db[s+2]; t2[o+3] = 255;
     }
   }
-  return {ring: dataTex(ring, WT, HT), t1: dataTex(t1, WT, HT), t2: dataTex(t2, WT, HT)};
+  const ringT = dataTex(ring, WT, HT);
+  return {ring: ringT, t1: dataTex(t1, WT, HT), t2: dataTex(t2, WT, HT), repaint: n => { paintRing(n); ringT.needsUpdate = true; }};
 }
 const detailTexs = detailTextures(), detailTex = detailTexs.ring;
 const coverFrontTex = new THREE.CanvasTexture(placeholderCover(false));
@@ -254,7 +270,7 @@ const DUST_VS = `
     gl_Position = projectionMatrix * viewMatrix * w;
   }`;
 const DUST_FS = `
-  uniform sampler2D uT1, uT2; uniform vec3 uLight, uCam, uLightCol; uniform float uAmt, uLightK;
+  uniform sampler2D uT1, uT2, uRing; uniform vec3 uLight, uCam, uLightCol; uniform float uAmt, uLightK;
   varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW; varying vec3 vAx; varying vec3 vAy;
   float aniso(vec3 T, vec3 H){ float d = dot(normalize(T), H); return pow(max(1.0 - d*d, 0.0), 6.0); }
   void main(){
@@ -264,14 +280,15 @@ const DUST_FS = `
     float ang = atan(vL.y, vL.x);
     vec3 Tc = -sin(ang)*vAx + cos(ang)*vAy;
     float nh = max(dot(n, H), 0.0);
-    float scr = a.g*aniso(Tc, H) + b.r*aniso(vAx, H) + b.g*aniso(0.5*vAx + 0.866*vAy, H) + b.b*aniso(-0.5*vAx + 0.866*vAy, H);
+    float gz = smoothstep(0.035, 0.07, texture2D(uRing, vUv).r);   // no hairlines on smooth zones
+    float scr = a.g*gz*aniso(Tc, H) + b.r*aniso(vAx, H) + b.g*aniso(0.5*vAx + 0.866*vAy, H) + b.b*aniso(-0.5*vAx + 0.866*vAy, H);
     float dust = a.r*(0.45 + 0.55*pow(nh, 4.0));
     float smudge = a.b*(0.25 + 0.75*pow(nh, 10.0));
     float v = (scr*1.5 + dust*0.6 + smudge*0.45)*uAmt*uLightK*0.35;
     gl_FragColor = vec4(uLightCol*v, 1.0);
   }`;
 const dustMat = new THREE.ShaderMaterial({
-  uniforms: {uT1: {value: detailTexs.t1}, uT2: {value: detailTexs.t2}, uAmt: {value: 0.5}, uLight: U.uLight, uCam: U.uCam, uLightCol: U.uLightCol, uLightK: U.uLightK},
+  uniforms: {uT1: {value: detailTexs.t1}, uT2: {value: detailTexs.t2}, uRing: {value: detailTex}, uAmt: {value: 0.5}, uLight: U.uLight, uCam: U.uCam, uLightCol: U.uLightCol, uLightK: U.uLightK},
   vertexShader: DUST_VS, fragmentShader: DUST_FS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
   polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide
 });
@@ -284,7 +301,7 @@ const GRV_FS = `
   void main(){
     vec4 a = texture2D(uT1, vUv), b = texture2D(uT2, vUv); float g = texture2D(uRing, vUv).r;
     float band = clamp((g - 0.06)/0.18, 0.0, 1.0);
-    float d = 0.5*band + 0.9*a.g + 0.8*max(b.r, max(b.g, b.b)) + 0.35*a.r + 0.2*a.b;
+    float d = 0.5*band + 0.9*a.g*smoothstep(0.035, 0.07, g) + 0.8*max(b.r, max(b.g, b.b)) + 0.35*a.r + 0.2*a.b;
     float k = uAmt*smoothstep(0.08, 0.55, uLum);
     gl_FragColor = vec4(0.0, 0.0, 0.0, clamp(d*k*0.55, 0.0, 0.8));
   }`;
@@ -296,6 +313,92 @@ const grooveMat = new THREE.ShaderMaterial({
 });
 const lumOf = hex => { const c = new THREE.Color(hex); return 0.2126*c.r + 0.7152*c.g + 0.0722*c.b; };   // sRGB lightness 0..1
 grooveMat.uniforms.uLum.value = lumOf($('vColor').value);
+
+// ---------- Vinyl finish: solid / marble / splatter / half & half, glitter, transparency ----------
+const GLIT_FS = `
+  uniform vec3 uLight, uCam, uCol; uniform float uAmt, uLightK, uDens;
+  varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW; varying vec3 vAx; varying vec3 vAy;
+  float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453); }
+  void main(){
+    vec2 p = vL*uDens, cell = floor(p), f = fract(p);
+    float hb = h1(cell + 7.3), hx = h1(cell), hy = h1(cell + 19.7);
+    if(hb < 1.0 - uAmt) discard;                                             // not every cell holds a flake
+    float shape = smoothstep(0.38, 0.22, length(f - 0.5 - (vec2(hx, hy) - 0.5)*0.3));
+    vec3 n = normalize(vN); if(!gl_FrontFacing) n = -n;
+    n = normalize(n + ((hx - 0.5)*vAx + (hy - 0.5)*vAy)*1.3);                 // every flake is tilted its own way
+    vec3 V = normalize(uCam - vW), H = normalize(normalize(uLight) + V);
+    float sp = pow(max(dot(n, H), 0.0), 70.0);
+    float v = shape*(sp*3.0 + 0.10*hb)*uLightK;
+    gl_FragColor = vec4(uCol*v, 1.0);
+  }`;
+const glitterMat = new THREE.ShaderMaterial({
+  uniforms: {uAmt: {value: 0}, uCol: {value: new THREE.Color(1, 0.95, 0.82)}, uDens: {value: 0.85}, uLight: U.uLight, uCam: U.uCam, uLightK: U.uLightK},
+  vertexShader: DUST_VS, fragmentShader: GLIT_FS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+  polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, side: THREE.DoubleSide
+});
+let patSeed = 1, patTex = null;
+function buildPattern(kind, c1, c2, seed){
+  const N = 768, cv = document.createElement('canvas'); cv.width = cv.height = N; const x = cv.getContext('2d');
+  let sd = seed*2654435761 >>> 0; const rnd = () => (sd = (sd*1664525 + 1013904223) >>> 0)/4294967296;
+  const col1 = new THREE.Color(c1), col2 = new THREE.Color(c2), css = c => '#' + c.getHexString();
+  if(kind === 'marble'){
+    const off = [rnd()*100, rnd()*100, rnd()*100, rnd()*100];
+    const hs = (i, j) => { const v = Math.sin(i*127.1 + j*311.7 + off[0])*43758.5453; return v - Math.floor(v); };
+    const vn = (px, py) => { const i = Math.floor(px), j = Math.floor(py), fx = px - i, fy = py - j, u = fx*fx*(3 - 2*fx), w = fy*fy*(3 - 2*fy);
+      return hs(i, j)*(1 - u)*(1 - w) + hs(i + 1, j)*u*(1 - w) + hs(i, j + 1)*(1 - u)*w + hs(i + 1, j + 1)*u*w; };
+    const fbm = (px, py) => vn(px, py)*0.5 + vn(px*2, py*2)*0.25 + vn(px*4, py*4)*0.125 + vn(px*8, py*8)*0.0625;
+    const im = x.createImageData(N, N);
+    for(let j = 0; j < N; j++) for(let i = 0; i < N; i++){
+      const px = i/N*3 + off[1], py = j/N*3 + off[2];
+      const wx = fbm(px*1.3 + 5.2, py*1.3), wy = fbm(px*1.3, py*1.3 + 1.7);
+      const t = fbm(px + 2.6*wx, py + 2.6*wy), m = Math.min(1, Math.max(0, (t - 0.42)/0.16)), mm = m*m*(3 - 2*m), o = (j*N + i)*4;
+      im.data[o] = (col1.r*(1 - mm) + col2.r*mm)*255; im.data[o+1] = (col1.g*(1 - mm) + col2.g*mm)*255; im.data[o+2] = (col1.b*(1 - mm) + col2.b*mm)*255; im.data[o+3] = 255;
+    }
+    x.putImageData(im, 0, 0);
+  } else if(kind === 'splatter'){
+    x.fillStyle = css(col1); x.fillRect(0, 0, N, N); x.fillStyle = css(col2);
+    for(let n = 0; n < 70; n++){
+      const cx = rnd()*N, cy = rnd()*N, r = 4 + 38*Math.pow(rnd(), 2.4), a = rnd()*Math.PI*2, L = r*(1 + 3*rnd());
+      x.beginPath(); x.ellipse(cx, cy, r, r*(0.6 + 0.4*rnd()), a, 0, 7); x.fill();
+      x.beginPath(); x.ellipse(cx + Math.cos(a)*L*0.5, cy + Math.sin(a)*L*0.5, L*0.5, r*0.35, a, 0, 7); x.fill();   // streak tail
+    }
+    for(let n = 0; n < 420; n++){ x.beginPath(); x.arc(rnd()*N, rnd()*N, 1 + 4*Math.pow(rnd(), 3), 0, 7); x.fill(); }
+  } else {   // half & half
+    const a = rnd()*Math.PI*2, dx = Math.cos(a)*N/2, dy = Math.sin(a)*N/2, g = x.createLinearGradient(N/2 - dx, N/2 - dy, N/2 + dx, N/2 + dy);
+    g.addColorStop(0, css(col1)); g.addColorStop(0.45, css(col1)); g.addColorStop(0.55, css(col2)); g.addColorStop(1, css(col2));
+    x.fillStyle = g; x.fillRect(0, 0, N, N);
+  }
+  // unroll to the polar texture the vinyl faces use (u = angle, v = radius from the hole to the rim)
+  const src = x.getImageData(0, 0, N, N).data, WT = 1024, HT = 512, out = new Uint8Array(WT*HT*4);
+  for(let j = 0; j < HT; j++){
+    const r = (LP.HOLE + (j + 0.5)/HT*(LP.R - LP.HOLE))/LP.R*(N/2);
+    for(let i = 0; i < WT; i++){
+      const a = (i + 0.5)/WT*Math.PI*2, px = Math.min(N - 1, Math.max(0, Math.round(N/2 + Math.cos(a)*r))), py = Math.min(N - 1, Math.max(0, Math.round(N/2 + Math.sin(a)*r)));
+      const o = (j*WT + i)*4, sI = (py*N + px)*4; out[o] = src[sI]; out[o+1] = src[sI+1]; out[o+2] = src[sI+2]; out[o+3] = 255;
+    }
+  }
+  const t = new THREE.DataTexture(out, WT, HT, THREE.RGBAFormat);
+  t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true; t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); t.needsUpdate = true;
+  return t;
+}
+let finTimer = 0;
+function refreshFinish(now){
+  clearTimeout(finTimer);
+  const go = () => {
+    const kind = $('vFinish').value, c1 = $('vColor').value, c2 = $('vColor2').value;
+    if(patTex){ patTex.dispose(); patTex = null; }
+    if(kind === 'solid'){ vinylFaceMat.map = null; vinylFaceMat.color.copy(linearHex(c1)); }
+    else { patTex = buildPattern(kind, c1, c2, patSeed); vinylFaceMat.map = patTex; vinylFaceMat.color.setRGB(1, 1, 1); }
+    vinylFaceMat.needsUpdate = true;
+    if(kind !== 'solid') grooveMat.uniforms.uLum.value = Math.max(lumOf(c1), lumOf(c2)) * 0.5 + Math.min(lumOf(c1), lumOf(c2)) * 0.5;
+    else grooveMat.uniforms.uLum.value = lumOf(c1);
+  };
+  if(now) go(); else finTimer = setTimeout(go, 160);
+}
+function applyTrans(t){
+  for(const m of [vinylBodyMat, vinylFaceMat]){ m.transparent = t > 0; m.opacity = 1 - t; m.depthWrite = t === 0; m.needsUpdate = true; }
+}
 const labelFrontMat = new THREE.MeshStandardMaterial({map: labelTex(false), transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 const labelBackMat  = new THREE.MeshStandardMaterial({map: labelTex(true),  transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 
@@ -340,6 +443,8 @@ function buildVinyl(){
   g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, -h - 0.02, true));
   g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, h + 0.04, false));
   g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, -h - 0.04, true));
+  g.add(face(annulus(HOLE, R, 256, false, true), glitterMat, h + 0.05, false));
+  g.add(face(annulus(HOLE, R, 256, false, true), glitterMat, -h - 0.05, true));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, h + 0.06, false));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, -h - 0.06, true));
   g.add(face(annulus(HOLE, LABEL), labelFrontMat, h + 0.2, false));
@@ -422,7 +527,14 @@ $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent 
 
 
 // Ajustes
-$('vColor').oninput = e => { grooveMat.uniforms.uLum.value = lumOf(e.target.value); const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); vinylFaceMat.color.copy(c); };
+$('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); refreshFinish(); };
+$('vColor2').oninput = () => refreshFinish();
+$('vFinish').onchange = () => { $('vColor2').closest('.block').style.opacity = $('vFinish').value === 'solid' ? .35 : 1; $('vSeed').disabled = $('vFinish').value === 'solid' || $('vFinish').value === 'half'; refreshFinish(true); };
+$('vSeed').onclick = () => { patSeed = patSeed*7 + 13; refreshFinish(true); CTPersist.save(); };
+$('glit').oninput = e => { $('glitv').textContent = (+e.target.value).toFixed(2); glitterMat.uniforms.uAmt.value = +e.target.value; };
+$('glitC').oninput = e => glitterMat.uniforms.uCol.value.set(e.target.value);
+$('vTr').oninput = e => { $('vtrv').textContent = (+e.target.value).toFixed(2); applyTrans(+e.target.value); };
+$('gaps').oninput = e => { $('gapsv').textContent = e.target.value; detailTexs.repaint(+e.target.value); };
 // reflectividad: más alta = más brillo de entorno y barniz; más baja = superficie mate
 function applyGloss(v){
   for(const m of [vinylBodyMat, vinylFaceMat]){
@@ -438,11 +550,37 @@ $('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2)
 $('grv').oninput = e => { $('grvv').textContent = (+e.target.value).toFixed(2); grooveMat.uniforms.uAmt.value = +e.target.value; };
 $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
 applyGloss(0.5);
+$('vFinish').onchange();
 $('iri').oninput = e => U.uIri.value = +e.target.value;
 $('trans').oninput = e => U.uTrans.value = +e.target.value;
 function setBg(hex){ if(window.setFrameBg) window.setFrameBg(hex); renderer.setClearColor(new THREE.Color(hex), 1); }
 $('bg').oninput = e => setBg(e.target.value);
 setBg($('bg').value);
+let bgTex = null, bgImgEl = null;
+function fitBg(){
+  if(!bgTex || !bgImgEl) return;
+  const ia = bgImgEl.width/bgImgEl.height, va = camera.aspect;     // "cover": fill the frame, crop the excess
+  if(ia > va){ bgTex.repeat.set(va/ia, 1); bgTex.offset.set((1 - va/ia)/2, 0); } else { bgTex.repeat.set(1, ia/va); bgTex.offset.set(0, (1 - ia/va)/2); }
+}
+function setBgImage(url){
+  labelImgs.BG = url || null;
+  if(!url){ scene.background = null; bgTex = bgImgEl = null; $('bgClear').hidden = true; CTPersist.save(); return; }
+  const img = new Image();
+  img.onload = () => { bgImgEl = img; bgTex = new THREE.Texture(img); bgTex.encoding = THREE.sRGBEncoding; bgTex.needsUpdate = true;
+    scene.background = bgTex; fitBg(); $('bgClear').hidden = false; CTPersist.save(); };
+  img.src = url;
+}
+$('bgImg').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => { const im = new Image(); im.onload = () => {
+    const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    setBgImage(c.toDataURL('image/jpeg', 0.85));
+  }; im.src = r.result; };
+  r.readAsDataURL(f);
+};
+$('bgClear').onclick = () => { $('bgImg').value = ''; setBgImage(null); };
 
 // Luces
 $('bright').oninput = e => $('brv').textContent = (+e.target.value).toFixed(2);
@@ -581,7 +719,7 @@ function layoutStage(){
   camera.aspect = ar;
   // vertical formats: the disc must fit the width, so the camera moves back
   camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*ar));
-  camera.updateProjectionMatrix();
+  camera.updateProjectionMatrix(); fitBg();
 }
 new ResizeObserver(() => { if(!exporting) layoutStage(); }).observe(viewer);
 layoutStage();
@@ -628,14 +766,15 @@ syncLightUI();
 
 // ---------- Remember the settings and the images between visits ----------
 CTPersist.init('disc', {
-  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV}),
+  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV, seed: patSeed}),
   set: x => {
     if(x.mode) mode = x.mode; if(x.style) style = x.style; refresh();
     if(x.anim){ const b = document.querySelector(`#anims button[data-a="${x.anim}"]`); if(b) b.click(); }
     if(x.ratio){ const b = document.querySelector(`#ratios button[data-r="${x.ratio}"]`); if(b) b.click(); }
     if(x.lights){ x.lights.forEach((l, k) => { if(lights[k]) Object.assign(lights[k], l); }); selectLight(x.sel || 0); }
     if(x.zoom) setZoom(x.zoom);
-    if(x.imgs){ if(x.imgs.F) setLabel('F', x.imgs.F); if(x.imgs.B) setLabel('B', x.imgs.B); }
+    if(x.seed){ patSeed = x.seed; refreshFinish(true); }
+    if(x.imgs){ if(x.imgs.F) setLabel('F', x.imgs.F); if(x.imgs.B) setLabel('B', x.imgs.B); if(x.imgs.BG) setBgImage(x.imgs.BG); }
   }
 });
 
@@ -646,7 +785,7 @@ $('exp').onclick = async () => {
   exporting = true; $('exp').disabled = true;
   try{
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);
-    camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix();
+    camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix(); fitBg();
     const out = await VideoExport.run({canvas, renderAt, period: P, fps: FPS, width: W, height: H, status});
     const name = `${mode}-${style}-${animName}-${RATIO_KEY.replace(':','x')}.${out.ext}`;
     const result = await VideoExport.save(name, out.blob);

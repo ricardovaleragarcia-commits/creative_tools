@@ -53,7 +53,7 @@
 
     <div class="block full"><div class="t">Zoom <output id="zv">100%</output></div><div class="zrow"><button id="zOut" class="zb zb--minus" aria-label="Smaller"></button><input type="range" id="zoom" min="0.3" max="2.5" step="0.01" value="1"><button id="zIn" class="zb zb--plus" aria-label="Bigger"></button></div></div>
 
-    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
+    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"><input type="file" id="bgImg" accept="image/png,image/jpeg,image/webp"><button class="btn" id="bgClear" hidden>Remove background image</button></div>
 
     <div class="block" data-sec="Labels &amp; colors" data-open><div class="t">Label · front (PNG)</div><input type="file" id="fLabF" accept="image/png,image/webp,image/jpeg"></div>
     <div class="block"><div class="t">Label · back</div><input type="file" id="fLabB" accept="image/png,image/webp,image/jpeg"></div>
@@ -70,9 +70,16 @@
 
     <div class="group" id="optVN">
       <div class="block"><div class="t">Vinyl color</div><input type="color" id="vColor" value="#17171c"></div>
+      <div class="block"><div class="t">Color 2</div><input type="color" id="vColor2" value="#e8e8e8"></div>
+      <div class="block"><div class="t">Finish</div><select id="vFinish"><option value="solid">Solid</option><option value="marble">Marble</option><option value="splatter">Splatter</option><option value="half">Half &amp; half</option></select></div>
+      <div class="block"><div class="t">Pattern</div><button class="btn" id="vSeed">Shuffle pattern</button></div>
+      <div class="block"><div class="t">Glitter <output id="glitv">0.00</output></div><input type="range" id="glit" min="0" max="1" step="0.01" value="0"></div>
+      <div class="block"><div class="t">Glitter color</div><input type="color" id="glitC" value="#fff3d1"></div>
+      <div class="block"><div class="t">Transparency <output id="vtrv">0.00</output></div><input type="range" id="vTr" min="0" max="0.9" step="0.01" value="0"></div>
+      <div class="block"><div class="t">Track gaps <output id="gapsv">4</output></div><input type="range" id="gaps" min="0" max="8" step="1" value="4"></div>
       <div class="block"><div class="t">Dust &amp; scratches <output id="dustv">0.50</output></div><input type="range" id="dust" min="0" max="1" step="0.01" value="0.5"></div>
       <div class="block"><div class="t">Groove texture <output id="grvv">0.50</output></div><input type="range" id="grv" min="0" max="1" step="0.01" value="0.5"></div>
-      <div class="block"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
+      <div class="block full"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
     </div>
 
     <div class="group" data-sec="Lights" id="optLights">
