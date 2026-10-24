@@ -179,7 +179,9 @@ const FACE_FS = `
     vec3 silver = vec3(0.72, 0.75, 0.80) * (0.5 + 0.45*e);
     vec3 foil = mix(silver, film*streak*(0.8 + 0.35*e), uIri*0.7);
     float spec = pow(max(dot(R, uLight), 0.0), 40.0);
-    vec4 t = texture2D(uMap, vUv);
+    // the artwork is scaled to fit inside 96% of the radius: a thin outer ring always stays bare, so the rainbow shows
+    vec4 t = texture2D(uMap, (vUv - 0.5)/0.96 + 0.5);
+    t.a *= 1.0 - smoothstep(0.956, 0.964, rn);
     vec3 cover = t.rgb*(0.9 + 0.2*e) + spec*0.3;
     float fres = pow(1.0 - nv, 2.0);
     vec3 col = mix(foil + spec*0.6, cover, t.a);
