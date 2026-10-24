@@ -57,3 +57,5 @@ html[data-card="4"] { --card: var(--c4); }
 .toolhead .instructions { animation: rise-in .7s var(--vt-ease) .4s both; }
 .toolhead__title { animation: rise-in .7s var(--vt-ease) .45s both; }
 .menu .block { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.45s + var(--i, 0) * 45ms); }
+.stage { animation: stage-in .8s var(--vt-ease) both; }
+@keyframes stage-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }

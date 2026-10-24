@@ -39,14 +39,14 @@ h1, h2, p { margin: 0; font: inherit; }
 .grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap); }
 
 /* Credits bar: fixed, over the content. On the landing it sits in the dark panel at the left;
-   inside a tool it sits at the right (.credits--end). Cross-document view transitions slide it. */
+   inside a tool it sits at the right (.credits--end). It rises in on every page. */
 @view-transition { navigation: auto; }
 .credits {
   position: fixed; left: 15px; bottom: 14px; z-index: 10;
   width: max-content; max-width: calc(100% - 30px);
   display: flex; flex-direction: column; gap: 6px;
   font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
-  view-transition-name: credits;
+  animation: rise-in .7s var(--vt-ease) .55s both;
 }
 .credits--end { left: auto; right: 15px; align-items: flex-end; }
 .credits > * { pointer-events: auto; }
@@ -54,11 +54,10 @@ h1, h2, p { margin: 0; font: inherit; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
 
 /* ---- Motion ----
-   1. landing <-> tool: the old page dissolves into the new one, the dark left panel stays put, the credits bar slides across.
+   1. landing <-> tool: the old page dissolves into the new one, the dark left panel stays put.
    2. entrances: texts rise in, tool controls stagger in.
    3. palette dot: the new palette spreads as a circle from the clicked dot (same-document transition, class .pal-vt). */
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .75s; }
-::view-transition-group(credits) { animation-duration: var(--vt-time); animation-timing-function: var(--vt-ease); }
 :root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .45s ease both; }
 :root:not(.pal-vt)::view-transition-new(root) { animation: none; }
 @keyframes vt-fade-out { to { opacity: 0; } }
@@ -68,7 +67,6 @@ h1, h2, p { margin: 0; font: inherit; }
 /* palette reveal: root old/new are driven from JS (clip-path circle) */
 .pal-vt *, .pal-vt { transition: none !important; }
 .pal-vt::view-transition-old(root), .pal-vt::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-.pal-vt .credits, .pal-vt .tool__cover { view-transition-name: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: .01s !important; animation-delay: 0s !important; }
