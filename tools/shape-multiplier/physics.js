@@ -36,9 +36,10 @@ function convexHull(pts){
   up.pop();lo.pop();return lo.concat(up);
 }
 
-/* Estrella de alba_shine.png (12 vértices exteriores + 12 del hueco), en px del PNG 1080×1247 */
-const STAR_OUTER=[[540,0],[664,408],[1080,311],[788,622.5],[1080,934],[664,837],[540,1247],[415,837],[0,934],[292,622.5],[0,311],[415,408]];
-const STAR_INNER=[[540,244],[600,519.5],[866,434],[660,622.5],[866,811],[600,726],[540,1001],[480,726],[214,811],[420,622.5],[214,434],[480,519.5]];
+/* Default shape = the star of this tool's cover (Figma): 6 points, 12 vertices (tips at even indexes, notches at odd), solid.
+   Coordinates are the exact vector from the cover (large star). */
+const STAR_OUTER=[[266.413,0],[236.36,119.893],[355.217,153.814],[236.36,187.734],[266.413,307.627],[177.609,221.654],[88.8043,307.627],[118.857,187.734],[0,153.814],[118.857,119.893],[88.8043,0],[177.609,85.9731]];
+const STAR_INNER=null;   // solid: no hole
 function starShape(){
   const T=[0,2,4,6,8,10].map(i=>STAR_OUTER[i]),C=[1,3,5,7,9,11].map(i=>STAR_OUTER[i]);
   const parts=[C.slice()];                       // hexágono central (convexo)

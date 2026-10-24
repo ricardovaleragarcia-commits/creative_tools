@@ -198,7 +198,7 @@ $('export').onclick=function(){
       StarExport.drawScene(oc.getContext('2d'),exportG(tr),sim.poses(),k);
       job=new Promise(function(res,rej){oc.toBlob(function(b){b?res(b):rej(new Error('Could not create the PNG'))},'image/png')}).then(function(b){return saveFile('shape-multiplier.png',b)});
     }else if(f==='svg'){
-      job=saveFile(custom?'silhouette.svg':'alba_shine.svg',StarExport.buildShapeSVG(exportG(false)),'image/svg+xml');
+      job=saveFile(custom?'silhouette.svg':'star.svg',StarExport.buildShapeSVG(exportG(false)),'image/svg+xml');
     }else{
       job=bake().then(function(bk){
         if(f==='lottie')return saveFile('shape-multiplier.lottie.json',JSON.stringify(StarExport.buildLottie(bk,exportG(tr),bitmapURL())),'application/json');
