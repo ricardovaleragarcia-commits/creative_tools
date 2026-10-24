@@ -5,7 +5,7 @@
     var f = document.createDocumentFragment();
     list.forEach(function (t) {
       var a = document.createElement(t.href ? "a" : "div");
-      a.className = "tool";
+      a.className = "tool"; a.style.setProperty("--i", f.childNodes.length);
       if (t.href) a.href = t.href;
       var h = document.createElement("h2");
       h.className = "title"; h.textContent = t.title;

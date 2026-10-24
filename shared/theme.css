@@ -46,7 +46,7 @@ h1, h2, p { margin: 0; font: inherit; }
   width: max-content; max-width: calc(100% - 30px);
   display: flex; flex-direction: column; gap: 6px;
   font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
-  animation: rise-in .7s var(--vt-ease) .55s both;
+  animation: rise-in .8s var(--vt-ease) .9s both;
 }
 .credits--end { left: auto; right: 15px; align-items: flex-end; }
 .credits > * { pointer-events: auto; }
@@ -58,7 +58,7 @@ h1, h2, p { margin: 0; font: inherit; }
    2. entrances: texts rise in, tool controls stagger in.
    3. palette dot: the new palette spreads as a circle from the clicked dot (same-document transition, class .pal-vt). */
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .75s; }
-:root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .45s ease both; }
+:root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .4s ease-in-out both; }
 :root:not(.pal-vt)::view-transition-new(root) { animation: none; }
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
