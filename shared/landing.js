@@ -57,22 +57,5 @@
       t.finished.finally(function () { root.classList.remove("pal-vt"); });
     });
   });
-
-  // shared element: the clicked cover grows into the tool stage (and back)
-  function nameCover(a) { var c = a && a.querySelector(".tool__cover"); if (c) c.style.viewTransitionName = "tool-stage"; }
-  function cardFor(url) {
-    var path = new URL(url, location.href).pathname.replace(/index\.html$/, "");
-    return Array.prototype.find.call(document.querySelectorAll("a.tool"), function (a) {
-      return new URL(a.href).pathname.replace(/index\.html$/, "") === path;
-    });
-  }
-  addEventListener("pageswap", function (e) {
-    if (!e.viewTransition || !e.activation) return;
-    nameCover(cardFor(e.activation.entry.url));
-  });
-  addEventListener("pagereveal", function (e) {
-    if (!e.viewTransition || !navigation.activation || !navigation.activation.from) return;
-    nameCover(cardFor(navigation.activation.from.url));
-  });
   mark();
 })();

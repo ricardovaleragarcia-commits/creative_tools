@@ -54,16 +54,13 @@ h1, h2, p { margin: 0; font: inherit; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
 
 /* ---- Motion ----
-   1. landing <-> tool: the card cover and the tool stage are one shared element (name "tool-stage") that grows/shrinks;
-      the rest of the old page fades out, the dark left panel stays put, the credits bar slides across.
+   1. landing <-> tool: the old page dissolves into the new one, the dark left panel stays put, the credits bar slides across.
    2. entrances: texts rise in, tool controls stagger in.
    3. palette dot: the new palette spreads as a circle from the clicked dot (same-document transition, class .pal-vt). */
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); --vt-time: .75s; }
-::view-transition-group(credits), ::view-transition-group(tool-stage) { animation-duration: var(--vt-time); animation-timing-function: var(--vt-ease); }
+::view-transition-group(credits) { animation-duration: var(--vt-time); animation-timing-function: var(--vt-ease); }
 :root:not(.pal-vt)::view-transition-old(root) { animation: vt-fade-out .45s ease both; }
 :root:not(.pal-vt)::view-transition-new(root) { animation: none; }
-::view-transition-old(tool-stage) { animation: vt-fade-out var(--vt-time) var(--vt-ease) both; height: 100%; object-fit: cover; }
-::view-transition-new(tool-stage) { animation: vt-fade-in var(--vt-time) var(--vt-ease) both; height: 100%; object-fit: cover; }
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
