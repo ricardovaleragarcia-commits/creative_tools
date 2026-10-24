@@ -15,10 +15,10 @@
   --block: color-mix(in srgb, var(--dark) 84%, #000);   /* controls blocks: a shade darker than the panel */
   --frame-bg: #000;                                       /* artwork background when the workspace is off */
 }
-html[data-palette="green"]  { --main: #00c893; --dark: #00573f; --ink: #ffffff; --c1: #f587ff; --c2: #ff0004; --c3: #2270ff; --c4: #cba900; --c5: #ff8f35; --c6: #9b7bf0; }
+html[data-palette="green"]  { --main: #00c893; --dark: #00573f; --ink: #ffffff; --c1: #f587ff; --c2: #ff0004; --c3: #2270ff; --c4: #cba900; --c5: #ff6b4a; --c6: #7ad7ff; }
 html[data-palette="purple"] { --main: #9b7bf0; --dark: #3f2e73; --ink: #ffffff; --c1: #00c893; --c2: #ff0004; --c3: #cba900; --c4: #ff8f35; --c5: #2270ff; --c6: #f587ff; }
 html[data-palette="orange"] { --main: #ff8f35; --dark: #7a3d12; --ink: #ffffff; --c1: #2270ff; --c2: #00c893; --c3: #9b7bf0; --c4: #f587ff; --c5: #ff0004; --c6: #cba900; }
-html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #ff8f35; --c6: #9b7bf0; }
+html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #9be564; --c6: #19d3da; }
 html[data-palette="white"]  { --main: #ffffff; --dark: #d9d9d9; --ink: #000000; --c1: #ececec; --c2: #c9c9c9; --c3: #a6a6a6; --c4: #7d7d7d; --c5: #dadada; --c6: #939393; }
 html[data-palette="black"]  { --main: #000000; --dark: #2a2a2a; --ink: #ffffff; --c1: #4a4a4a; --c2: #6e6e6e; --c3: #9a9a9a; --c4: #d0d0d0; --c5: #5c5c5c; --c6: #bcbcbc; }
 
