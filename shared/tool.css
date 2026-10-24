@@ -47,6 +47,7 @@ html[data-card="4"] { --card: var(--c4); }
   .toolhead__title { display: none; }
   .toolgrid { display: flex; flex-direction: column-reverse; }
   .stage { margin: 0; height: 70vw; min-height: 320px; }
+  .menu { grid-auto-rows: auto; align-content: start; overflow: visible; }   /* rows size to their content (desktop stretches them to fill the panel) */
   .artwork { --pad-x: 4cqw; --pad-y: 4cqh; }
 }
 .artwork.interactive { cursor: grab; touch-action: none; }
