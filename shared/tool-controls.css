@@ -23,3 +23,6 @@
 .block .chk { display: flex; align-items: center; font-size: var(--fs-s); line-height: 1; cursor: pointer; }
 .block input[type=range] { width: 100%; margin: 0; accent-color: var(--ink); }
 .block .note { font-size: var(--fs-s); line-height: 1.25; font-weight: 700; opacity: .6; }
+
+/* options of an inactive mode: visible but switched off */
+.group.off > .block { opacity: .35 !important; pointer-events: none; }

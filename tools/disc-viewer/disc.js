@@ -268,18 +268,23 @@ disc.add(cdGroup, vinylGroup, plainVinyl, plainCD);
 scene.add(disc);
 
 // ---------- Estado ----------
-let mode = 'vinyl', style = 'real', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
+let mode = 'vinyl', style = 'plain', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
 let userRx = 0, userRy = 0, dragging = false, lx = 0, ly = 0, recenter = false;
 const BASE = {x: 0, y: 0};   // always seen from the front
 
+function setOff(id, off){
+  const g = $(id); g.classList.toggle('off', off);
+  g.querySelectorAll('input, select, button').forEach(el => el.disabled = off);
+}
 function refresh(){
   const real = style === 'real';
   cdGroup.visible = real && mode === 'cd'; vinylGroup.visible = real && mode === 'vinyl';
   plainCD.visible = !real && mode === 'cd'; plainVinyl.visible = !real && mode === 'vinyl';
   $('tCD').classList.toggle('on', mode === 'cd'); $('tVN').classList.toggle('on', mode === 'vinyl');
   $('sReal').classList.toggle('on', real); $('sPlain').classList.toggle('on', !real);
-  $('optCD').hidden = !(real && mode === 'cd'); $('optVN').hidden = !(real && mode === 'vinyl');
-  $('optPlain').hidden = real; $('optLights').hidden = !real;
+  $('optCD').hidden = mode !== 'cd'; $('optVN').hidden = mode !== 'vinyl';   // by disc type
+  // the options of the style that is not active stay visible but switched off
+  setOff('optCD', !real); setOff('optVN', !real); setOff('optLights', !real); setOff('optPlain', real);
 }
 const setMode = m => { mode = m; refresh(); };
 $('tCD').onclick = () => setMode('cd');

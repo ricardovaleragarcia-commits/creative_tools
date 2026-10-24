@@ -31,7 +31,7 @@
 
     <div class="block full">
       <div class="t">Style</div>
-      <div class="btns fill"><button id="sReal" class="on">Realistic</button><button id="sPlain">Plain colors</button></div>
+      <div class="btns fill"><button id="sPlain" class="on">Plain colors</button><button id="sReal">Realistic</button></div>
     </div>
 
     <div class="block full">
@@ -49,6 +49,11 @@
       <div class="btns fill"><button id="pause">Pause</button><button id="center">Front view</button></div>
     </div>
 
+    <div class="group" id="optPlain">
+      <div class="block"><div class="t">Disc color</div><input type="color" id="pBody" value="#d9d9d9"></div>
+      <div class="block"><div class="t">Label color</div><input type="color" id="pLabel" value="#eaeaea"></div>
+    </div>
+
     <div class="group" id="optCD" hidden>
       <div class="block"><div class="t">Cover · front (PNG)</div><input type="file" id="fCoverF" accept="image/png,image/webp,image/jpeg"></div>
       <div class="block"><div class="t">Cover · back</div><input type="file" id="fCoverB" accept="image/png,image/webp,image/jpeg"></div>
@@ -62,11 +67,6 @@
       <div class="block"><div class="t">Vinyl color</div><input type="color" id="vColor" value="#17171c"></div>
       <div class="block"><div class="t">Dust &amp; scratches <output id="dustv">0.50</output></div><input type="range" id="dust" min="0" max="1" step="0.01" value="0.5"></div>
       <div class="block full"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
-    </div>
-
-    <div class="group" id="optPlain" hidden>
-      <div class="block"><div class="t">Disc color</div><input type="color" id="pBody" value="#d9d9d9"></div>
-      <div class="block"><div class="t">Label color</div><input type="color" id="pLabel" value="#eaeaea"></div>
     </div>
 
     <div class="group" id="optLights">
