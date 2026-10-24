@@ -97,7 +97,7 @@ function dataTex(data, WT, HT){
   return t;
 }
 function detailTextures(){
-  const WT = 1024, HT = 2048, ring = new Uint8Array(WT*HT*4), dust = new Uint8Array(WT*HT*4);
+  const WT = 1024, HT = 2048, ring = new Uint8Array(WT*HT*4);
   const inner = LP.HOLE, outer = LP.R, r0 = LP.LABEL, r1 = outer - 2, RINGS = 170, mmRow = (outer - inner)/HT;
   const hash = n => { const v = Math.sin(n*127.1 + 311.7)*43758.5453; return v - Math.floor(v); };
   const vnoise = x => { const k = Math.floor(x), f = x - k, w = f*f*(3 - 2*f); return hash(k)*(1 - w) + hash(k + 1)*w; };   // transición suave entre anillos
@@ -105,28 +105,75 @@ function detailTextures(){
   for(let j = 0; j < HT; j++){
     const r = inner + (j + 0.5)*mmRow; let v = 0;
     if(r > r0 && r < r1){ const q = (r - r0)/(r1 - r0); v = 255*(0.06 + 0.18*(0.65*vnoise(q*RINGS) + 0.35*vnoise(q*RINGS/4 + 91.7))); }
-    for(let i = 0; i < WT; i++){ const o = (j*WT + i)*4; ring[o] = ring[o+1] = ring[o+2] = v; ring[o+3] = 255; dust[o+3] = 255; }
+    for(let i = 0; i < WT; i++){ const o = (j*WT + i)*4; ring[o] = ring[o+1] = ring[o+2] = v; ring[o+3] = 255; }
   }
-  const put = (i, j, val) => {
-    if(j < 0 || j >= HT) return;
-    i = ((i % WT) + WT) % WT; const o = (j*WT + i)*4, nv = Math.max(dust[o], val);
-    dust[o] = dust[o+1] = dust[o+2] = nv;
-  };
-  for(let n = 0; n < 420; n++){                                      // polvo: motas redondas de 0.4-2 mm
-    const r = r0 + 4 + rnd()*(r1 - r0 - 6), a = rnd()*WT, s = 0.2 + rnd()*rnd()*0.8;   // radio de la mota en mm
-    const rx = Math.max(0.9, s/(2*Math.PI*r/WT)), ry = Math.max(0.9, s/mmRow), peak = 255*(0.45 + 0.55*rnd()), j0 = Math.round((r - inner)/mmRow);
-    for(let dj = -Math.ceil(ry); dj <= Math.ceil(ry); dj++) for(let di = -Math.ceil(rx); di <= Math.ceil(rx); di++){
-      const d = (di/rx)**2 + (dj/ry)**2; if(d <= 1) put(Math.round(a) + di, j0 + dj, peak*(1 - d*0.6));
+
+  // Wear is drawn on flat canvases (disc seen from above, 1 mm = PX px) and then unrolled into polar textures.
+  //  tex1: R = dust specks + fibers · G = circular hairlines (follow the grooves) · B = soft smudges / fingerprints
+  //  tex2: R, G, B = scratches crossing the grooves, in three orientations (0°, 60°, 120°); the shader lights each by its own direction
+  const SIZE = 2048, PX = SIZE/(2*outer), C = SIZE/2, TAU = Math.PI*2;
+  const mk = () => { const c = document.createElement('canvas'); c.width = c.height = SIZE; const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, SIZE, SIZE); x.globalCompositeOperation = 'lighter'; x.lineCap = 'round'; x.lineJoin = 'round'; return {c, x}; };
+  const A = mk(), B = mk();
+  const clipRing = x => { x.save(); x.beginPath(); x.arc(C, C, r1*PX, 0, TAU); x.arc(C, C, r0*PX, 0, TAU, true); x.clip('evenodd'); };
+  const col = (ch, a) => `rgba(${ch === 0 ? 255 : 0},${ch === 1 ? 255 : 0},${ch === 2 ? 255 : 0},${a})`;
+  const ringPoint = () => { const r = r0 + 2 + rnd()*(r1 - r0 - 4), a = rnd()*TAU; return [C + Math.cos(a)*r*PX, C + Math.sin(a)*r*PX, r, a]; };
+  // 1) dust: many tiny specks, few big ones, irregular (1-3 overlapping blobs)
+  clipRing(A.x);
+  for(let n = 0; n < 3200; n++){
+    const [x, y] = ringPoint(), s = (0.05 + 1.0*Math.pow(rnd(), 5))*PX, al = 0.25 + 0.75*rnd();
+    A.x.fillStyle = col(0, al);
+    for(let k = 0, m = 1 + Math.floor(rnd()*3); k < m; k++){
+      A.x.beginPath(); A.x.ellipse(x + (rnd() - 0.5)*s, y + (rnd() - 0.5)*s, Math.max(0.6, s*(0.4 + rnd()*0.7)), Math.max(0.6, s*(0.3 + rnd()*0.6)), rnd()*Math.PI, 0, TAU); A.x.fill();
     }
   }
-  for(let n = 0; n < 12; n++){                                       // rayones: arcos finos y tenues
-    const r = r0 + 6 + rnd()*(r1 - r0 - 12), a0 = rnd()*WT, L = (14 + rnd()*56)/(2*Math.PI*r/WT), drift = (rnd() - 0.5)*30;
-    const j0 = Math.round((r - inner)/mmRow), val = 255*(0.2 + 0.25*rnd());
-    for(let k = 0; k < L; k++){ const j = j0 + Math.round(drift*k/L); for(let t = 0; t < 4; t++) put(Math.round(a0) + k, j + t, val); }
+  // 2) fibers: short curly threads
+  A.x.lineWidth = 0.8;
+  for(let n = 0; n < 110; n++){
+    let [x, y] = ringPoint(), dir = rnd()*TAU; const segs = 3 + Math.floor(rnd()*4), step = (0.3 + rnd()*1.2)*PX;
+    A.x.strokeStyle = col(0, 0.35 + 0.5*rnd()); A.x.beginPath(); A.x.moveTo(x, y);
+    for(let k = 0; k < segs; k++){ dir += (rnd() - 0.5)*2.2; x += Math.cos(dir)*step; y += Math.sin(dir)*step; A.x.lineTo(x, y); }
+    A.x.stroke();
   }
-  return {ring: dataTex(ring, WT, HT), dust: dataTex(dust, WT, HT)};
+  // 3) hairlines along the grooves: a lot, mostly short and faint, a few long
+  for(let n = 0; n < 1100; n++){
+    const r = (r0 + 1 + rnd()*(r1 - r0 - 2))*PX, a0 = rnd()*TAU, L = 0.03 + 1.3*Math.pow(rnd(), 3);
+    A.x.lineWidth = 0.5 + rnd()*0.7; A.x.strokeStyle = col(1, 0.06 + 0.45*Math.pow(rnd(), 2));
+    A.x.beginPath(); A.x.arc(C, C, r + (rnd() - 0.5)*0.6, a0, a0 + L); A.x.stroke();
+  }
+  A.x.restore();
+  // 4) scratches across the grooves, three orientations
+  clipRing(B.x);
+  for(let n = 0; n < 190; n++){
+    const [x, y] = ringPoint(), bucket = Math.floor(rnd()*3), ang = bucket*Math.PI/3 + (rnd() - 0.5)*0.25;
+    const L = (3 + 55*Math.pow(rnd(), 2.2))*PX, bend = (rnd() - 0.5)*L*0.12, dx = Math.cos(ang)*L/2, dy = Math.sin(ang)*L/2;
+    B.x.lineWidth = 0.5 + rnd()*0.5; B.x.strokeStyle = col(bucket, 0.08 + 0.55*Math.pow(rnd(), 2));
+    B.x.beginPath(); B.x.moveTo(x - dx, y - dy); B.x.quadraticCurveTo(x - dy/L*bend*2, y + dx/L*bend*2, x + dx, y + dy); B.x.stroke();
+  }
+  B.x.restore();
+  // 5) smudges / fingerprints: soft blobs and a few oval ridged prints
+  const sm = document.createElement('canvas'); sm.width = sm.height = 512; const sx = sm.getContext('2d'); sx.fillStyle = '#000'; sx.fillRect(0, 0, 512, 512); sx.globalCompositeOperation = 'lighter';
+  for(let n = 0; n < 55; n++){
+    const x = rnd()*512, y = rnd()*512, rr = 14 + rnd()*70, g = sx.createRadialGradient(x, y, 0, x, y, rr);
+    g.addColorStop(0, `rgba(255,255,255,${0.05 + 0.18*rnd()})`); g.addColorStop(1, 'rgba(255,255,255,0)'); sx.fillStyle = g; sx.fillRect(x - rr, y - rr, rr*2, rr*2);
+  }
+  for(let n = 0; n < 5; n++){                                   // fingerprint: concentric ovals, partly worn
+    const x = 120 + rnd()*280, y = 120 + rnd()*280, tilt = rnd()*Math.PI, a0 = rnd()*TAU;
+    for(let k = 3; k < 26; k++){ sx.strokeStyle = `rgba(255,255,255,${0.05 + 0.07*rnd()})`; sx.lineWidth = 1.3; sx.beginPath(); sx.ellipse(x, y, k*1.7, k*2.3, tilt, a0 + rnd(), a0 + 2 + rnd()*3.5); sx.stroke(); }
+  }
+  const da = A.x.getImageData(0, 0, SIZE, SIZE).data, db = B.x.getImageData(0, 0, SIZE, SIZE).data, ds = sx.getImageData(0, 0, 512, 512).data;
+  const t1 = new Uint8Array(WT*HT*4), t2 = new Uint8Array(WT*HT*4);
+  for(let j = 0; j < HT; j++){
+    const r = (inner + (j + 0.5)*mmRow)*PX;
+    for(let i = 0; i < WT; i++){
+      const a = (i + 0.5)/WT*TAU, cx = Math.min(SIZE - 1, Math.max(0, Math.round(C + Math.cos(a)*r))), cy = Math.min(SIZE - 1, Math.max(0, Math.round(C + Math.sin(a)*r)));
+      const o = (j*WT + i)*4, s = (cy*SIZE + cx)*4, sm2 = (Math.min(511, Math.round(cy/4))*512 + Math.min(511, Math.round(cx/4)))*4;
+      t1[o] = da[s]; t1[o+1] = da[s+1]; t1[o+2] = ds[sm2]; t1[o+3] = 255;
+      t2[o] = db[s]; t2[o+1] = db[s+1]; t2[o+2] = db[s+2]; t2[o+3] = 255;
+    }
+  }
+  return {ring: dataTex(ring, WT, HT), t1: dataTex(t1, WT, HT), t2: dataTex(t2, WT, HT)};
 }
-const detailTexs = detailTextures(), detailTex = detailTexs.ring, dustTex = detailTexs.dust;
+const detailTexs = detailTextures(), detailTex = detailTexs.ring;
 const coverFrontTex = new THREE.CanvasTexture(placeholderCover(false));
 const coverBackTex  = new THREE.CanvasTexture(placeholderCover(true));
 function labelTex(back){ const t = new THREE.CanvasTexture(placeholderLabel(back)); t.encoding = THREE.sRGBEncoding; return t; }
@@ -195,7 +242,39 @@ const cdBodyMat = new THREE.MeshStandardMaterial({color: 0xdfe3ea, metalness: 1,
 const vColorLin = linearHex($('vColor').value);
 const vinylBodyMat = new THREE.MeshPhysicalMaterial({color: vColorLin, roughness: 0.35, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMap: envDark.map, envMapIntensity: 1.0, side: THREE.DoubleSide});
 const vinylFaceMat = new THREE.MeshPhysicalMaterial({color: vColorLin, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMap: envDark.map, envMapIntensity: 1.0, emissive: new THREE.Color(1, 1, 1), emissiveMap: detailTex, emissiveIntensity: 0.05, bumpMap: detailTex, bumpScale: 0.003, side: THREE.DoubleSide});
-const dustMat = new THREE.MeshBasicMaterial({map: dustTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.07, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide});
+// Wear layer: additive, lit by the first light. Scratches flash depending on the angle between their direction and the light/camera,
+// so they glint and fade as the disc or the light moves, like real marks on a record.
+const DUST_VS = `
+  varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW; varying vec3 vAx; varying vec3 vAy;
+  void main(){
+    vUv = uv; vL = position.xy;
+    vN = normalize(mat3(modelMatrix) * normal);
+    vAx = normalize(mat3(modelMatrix) * vec3(1.0, 0.0, 0.0)); vAy = normalize(mat3(modelMatrix) * vec3(0.0, 1.0, 0.0));
+    vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }`;
+const DUST_FS = `
+  uniform sampler2D uT1, uT2; uniform vec3 uLight, uCam, uLightCol; uniform float uAmt, uLightK;
+  varying vec2 vUv; varying vec2 vL; varying vec3 vN; varying vec3 vW; varying vec3 vAx; varying vec3 vAy;
+  float aniso(vec3 T, vec3 H){ float d = dot(normalize(T), H); return pow(max(1.0 - d*d, 0.0), 6.0); }
+  void main(){
+    vec4 a = texture2D(uT1, vUv), b = texture2D(uT2, vUv);
+    vec3 n = normalize(vN); if(!gl_FrontFacing) n = -n;
+    vec3 V = normalize(uCam - vW), H = normalize(normalize(uLight) + V);
+    float ang = atan(vL.y, vL.x);
+    vec3 Tc = -sin(ang)*vAx + cos(ang)*vAy;
+    float nh = max(dot(n, H), 0.0);
+    float scr = a.g*aniso(Tc, H) + b.r*aniso(vAx, H) + b.g*aniso(0.5*vAx + 0.866*vAy, H) + b.b*aniso(-0.5*vAx + 0.866*vAy, H);
+    float dust = a.r*(0.45 + 0.55*pow(nh, 4.0));
+    float smudge = a.b*(0.25 + 0.75*pow(nh, 10.0));
+    float v = (scr*1.5 + dust*0.6 + smudge*0.45)*uAmt*uLightK*0.35;
+    gl_FragColor = vec4(uLightCol*v, 1.0);
+  }`;
+const dustMat = new THREE.ShaderMaterial({
+  uniforms: {uT1: {value: detailTexs.t1}, uT2: {value: detailTexs.t2}, uAmt: {value: 0.5}, uLight: U.uLight, uCam: U.uCam, uLightCol: U.uLightCol, uLightK: U.uLightK},
+  vertexShader: DUST_VS, fragmentShader: DUST_FS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+  polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide
+});
 const labelFrontMat = new THREE.MeshStandardMaterial({map: labelTex(false), transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 const labelBackMat  = new THREE.MeshStandardMaterial({map: labelTex(true),  transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 
@@ -332,7 +411,7 @@ function applyGloss(v){
   for(const m of [labelFrontMat, labelBackMat]){ m.envMapIntensity = 0.1 + v*0.6; m.roughness = 0.75 - 0.2*v; m.needsUpdate = true; }
   vinylBodyMat.needsUpdate = vinylFaceMat.needsUpdate = true;
 }
-$('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.opacity = 0.14*(+e.target.value); };
+$('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.uniforms.uAmt.value = +e.target.value; };
 $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
 applyGloss(0.5);
 $('iri').oninput = e => U.uIri.value = +e.target.value;
