@@ -6,6 +6,7 @@
   display: flex; flex-direction: column;
 }
 .side__head { display: flex; flex-direction: column; gap: 14px; padding: 15px; }
+.head__c { margin: 6px 0 0; font-size: 36px; font-weight: 500; line-height: 1; }
 .head__title { font-size: 36px; font-weight: 500; line-height: .9; }
 .dots { position: absolute; left: 0; right: 0; top: 170px; bottom: 68px; pointer-events: none; }  /* free space between the intro text and the credits */
 .dot {
@@ -38,8 +39,8 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 .tool:nth-child(4n)   .tool__cover { --cover: var(--c4); }
 
 /* transition names (see theme.css) */
-.head__title, .head__a, .head__b { animation: rise-in .8s var(--vt-ease) .35s both; }
-.head__a { animation-delay: .45s; } .head__b { animation-delay: .55s; }
+.head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
+.head__a { animation-delay: .45s; } .head__b { animation-delay: .55s; } .head__c { animation-delay: .65s; }
 .dot { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.5s + var(--i, 0) * 50ms); }
 
 @media (max-width: 900px) {
