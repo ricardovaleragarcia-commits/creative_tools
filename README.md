@@ -12,6 +12,7 @@ shared/tool.css     tool screen: dark panel with controls (1/3) + stage with the
 shared/tool.js      tool name, workspace on/off (crop marks), frame background helper
 shared/credits.js   credits bar with clickable icons (mail, web, Instagram, LinkedIn)
 shared/leave.js     soft fade-out when navigating between pages (add it before smooth-scroll.js)
+shared/persist.js   remembers a tool's settings between visits (CTPersist.init in the tool script)
 tools/_template/    copy this folder to start a new tool
 fonts/              (not used since the switch to Helvetica Neue)
 ```

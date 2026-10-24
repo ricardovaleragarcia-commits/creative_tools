@@ -297,12 +297,6 @@ $('sReal').onclick = () => { style = 'real'; refresh(); };
 $('sPlain').onclick = () => { style = 'plain'; refresh(); };
 $('pBody').oninput = e => { const c = linearHex(e.target.value); plainBodyMat.color.copy(c); plainEdgeMat.color.copy(c); };
 $('pLabel').oninput = e => { for(const m of [plainLabelFrontMat, plainLabelBackMat]) if(!m.map) m.color.copy(linearHex(e.target.value)); };   // the color is only for labels without an image
-// own labels in plain colors: shown flat and unlit, exactly as uploaded
-function plainLabelFrom(mat){
-  return e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { mat.map = t; mat.color.set(0xffffff); mat.transparent = true; mat.needsUpdate = true; }, true); };
-}
-$('pLblF').onchange = plainLabelFrom(plainLabelFrontMat);
-$('pLblB').onchange = plainLabelFrom(plainLabelBackMat);
 refresh();
 
 // Cada animación es periódica: su último fotograma enlaza con el primero
@@ -330,11 +324,6 @@ $('center').onclick = () => {   // ease back to the front, taking the shortest w
 };
 $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent = animPlaying ? 'Pause' : 'Resume'; };
 
-// Imágenes
-$('fCoverF').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => cdFrontMat.uniforms.uMap.value = t, false); };
-$('fCoverB').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => cdBackMat.uniforms.uMap.value = t, false); };
-$('fLabelF').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { labelFrontMat.map = t; labelFrontMat.needsUpdate = true; }, true); };
-$('fLabelB').onchange = e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { labelBackMat.map = t; labelBackMat.needsUpdate = true; }, true); };
 
 // Ajustes
 $('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); vinylFaceMat.color.copy(c); };
@@ -376,6 +365,36 @@ stage.addEventListener('pointermove', e => {
 const endDrag = () => dragging = false;
 stage.addEventListener('pointerup', endDrag);
 stage.addEventListener('pointercancel', endDrag);
+
+// ---------- Labels: ONE image per side, used by every version (Realistic and Plain, vinyl and CD) ----------
+const labelImgs = {F: null, B: null};   // downscaled data URLs, also what gets remembered
+function setLabel(side, url){
+  labelImgs[side] = url;
+  const img = new Image();
+  img.onload = () => {
+    const tex = srgb => { const t = new THREE.Texture(img); if(srgb) t.encoding = THREE.sRGBEncoding; t.needsUpdate = true; return t; };
+    const real = side === 'F' ? labelFrontMat : labelBackMat, plain = side === 'F' ? plainLabelFrontMat : plainLabelBackMat;
+    real.map = tex(true); real.needsUpdate = true;                                     // vinyl label
+    (side === 'F' ? cdFrontMat : cdBackMat).uniforms.uMap.value = tex(false);          // CD face
+    plain.map = tex(true); plain.color.set(0xffffff); plain.transparent = true; plain.needsUpdate = true;   // plain label
+    CTPersist.save();
+  };
+  img.src = url;
+}
+function pickLabel(side){
+  return e => {
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => { const im = new Image(); im.onload = () => {
+      const k = Math.min(1, 1024/Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      setLabel(side, c.toDataURL('image/webp', 0.92));   // keeps transparency; small enough to remember
+    }; im.src = r.result; };
+    r.readAsDataURL(f);
+  };
+}
+$('fLabF').onchange = pickLabel('F');
+$('fLabB').onchange = pickLabel('B');
 
 // ---------- Tamaño del escenario según el formato ----------
 function layoutStage(){
@@ -422,6 +441,17 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+// ---------- Remember the settings and the images between visits ----------
+CTPersist.init('disc', {
+  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs}),
+  set: x => {
+    if(x.mode) mode = x.mode; if(x.style) style = x.style; refresh();
+    if(x.anim){ const b = document.querySelector(`#anims button[data-a="${x.anim}"]`); if(b) b.click(); }
+    if(x.ratio){ const b = document.querySelector(`#ratios button[data-r="${x.ratio}"]`); if(b) b.click(); }
+    if(x.imgs){ if(x.imgs.F) setLabel('F', x.imgs.F); if(x.imgs.B) setLabel('B', x.imgs.B); }
+  }
+});
 
 // ---------- Export loop (shared exporter) ----------
 $('exp').onclick = async () => {
