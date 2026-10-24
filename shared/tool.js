@@ -12,6 +12,8 @@
 
   menu.querySelectorAll(".block").forEach(function (b, i) { b.style.setProperty("--i", i); });
 
+  setTimeout(function () { page.classList.add("ready"); }, 1800);
+
   window.setFrameBg = function (css) { stage.style.setProperty("--frame-bg", css); };
 
 })();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ff5959">
 <script src="../../shared/palette.js"></script>
-<title>CT1 — CD/Vinyl Playground — Creative tools</title>
+<title>CT1 — Vinyl/CD Playground — Creative tools</title>
 <link rel="icon" type="image/svg+xml" href="../../shared/site-icon.svg">
 <link rel="apple-touch-icon" href="../../shared/site-icon-180.png">
 <link rel="stylesheet" href="../../shared/theme.css">
@@ -16,7 +16,7 @@
 <header class="toolhead">
   <div class="toolhead__side">
     <a class="title back" href="../../">← back</a>
-    <p class="small instructions">Pick CD or vinyl, upload your PNG artwork, then hold and drag on the artwork to tilt it. Choose a format and an animation, and export a seamless MP4 loop for stories and reels.</p>
+    <p class="small instructions">Pick CD or vinyl, upload your PNG artwork, then hold and drag on the artwork to turn it: it stays where you leave it, and Front view brings it back. Choose a style, a format and an animation, and export a seamless MP4 loop for stories and reels.</p>
   </div>
   <h1 class="title toolhead__title"></h1>
 </header>
@@ -26,7 +26,12 @@
 
     <div class="block full">
       <div class="t">Disc</div>
-      <div class="btns fill"><button id="tCD" class="on">CD</button><button id="tVN">Vinyl</button></div>
+      <div class="btns fill"><button id="tVN" class="on">Vinyl</button><button id="tCD">CD</button></div>
+    </div>
+
+    <div class="block full">
+      <div class="t">Style</div>
+      <div class="btns fill"><button id="sReal" class="on">Realistic</button><button id="sPlain">Plain colors</button></div>
     </div>
 
     <div class="block full">
@@ -44,14 +49,14 @@
       <div class="btns fill"><button id="pause">Pause</button><button id="center">Front view</button></div>
     </div>
 
-    <div class="group" id="optCD">
+    <div class="group" id="optCD" hidden>
       <div class="block"><div class="t">Cover · front (PNG)</div><input type="file" id="fCoverF" accept="image/png,image/webp,image/jpeg"></div>
       <div class="block"><div class="t">Cover · back</div><input type="file" id="fCoverB" accept="image/png,image/webp,image/jpeg"></div>
       <div class="block"><div class="t">Rainbow</div><input type="range" id="iri" min="0" max="1" step="0.01" value="0.9"></div>
       <div class="block"><div class="t">Plastic translucency</div><input type="range" id="trans" min="0" max="0.6" step="0.01" value="0.3"></div>
     </div>
 
-    <div class="group" id="optVN" hidden>
+    <div class="group" id="optVN">
       <div class="block"><div class="t">Label · front (PNG)</div><input type="file" id="fLabelF" accept="image/png,image/webp,image/jpeg"></div>
       <div class="block"><div class="t">Label · back</div><input type="file" id="fLabelB" accept="image/png,image/webp,image/jpeg"></div>
       <div class="block"><div class="t">Vinyl color</div><input type="color" id="vColor" value="#17171c"></div>
@@ -59,6 +64,12 @@
       <div class="block full"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
     </div>
 
+    <div class="group" id="optPlain" hidden>
+      <div class="block"><div class="t">Disc color</div><input type="color" id="pBody" value="#d9d9d9"></div>
+      <div class="block"><div class="t">Label color</div><input type="color" id="pLabel" value="#eaeaea"></div>
+    </div>
+
+    <div class="group" id="optLights">
     <div class="block full"><div class="t">Brightness <output id="brv">1.00</output></div><input type="range" id="bright" min="0.4" max="2.2" step="0.01" value="1"></div>
 
     <div class="block">
@@ -72,8 +83,9 @@
       <div class="t">Intensity <output id="bpiv">1.00</output></div><input type="range" id="botI" min="0" max="4" step="0.05" value="1">
     </div>
 
-    <div class="block"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
-    <div class="block"><label class="chk"><input type="checkbox" id="keep">Keep tilt on release</label></div>
+    </div>
+
+    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"></div>
 
     <div class="block full">
       <div class="t">Export loop</div>

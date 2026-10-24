@@ -17,8 +17,6 @@ const renderer = new THREE.WebGLRenderer({canvas, antialias: true, preserveDrawi
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.LinearToneMapping;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, 1, 2.5, 12);
 camera.position.set(0, 0, 5.4);
@@ -52,7 +50,6 @@ const key = new THREE.DirectionalLight(0xffffff, 0.8); key.position.set(2, 4, 5)
 const rim = new THREE.DirectionalLight(0xffffff, 0.4); rim.position.set(-3, 1, -2); scene.add(rim);
 function makeSpot(){
   const s = new THREE.SpotLight(0xffffff, 1.5, 0, Math.PI/5, 0.6, 1);
-  s.castShadow = true; s.shadow.mapSize.set(1024, 1024); s.shadow.bias = -0.0008; s.shadow.radius = 6;
   scene.add(s); scene.add(s.target); s.target.position.set(0, 0, 0);
   return s;
 }
@@ -63,10 +60,6 @@ function placeSpots(){
   botSpot.position.set(Math.sin(b)*6, -5, Math.cos(b)*6);
 }
 placeSpots();
-
-// Fondo que recibe las sombras (transparente salvo la sombra)
-const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({opacity: 0.22}));
-backdrop.position.set(0, 0, -1.2); backdrop.receiveShadow = true; scene.add(backdrop);
 
 // ---------- Texturas ----------
 function placeholderCover(back){
@@ -255,27 +248,47 @@ function buildVinyl(){
   g.scale.setScalar(1/R);
   return g;
 }
+// Plain colors: flat, unlit, same colors as the cover of this tool (disc + lighter label, hole through)
+const plainBodyMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
+const plainEdgeMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
+const plainLabelMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
+function buildPlain(T, R, holeF){
+  const g = new THREE.Group(), h = T/R/2;
+  g.add(new THREE.Mesh(lathe([[1, -h], [1, h]]), plainEdgeMat));
+  g.add(face(annulus(holeF, 1), plainBodyMat, h + 0.002, false));
+  g.add(face(annulus(holeF, 1), plainBodyMat, -h - 0.002, true));
+  g.add(face(annulus(holeF, 0.35), plainLabelMat, h + 0.004, false));
+  g.add(face(annulus(holeF, 0.35), plainLabelMat, -h - 0.004, true));
+  return g;
+}
+const plainVinyl = buildPlain(LP.T, LP.R, 0.061), plainCD = buildPlain(CD.T, CD.R, 0.061);
 const cdGroup = buildCD(), vinylGroup = buildVinyl();
-vinylGroup.visible = false;
 const disc = new THREE.Group();
-disc.add(cdGroup, vinylGroup);
+disc.add(cdGroup, vinylGroup, plainVinyl, plainCD);
 scene.add(disc);
-disc.traverse(o => { if(o.isMesh){ o.castShadow = o.material !== dustMat; o.receiveShadow = false; } });   // la capa de polvo no proyecta sombra
 
 // ---------- Estado ----------
-let mode = 'cd', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
-let userRx = 0, userRy = 0, dragging = false, lx = 0, ly = 0;
-const TILT = {x: 0.22, y: -0.3};
-let BASE = {x: 0.22, y: -0.3}, centered = false;   // BASE se acerca suavemente a TILT o a la vista de frente
+let mode = 'vinyl', style = 'real', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
+let userRx = 0, userRy = 0, dragging = false, lx = 0, ly = 0, recenter = false;
+const BASE = {x: 0, y: 0};   // always seen from the front
 
-function setMode(m){
-  mode = m;
-  cdGroup.visible = m === 'cd'; vinylGroup.visible = m === 'vinyl';
-  $('tCD').classList.toggle('on', m === 'cd'); $('tVN').classList.toggle('on', m === 'vinyl');
-  $('optCD').hidden = m !== 'cd'; $('optVN').hidden = m !== 'vinyl';
+function refresh(){
+  const real = style === 'real';
+  cdGroup.visible = real && mode === 'cd'; vinylGroup.visible = real && mode === 'vinyl';
+  plainCD.visible = !real && mode === 'cd'; plainVinyl.visible = !real && mode === 'vinyl';
+  $('tCD').classList.toggle('on', mode === 'cd'); $('tVN').classList.toggle('on', mode === 'vinyl');
+  $('sReal').classList.toggle('on', real); $('sPlain').classList.toggle('on', !real);
+  $('optCD').hidden = !(real && mode === 'cd'); $('optVN').hidden = !(real && mode === 'vinyl');
+  $('optPlain').hidden = real; $('optLights').hidden = !real;
 }
+const setMode = m => { mode = m; refresh(); };
 $('tCD').onclick = () => setMode('cd');
 $('tVN').onclick = () => setMode('vinyl');
+$('sReal').onclick = () => { style = 'real'; refresh(); };
+$('sPlain').onclick = () => { style = 'plain'; refresh(); };
+$('pBody').oninput = e => { const c = linearHex(e.target.value); plainBodyMat.color.copy(c); plainEdgeMat.color.copy(c); };
+$('pLabel').oninput = e => plainLabelMat.color.copy(linearHex(e.target.value));
+refresh();
 
 // Cada animación es periódica: su último fotograma enlaza con el primero
 function pose(name, t){
@@ -297,7 +310,9 @@ document.querySelectorAll('#ratios button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#ratios button').forEach(x => x.classList.toggle('on', x === b));
   layoutStage();
 });
-$('center').onclick = () => { centered = !centered; $('center').textContent = centered ? 'Tilt' : 'Front view'; };
+$('center').onclick = () => {   // ease back to the front, taking the shortest way round
+  userRy = ((userRy + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI; recenter = true;
+};
 $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent = animPlaying ? 'Pause' : 'Resume'; };
 
 // Imágenes
@@ -335,13 +350,13 @@ $('topI').oninput = e => $('tpiv').textContent = (+e.target.value).toFixed(2);
 $('botAng').oninput = e => { $('bpav').textContent = e.target.value + '°'; placeSpots(); };
 $('botI').oninput = e => $('bpiv').textContent = (+e.target.value).toFixed(2);
 
-// ---------- Inclinar manteniendo el clic ----------
-stage.addEventListener('pointerdown', e => { dragging = true; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
+// ---------- Girar manteniendo el clic: se queda donde sueltas ----------
+stage.addEventListener('pointerdown', e => { dragging = true; recenter = false; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
 stage.addEventListener('pointermove', e => {
   if(!dragging) return;
   const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
-  userRy = clamp(userRy + dx*0.01, -1.4, 1.4);
-  userRx = clamp(userRx + dy*0.01, -1.4, 1.4);
+  userRy += dx*0.01;
+  userRx = clamp(userRx + dy*0.01, -1.5, 1.5);   // stays exactly where the mouse stopped
 });
 const endDrag = () => dragging = false;
 stage.addEventListener('pointerup', endDrag);
@@ -364,11 +379,11 @@ layoutStage();
 
 // ---------- Renderizado de un fotograma ----------
 function applyLights(){
-  const bright = +$('bright').value;
+  const bright = style === 'plain' ? 1 : +$('bright').value;
   renderer.toneMappingExposure = bright; U.uExp.value = bright;
-  topSpot.visible = $('topOn').checked; topSpot.castShadow = topSpot.visible;
+  topSpot.visible = $('topOn').checked;
   topSpot.intensity = +$('topI').value;
-  botSpot.visible = $('botOn').checked; botSpot.castShadow = botSpot.visible;
+  botSpot.visible = $('botOn').checked;
   botSpot.intensity = +$('botI').value;
   // el brillo del CD sigue la luz superior (o la principal si no hay focal)
   if(topSpot.visible) U.uLight.value.copy(topSpot.position).normalize(); else U.uLight.value.set(2, 4, 5).normalize();
@@ -386,10 +401,7 @@ function frame(now){
   const dt = Math.min(0.1, (now - lastT)/1000); lastT = now;
   if(!exporting){
     if(animPlaying) tAnim += dt;
-    const tgt = centered ? {x: 0, y: 0} : TILT;
-    BASE.x += (tgt.x - BASE.x)*0.1; BASE.y += (tgt.y - BASE.y)*0.1;
-    if(centered){ userRx *= 0.85; userRy *= 0.85; }
-    else if(!dragging && !$('keep').checked){ userRx *= 0.92; userRy *= 0.92; }
+    if(recenter){ userRx *= 0.85; userRy *= 0.85; if(Math.abs(userRx) + Math.abs(userRy) < 0.002){ userRx = userRy = 0; recenter = false; } }
     renderAt(tAnim);
   }
   requestAnimationFrame(frame);
@@ -405,7 +417,7 @@ $('exp').onclick = async () => {
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);
     camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix();
     const out = await VideoExport.run({canvas, renderAt, period: P, fps: FPS, width: W, height: H, status});
-    const name = `disc-${mode}-${animName}-${RATIO_KEY.replace(':','x')}.${out.ext}`;
+    const name = `${mode}-${style}-${animName}-${RATIO_KEY.replace(':','x')}.${out.ext}`;
     const result = await VideoExport.save(name, out.blob);
     const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', rejected_extension: 'Format not allowed', too_large: 'The file is too large'};
     status(`${msgs[result] || 'Could not save'}: ${name} · ${W}×${H} · ${P} s loop · ${out.note}`);
