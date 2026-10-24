@@ -4,7 +4,7 @@
 .toolpage {
   height: 100vh; height: 100dvh; overflow: hidden; background: var(--main);
   display: grid; grid-template-columns: 1fr 2fr; grid-template-rows: auto minmax(0, 1fr);
-  column-gap: var(--gap); padding: 0 var(--gap) 0 0;
+  column-gap: 0; padding: 0;   /* left panel = exactly 1/3, same as the landing */
 }
 .toolhead { display: contents; }
 .toolhead__side { grid-column: 1; grid-row: 1; background: var(--dark); padding: var(--gap); }
@@ -12,7 +12,7 @@
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
 .toolhead__title {
   grid-column: 2; grid-row: 1; align-self: start; justify-self: start; position: relative; z-index: 1;
-  margin: var(--gap) var(--gap) 0; font-size: 24px; font-weight: 700; line-height: 32px; height: 32px;
+  margin: var(--gap) var(--gap) 0 var(--gap); font-size: 24px; font-weight: 700; line-height: 32px; height: 32px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 2 * var(--gap));
 }
 .toolgrid { display: contents; }
@@ -32,7 +32,7 @@ html[data-card="2"] { --card: var(--c2); }
 html[data-card="3"] { --card: var(--c3); }
 html[data-card="4"] { --card: var(--c4); }
 .stage {
-  grid-column: 2; grid-row: 1 / span 2; margin: var(--cover-top) 0 var(--gap); background: var(--card, var(--main));
+  grid-column: 2; grid-row: 1 / span 2; margin: var(--cover-top) var(--gap) var(--gap); background: var(--card, var(--main));
   min-height: 0; overflow: hidden; position: relative; container-type: size; display: grid; place-items: center;
 }
 .artwork {
