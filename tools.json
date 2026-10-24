@@ -13,7 +13,7 @@
   },
   {
     "title": "CT3 — Text/SVG Reveal",
-    "description": "Reveal text or SVG logos letter by letter with a traveling mask.",
+    "description": "Draw the outline of text or SVG logos like a pen stroke, then fill it, as a seamless loop.",
     "cover": "shared/covers/ct3-text-reveal.svg",
     "href": "tools/text-reveal/"
   },

@@ -26,3 +26,14 @@
 
 /* options of an inactive mode: visible but switched off */
 .group.off > .block { opacity: .35 !important; pointer-events: none; }
+
+/* keyboard focus: visible ring in the palette's ink color */
+.menu :is(button, select, input, textarea, canvas):focus-visible, .toolhead .back:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* touch screens: finger-sized targets (44px guideline) */
+@media (pointer: coarse) {
+  .btn, .btns button, .block select, .block input[type=file]::file-selector-button { min-height: 40px; padding: 10px 10px; }
+  .block input[type=color] { height: 40px; }
+  .block input[type=range] { height: 32px; }
+  .block .chk { min-height: 36px; }
+}
