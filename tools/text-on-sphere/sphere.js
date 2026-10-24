@@ -158,7 +158,7 @@ FONTS.forEach(f => $('#font').add(new Option(f, f)));
 Object.entries(RATIOS).forEach(([k, v]) => $('#ratio').add(new Option(v, k)));
 
 const ctrl = sphereLoop(cv, {
-  text: 'your text here', font: 'Archivo', tsize: 55, size: 72, tilt: -30, repeat: true,
+  text: 'your text here', font: 'Archivo', tsize: 30, size: 72, tilt: -30, repeat: true,
   mode: 'giro', dir: 1, T: 6, ratio: '3:4', quality: 720,
   bg: '#000000', sc: '#EAEAEA', tc: '#000000', border: false, bc: '#000000', bw: 1.5, playing: true, fx: '', axis: 0, spin: 6, bseed: 0
 });
