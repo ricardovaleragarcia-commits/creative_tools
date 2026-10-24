@@ -8,7 +8,7 @@ if(!window.Matter||!window.StarCore||!window.StarExport||!window.VideoExport){sa
 
 var P={W:750,H:1000,gravity:1.8,bounce:0.12,friction:0.5,gap:2,shake:0,seq:'1,3,5,10',mode:'total',stepDur:2.4,hold:2.5};
 var bgStyle={mode:'solid',color:'#000000',stops:[{c:'#2a2a2a',p:0},{c:'#000000',p:1}],angle:0};
-var fillStyle={mode:'gradient',color:'#9a9a9a',stops:[{c:'#ececec',p:0},{c:'#818181',p:1}],angle:0};
+var fillStyle={mode:'solid',color:'#eaeaea',stops:[{c:'#ececec',p:0},{c:'#818181',p:1}],angle:0};   // default: the solid color of the cover star
 var shape=StarCore.starShape(),custom=null,playing=true,busy=false,dl=null,liveG=null;
 /* ---- ajustes persistentes: se guardan en el navegador del usuario y se restauran al abrir ---- */
 var STORE_KEY='shape-multiplier-settings-v1',NUM_KEYS=['gravity','bounce','friction','gap','shake','stepDur','hold'];
@@ -17,7 +17,7 @@ try{var saved=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
     NUM_KEYS.forEach(function(k){if(saved.P&&saved.P[k]!=null){P[k]=+saved.P[k];$(k).value=saved.P[k]}});
     if(saved.P&&saved.P.seq!=null){P.seq=saved.P.seq;$('seq').value=saved.P.seq}
     if(saved.P&&saved.P.mode){P.mode=saved.P.mode;$('mode').value=saved.P.mode}
-    if(saved.fill)fillStyle=saved.fill;
+    if(saved.fill&&saved.fillv===2)fillStyle=saved.fill;   // fills saved before the new default (no fillv) are dropped once
     if(saved.alpha!=null)$('alpha').checked=!!saved.alpha;
   }
 }catch(e){}
@@ -29,7 +29,7 @@ function saveSettings(){
   if(window.setFrameBg)window.setFrameBg(bgCss(bgStyle));
   try{localStorage.setItem(STORE_KEY,JSON.stringify({
     P:{gravity:$('gravity').value,bounce:$('bounce').value,friction:$('friction').value,gap:$('gap').value,shake:$('shake').value,stepDur:$('stepDur').value,hold:$('hold').value,seq:$('seq').value,mode:$('mode').value},
-    bg:bgStyle,fill:fillStyle,alpha:$('alpha').checked}))}catch(e){}
+    bg:bgStyle,fill:fillStyle,fillv:2,alpha:$('alpha').checked}))}catch(e){}
 }
 
 var sim=StarCore.createSim(Matter,shape,P);
