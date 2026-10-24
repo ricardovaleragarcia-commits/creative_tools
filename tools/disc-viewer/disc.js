@@ -63,13 +63,13 @@ placeSpots();
 
 // ---------- Texturas ----------
 function placeholderCover(back){
+  // same grays as the plain-colors disc: #d9d9d9 body, #eaeaea label, gray SIDE A / SIDE B text
   const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
   x.clearRect(0,0,1024,1024);
-  const g = x.createRadialGradient(512,512,80,512,512,512);
-  if(back){ g.addColorStop(0,'#7fd3ff'); g.addColorStop(1,'#2563eb'); } else { g.addColorStop(0,'#ff5fa2'); g.addColorStop(1,'#c2185b'); }
-  x.fillStyle = g; x.beginPath(); x.arc(512,512,500,0,Math.PI*2); x.fill();
-  x.fillStyle = '#fff'; x.font = 'bold 120px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText(back ? 'REVERSO' : 'FRENTE', 512, 512);
+  x.fillStyle = '#cdcdcd'; x.beginPath(); x.arc(512,512,505,0,Math.PI*2); x.fill();
+  x.fillStyle = '#dedede'; x.beginPath(); x.arc(512,512,0.35*512,0,Math.PI*2); x.fill();
+  x.fillStyle = '#929292'; x.font = 'bold 76px "Helvetica Neue", Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(back ? 'SIDE B' : 'SIDE A', 512, 650);   // below the hub (drawn a touch darker: the lights brighten it ~5%)
   return c;
 }
 function placeholderLabel(back){
