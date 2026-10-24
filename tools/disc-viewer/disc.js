@@ -254,14 +254,15 @@ function buildVinyl(){
 // Plain colors: flat, unlit, same colors as the cover of this tool (disc + lighter label, hole through)
 const plainBodyMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
 const plainEdgeMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
-const plainLabelMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
+const plainLabelFrontMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
+const plainLabelBackMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
 function buildPlain(T, R, holeF){
   const g = new THREE.Group(), h = T/R/2;
   g.add(new THREE.Mesh(lathe([[1, -h], [1, h]]), plainEdgeMat));
   g.add(face(annulus(holeF, 1), plainBodyMat, h + 0.002, false));
   g.add(face(annulus(holeF, 1), plainBodyMat, -h - 0.002, true));
-  g.add(face(annulus(holeF, 0.35), plainLabelMat, h + 0.004, false));
-  g.add(face(annulus(holeF, 0.35), plainLabelMat, -h - 0.004, true));
+  g.add(face(annulus(holeF, 0.35), plainLabelFrontMat, h + 0.004, false));
+  g.add(face(annulus(holeF, 0.35), plainLabelBackMat, -h - 0.004, true));
   return g;
 }
 const plainVinyl = buildPlain(LP.T, LP.R, 0.061), plainCD = buildPlain(CD.T, CD.R, 0.061);
@@ -295,7 +296,13 @@ $('tVN').onclick = () => setMode('vinyl');
 $('sReal').onclick = () => { style = 'real'; refresh(); };
 $('sPlain').onclick = () => { style = 'plain'; refresh(); };
 $('pBody').oninput = e => { const c = linearHex(e.target.value); plainBodyMat.color.copy(c); plainEdgeMat.color.copy(c); };
-$('pLabel').oninput = e => plainLabelMat.color.copy(linearHex(e.target.value));
+$('pLabel').oninput = e => { for(const m of [plainLabelFrontMat, plainLabelBackMat]) if(!m.map) m.color.copy(linearHex(e.target.value)); };   // the color is only for labels without an image
+// own labels in plain colors: shown flat and unlit, exactly as uploaded
+function plainLabelFrom(mat){
+  return e => { const f = e.target.files[0]; if(f) loadTexture(f, t => { mat.map = t; mat.color.set(0xffffff); mat.transparent = true; mat.needsUpdate = true; }, true); };
+}
+$('pLblF').onchange = plainLabelFrom(plainLabelFrontMat);
+$('pLblB').onchange = plainLabelFrom(plainLabelBackMat);
 refresh();
 
 // Cada animación es periódica: su último fotograma enlaza con el primero
