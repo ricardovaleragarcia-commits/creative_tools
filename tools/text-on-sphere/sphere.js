@@ -178,7 +178,7 @@ $('#rand').onclick = () => {
   const modes = ['giro', 'vaiven', 'pulso', 'rebote'];
   ctrl.update({
     mode: modes[Math.random() * 4 | 0], dir: Math.random() < 0.5 ? 1 : -1,
-    T: Math.round(rnd(3, 12) * 2) / 2, tilt: Math.round(rnd(-45, 45)), tsize: Math.round(rnd(70, 130))
+    T: Math.round(rnd(3, 12) * 2) / 2   // motion only: text size, tilt and the rest of the look stay as you set them
   });
   sync();
 };
