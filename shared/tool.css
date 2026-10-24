@@ -55,5 +55,4 @@ html[data-card="4"] { --card: var(--c4); }
 /* motion: texts and controls rise in */
 .toolhead .back { animation: rise-in .8s var(--vt-ease) .35s both; }
 .toolhead .instructions { animation: rise-in .8s var(--vt-ease) .45s both; }
-.toolhead__title { animation: rise-in .8s var(--vt-ease) .5s both; }
 .menu .block { animation: fade-in .5s ease-out both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }

@@ -57,7 +57,7 @@ h1, h2, p { margin: 0; font: inherit; }
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); }
 .tools, .stage, .toolhead__title { animation: fade-in .7s ease-out .1s both; }
 .leaving .tools, .leaving .stage, .leaving .toolhead__title, .leaving .side__head, .leaving .dots,
-.leaving .toolhead__side > *, .leaving .menu > *, .leaving .credits { opacity: 0 !important; animation: none !important; transition: opacity .28s ease !important; }
+.leaving .toolhead__side > *, .leaving .menu .block, .leaving .menu > :not(.group), .leaving .credits { opacity: 0 !important; animation: none !important; transition: opacity .28s ease !important; }
 @keyframes fade-in { from { opacity: 0; } }
 .pal-vt *, .pal-vt { transition: none !important; }
 .pal-vt::view-transition-old(root), .pal-vt::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
