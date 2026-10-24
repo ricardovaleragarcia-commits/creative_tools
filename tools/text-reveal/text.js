@@ -313,6 +313,7 @@ function prepare(){
       const cum = new Float32Array(p.length/2); for(let i = 1; i < cum.length; i++) cum[i] = cum[i-1] + Math.hypot(p[2*i]-p[2*i-2], p[2*i+1]-p[2*i-1]);
       L.strokes.push({pts:p, cum, len:cum[cum.length-1], closed:c.closed, sh});
     }
+    for(const sh of L.shapes) sh.strokes = L.strokes.filter(x => x.sh === sh);
   });
   const rk = ranks(letters.length); letters.forEach((L,i) => L.rank = rk[i]);
 }
@@ -343,7 +344,7 @@ function strokePartial(ctx, s, f){
   ctx.stroke();
 }
 function renderFrame(ctx, W, H, t){
-  const T = timing(), keep = $('keep').checked, lc = $('lc').value, fc = $('fc').value, lw = +$('lw').value;
+  const T = timing(), keep = $('keep').checked, lc = $('lc').value, fc = $('fc').value, lw = +$('lw').value, align = $('align').value;
   ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha = 1;
   ctx.fillStyle = $('bg').value; ctx.fillRect(0,0,W,H);
   if(!letters.length) return;
@@ -372,13 +373,20 @@ function renderFrame(ctx, W, H, t){
         } else { ctx.globalAlpha = exit*fillA; ctx.fill(sh.fillPath, sh.rule); }
       }
     }
-    // outline
+    // outline (center / inside / outside the letter edge, like Figma)
     if(outA > 0 && pDraw > 0){
-      for(const st of L.strokes){
-        const sh = st.sh;
+      for(const sh of L.shapes){
+        const al = sh.fill ? align : 'center';
         ctx.globalAlpha = exit * (sh.fill ? outA : 1);   // stroke-only shapes keep their line
         ctx.strokeStyle = keep && sh.fill !== 'text' ? (sh.stroke || sh.fill || lc) : lc;
-        strokePartial(ctx, st, pDraw);
+        ctx.lineWidth = al === 'center' ? lw : lw*2;
+        if(al !== 'center'){
+          ctx.save();
+          if(al === 'inside') ctx.clip(sh.fillPath, sh.rule);
+          else { const q = new Path2D(); q.rect(L.bb[0]-lw*4, L.bb[1]-lw*4, L.bb[2]-L.bb[0]+lw*8, L.bb[3]-L.bb[1]+lw*8); q.addPath(sh.fillPath); ctx.clip(q, 'evenodd'); }
+        }
+        for(const st of sh.strokes) strokePartial(ctx, st, pDraw);
+        if(al !== 'center') ctx.restore();
       }
     }
   }
