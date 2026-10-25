@@ -575,6 +575,33 @@ function applyGloss(v){
   for(const m of [labelFrontMat, labelBackMat]){ m.envMapIntensity = 0.1 + v*0.6; m.roughness = 0.75 - 0.2*v; m.needsUpdate = true; }
   vinylBodyMat.needsUpdate = vinylFaceMat.needsUpdate = true;
 }
+// ---------- Label paper: fine fibre relief on the vinyl label (bump map; size and strength adjustable) ----------
+const lpBump = new THREE.CanvasTexture(document.createElement('canvas'));
+function paintPaper(size){
+  const N = 1024, c = lpBump.image; c.width = c.height = N; const x = c.getContext('2d');
+  x.fillStyle = '#808080'; x.fillRect(0, 0, N, N);
+  const layer = (cell, alpha) => {                                   // random noise at low resolution, smoothly enlarged = grain of that size
+    const n = Math.max(8, Math.round(N/cell)), t = document.createElement('canvas'); t.width = t.height = n;
+    const tx = t.getContext('2d'), d = tx.createImageData(n, n);
+    for(let i = 0; i < n*n; i++){ const v = 40 + Math.random()*176; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }
+    tx.putImageData(d, 0, 0); x.globalAlpha = alpha; x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(t, 0, 0, N, N);
+  };
+  layer(size, 1); layer(size*2.6, 0.3);
+  x.globalAlpha = 1;
+  // pressed ring around the spindle area, as on a real label
+  const R = 0.33*N/2, mid = N/2; x.lineWidth = 5;
+  x.strokeStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(mid, mid, R, 0, Math.PI*2); x.stroke();
+  x.strokeStyle = 'rgba(0,0,0,0.9)'; x.beginPath(); x.arc(mid, mid, R + 6, 0, Math.PI*2); x.stroke();
+  lpBump.needsUpdate = true;
+}
+function applyPaper(){
+  const a = +$('lp').value; $('lpv').textContent = a.toFixed(2); $('lpsv').textContent = (+$('lps').value).toFixed(1);
+  for(const m of [labelFrontMat, labelBackMat]){ if(m.bumpMap !== lpBump){ m.bumpMap = lpBump; m.needsUpdate = true; } m.bumpScale = a*PAPER_K; }
+}
+const PAPER_K = 0.1;
+paintPaper(+$('lps').value); applyPaper();
+$('lp').oninput = applyPaper;
+$('lps').oninput = () => { paintPaper(+$('lps').value); applyPaper(); };
 $('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.uniforms.uAmt.value = +e.target.value; };
 $('grv').oninput = e => { $('grvv').textContent = (+e.target.value).toFixed(2); grooveMat.uniforms.uAmt.value = +e.target.value; };
 $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
