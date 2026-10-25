@@ -124,7 +124,8 @@ function partsOverlap(PA,PB,vx,vy){ // PB shifted by (vx,vy)
 
 // Retícula más densa (traslaciones) de la forma en coordenadas unitarias, sin holgura. Cacheable por forma.
 function* latticeGen(shape){
-  const parts=shape.parts,NA=24,NB=48,ds=0.006,R=1.5;
+  // search reach grows with the shape (wide logos need longer steps); ordinary shapes keep the original values
+  const parts=shape.parts,NA=24,NB=48,R=Math.max(1.5,2.2*(shape.R||0)),ds=0.006*R/1.5,ITS=R>1.5?Math.ceil(2*R/ds):140;
   const ov=(x,y)=>partsOverlap(parts,parts,x,y);
   // distancia mínima por dirección: se sube hasta que ni ese punto ni sus vecinos inmediatos solapan
   const D=[];
@@ -142,7 +143,7 @@ function* latticeGen(shape){
       const tt=k2*Math.PI/NB,dx=Math.cos(tt),dy=Math.sin(tt);
       if(Math.abs(Math.sin(tt-t1))<0.2)continue;
       let d=D[Math.round(tt/(Math.PI/NA))%NA]*0.8,v2=null;
-      for(let it=0;it<140;it++){
+      for(let it=0;it<ITS;it++){
         const c=[dx*d,dy*d];
         if(!ov(c[0],c[1])&&!ov(c[0]-v1[0],c[1]-v1[1])&&!ov(c[0]+v1[0],c[1]+v1[1])&&!ov(2*c[0]-v1[0],2*c[1]-v1[1])&&!ov(2*c[0]+v1[0],2*c[1]+v1[1])){v2=c;break}
         d+=ds;
@@ -156,6 +157,9 @@ function* latticeGen(shape){
         if(good)best={cell,v1,v2};
       }
     }
+  }
+  if(!best){   // nothing found: plain rows and columns of the bounding box, always valid
+    const a=shape.bw*1.02+0.01,b=shape.bh*1.02+0.01;best={cell:a*b,v1:[a,0],v2:[0,b]};
   }
   best.density=shape.area/best.cell;
   return best;
@@ -177,10 +181,14 @@ function evalScale(shape,lat,s,n,W,H,gap,NPHI,NOFF,coll){
   const a0=[lat.v1[0]*s,lat.v1[1]*s],b0=[lat.v2[0]*s,lat.v2[1]*s];
   const rel=[];for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++){if(i||j)rel.push([i,j])}
   const bad=k=>{for(const r of rel){if(partsOverlap(hp,hp,(r[0]*a0[0]+r[1]*b0[0])*k,(r[0]*a0[1]+r[1]*b0[1])*k))return true}return false};
-  if(bad(1.35))return null;
-  let lo=1,hi=1.35;if(!bad(1))hi=1;else for(let it=0;it<9;it++){const m=(lo+hi)/2;if(bad(m))lo=m;else hi=m}
+  let lo=1,hi=1.35;
+  if(bad(1.35)){   // loose pieces can interlock, so a wider spacing is not always safer: take the first spacing that works
+    hi=0;for(let kk=1;kk<=1.35001;kk+=0.01)if(!bad(kk)){hi=kk;break}
+    if(!hi)return null;
+  }else if(!bad(1))hi=1;else for(let it=0;it<9;it++){const m=(lo+hi)/2;if(bad(m))lo=m;else hi=m}
   const k=hi,ax=a0[0]*k,ay=a0[1]*k,bx=b0[0]*k,by=b0[1]*k;
-  const minL=Math.min(Math.hypot(ax,ay),Math.hypot(bx,by)),I=Math.ceil((W+H)/minL)+2;
+  const minL=Math.min(Math.hypot(ax,ay),Math.hypot(bx,by));if(!(minL>1e-6))return null;
+  const I=Math.ceil((W+H)/minL)+2;
   let best=null;
   for(let pi=0;pi<NPHI;pi++){
     const phi=pi*TAU/NPHI,c=Math.cos(phi),sn=Math.sin(phi);
@@ -217,6 +225,7 @@ function* planGen(shape,lat,n,W,H,gap,opts){
   let lo=hiB*0.1,hi=hiB,bestS=0,bestR=null;
   const tryS=s=>{const r=evalScale(shape,lat,s,n,W,H,gap,NPHI,NOFF);if(r&&r.pts.length>=n){if(s>bestS){bestS=s;bestR=r}return true}return false};
   for(let it=0;it<13;it++){const m=(lo+hi)/2;if(tryS(m))lo=m;else hi=m;yield}
+  if(!bestR)return null;   // nothing fits on this lattice: the caller falls back to a simple grid
   // el recuento no es monótono: se prueban tamaños algo mayores
   for(let q=1;q<=12;q++){const s=bestS*(1+q*0.004);if(s<=hiB)tryS(s);yield}
   if(!bestR)return null;

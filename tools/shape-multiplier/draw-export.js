@@ -22,7 +22,7 @@ function drawScene(ctx, G, poses, k) {
   if (G.bg) { ctx.fillStyle = paint(G.bg, W, H, W / 2, H / 2); ctx.fillRect(0, 0, W, H); }
   if (!G.img && !G._path) {
     var p = new Path2D();
-    [G.shape.outer, G.shape.inner].forEach(function (poly) {
+    (G.shape.outers || [G.shape.outer]).concat([G.shape.inner]).forEach(function (poly) {
       if (!poly) return;
       poly.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); });
       p.closePath();
@@ -78,7 +78,7 @@ const r1 = n => Math.round(n * 10) / 10, r3 = n => Math.round(n * 1000) / 1000, 
 function buildShapeSVG(G) {
   var sh = G.shape, bw = sh.bw * sh.u, bh = sh.bh * sh.u, x0 = sh.cx - bw / 2, y0 = sh.cy - bh / 2;
   var f = function (poly) { return poly.map(function (q, i) { return (i ? 'L' : 'M') + r1(q[0] * sh.u + sh.cx) + ' ' + r1(q[1] * sh.u + sh.cy); }).join(' ') + 'Z'; };
-  var d = f(sh.outer) + (sh.inner ? ' ' + f(sh.inner) : '');
+  var d = (sh.outers || [sh.outer]).map(f).join(' ') + (sh.inner ? ' ' + f(sh.inner) : '');
   var defs = '', fill;
   if (G.fill.mode === 'solid') fill = G.fill.color;
   else {
@@ -144,7 +144,7 @@ function buildLottie(bk, G, imgDataURL, opts) {
       layer = { ddd: 0, ind: ++ind, ty: 2, nm: 'Shape ' + id, refId: 'img0', sr: 1, ks: ks, ao: 0, ip: smp[0].f, op: smp[smp.length - 1].f + 1, st: 0, bm: 0 };
     } else {
       ks.s = prop(smp, function (q) { var v = r2(q.s / S0 * 100); return [v, v, 100]; });
-      var items = [pathItem(sh.outer, S0, 'Outline')];
+      var items = (sh.outers || [sh.outer]).map(function (o, i) { return pathItem(o, S0, 'Outline ' + (i + 1)); });
       if (sh.inner) items.push(pathItem(sh.inner, S0, 'Hole'));
       items.push(fillItem(G.fill, sh.bw * S0, sh.bh * S0, 0, 0));
       items.push(tr());
@@ -152,7 +152,7 @@ function buildLottie(bk, G, imgDataURL, opts) {
     }
     layers.push(layer);
   });
-  if (imgDataURL) assets.push({ id: 'img0', w: Math.round(sh.bw * sh.u * 1.0) || 1, h: Math.round(sh.bh * sh.u) || 1, u: '', p: imgDataURL, e: 1 });
+  if (imgDataURL) assets.push({ id: 'img0', w: (G.img && G.img.width) || Math.round(sh.bw * sh.u) || 1, h: (G.img && G.img.height) || Math.round(sh.bh * sh.u) || 1, u: '', p: imgDataURL, e: 1 });   // the picture's own size
   if (G.bg) {
     var bgItems = [{ ty: 'rc', d: 1, s: { a: 0, k: [W, H] }, p: { a: 0, k: [W / 2, H / 2] }, r: { a: 0, k: 0 }, nm: 'Rect' }, fillItem(G.bg, W, H, W / 2, H / 2), tr()];
     layers.push({ ddd: 0, ind: ++ind, ty: 4, nm: 'Background', sr: 1, ks: { o: { a: 0, k: 100 }, r: { a: 0, k: 0 }, p: { a: 0, k: [0, 0, 0] }, a: { a: 0, k: [0, 0, 0] }, s: { a: 0, k: [100, 100, 100] } }, ao: 0, shapes: [{ ty: 'gr', nm: 'Background', it: bgItems }], ip: 0, op: F, st: 0, bm: 0 });
@@ -170,7 +170,7 @@ function buildPlayerHTML(bk, G, imgDataURL) {
   }
   var sh = G.shape;
   var data = { W: G.W, H: G.H, fps: bk.fps / step, bg: G.bg, fill: G.fill,
-    shape: { outer: sh.outer.map(function (q) { return [r3(q[0]), r3(q[1])]; }), inner: sh.inner ? sh.inner.map(function (q) { return [r3(q[0]), r3(q[1])]; }) : null, bw: sh.bw, bh: sh.bh, cx: sh.cx, cy: sh.cy, u: sh.u },
+    shape: { outer: sh.outer.map(function (q) { return [r3(q[0]), r3(q[1])]; }), outers: (sh.outers || [sh.outer]).map(function (o) { return o.map(function (q) { return [r3(q[0]), r3(q[1])]; }); }), inner: sh.inner ? sh.inner.map(function (q) { return [r3(q[0]), r3(q[1])]; }) : null, bw: sh.bw, bh: sh.bh, cx: sh.cx, cy: sh.cy, u: sh.u },
     img: imgDataURL || null, frames: fr };
   var json = JSON.stringify(data).replace(/</g, '\\u003c');
   return '<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>Shape multiplier animation</title>\n' +

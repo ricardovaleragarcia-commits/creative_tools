@@ -34,7 +34,7 @@ function saveSettings(){
 
 var sim=StarCore.createSim(Matter,shape,P);
 
-function mkG(){var sh=shape;return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,shape:{outer:sh.outer,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:custom?custom.bitmap:null}}
+function mkG(){var sh=shape;return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,shape:{outer:sh.outer,outers:sh.outers,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:custom?custom.bitmap:null}}
 function G(){if(!liveG)liveG=mkG();liveG.bg=bgStyle;liveG.fill=fillStyle;return liveG}
 function exportG(transparent){var g=Object.assign({},mkG());g.bg=transparent?null:bgStyle;return g}
 
@@ -137,8 +137,23 @@ $('reset').onclick=function(){sim.restart()};
 $('pick').onclick=function(){$('file').click()};
 $('file').addEventListener('change',function(e){
   var f=e.target.files[0];e.target.value='';if(!f)return;
+  var isSVG=/svg/i.test(f.type)||/\.svg$/i.test(f.name);
   var fr=new FileReader();
   fr.onload=function(){
+    var src=fr.result;
+    if(isSVG){   // SVGs often have no width/height (only a viewBox): give them a real size so they draw sharp and undistorted
+      try{
+        var doc=new DOMParser().parseFromString(src,'image/svg+xml'),sv=doc.documentElement;
+        if(!sv||sv.nodeName.toLowerCase()!=='svg'||doc.getElementsByTagName('parsererror').length){say('Could not read that SVG.');return}
+        var num=function(v){return v&&!/%/.test(v)?parseFloat(v):NaN},vb=(sv.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
+        var sw=num(sv.getAttribute('width')),sh2=num(sv.getAttribute('height'));
+        if(vb.length===4&&vb[2]>0&&vb[3]>0){if(!(sw>0&&sh2>0)){sw=vb[2];sh2=vb[3]}}
+        else{if(!(sw>0&&sh2>0)){sw=sh2=512}sv.setAttribute('viewBox','0 0 '+sw+' '+sh2)}
+        var kk=1024/Math.max(sw,sh2);sv.setAttribute('width',Math.round(sw*kk));sv.setAttribute('height',Math.round(sh2*kk));
+        if(!sv.getAttribute('xmlns'))sv.setAttribute('xmlns','http://www.w3.org/2000/svg');
+        src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(sv));
+      }catch(err){say('Could not read that SVG.');return}
+    }
     var im=new Image();
     im.onload=function(){
       try{
@@ -150,18 +165,19 @@ $('file').addEventListener('change',function(e){
         var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
         for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
         if(!n){say('That image has no visible pixels.');return}
-        var outline=StarCore.outlineFromGrid(g,gw,gh,w/gw,70);
-        if(!outline||outline.length<3){say('Could not trace that silhouette.');return}
-        var sh=StarCore.buildShape(outline,window.decomp);
+        var outlines=StarCore.outlinesFromGrid(g,gw,gh,w/gw,110,window.decomp);
+        if(!outlines||!outlines.length){say('Could not trace that silhouette.');return}
+        var sh=StarCore.buildShape(outlines,window.decomp);
         custom={bitmap:bm};shape=sh;liveG=null;sim.setShape(sh);
         var opaque=n/(gw*gh)>0.985;
-        $('shapenote').textContent='Silhouette traced: '+sh.outer.length+' vertices, '+sh.parts.length+' convex piece(s).'+(opaque?' The image is opaque (no transparency), so it collides as a rectangle.':'')+(sh.hull?' Silhouette too complex: using its convex hull.':'')+' Uploaded images keep their own colors.';
+        var np=sh.outers.length;
+        $('shapenote').textContent='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.')+(opaque?' The image is opaque (no transparency), so it collides as a rectangle.':'')+(sh.hull?' Part of the outline was too intricate and collides by its outer contour.':'')+' Uploaded images keep their own colors.';
       }catch(err){say('Could not process that image.')}
     };
     im.onerror=function(){say('Could not read that image.')};
-    im.src=fr.result;
+    im.src=src;
   };
-  fr.readAsDataURL(f);
+  if(isSVG)fr.readAsText(f);else fr.readAsDataURL(f);
 });
 
 /* ---------- export ---------- */

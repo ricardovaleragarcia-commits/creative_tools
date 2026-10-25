@@ -5,28 +5,35 @@
 /* ---------- Forma ---------- */
 function polyArea(p){let a=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length];a+=p[i][0]*q[1]-q[0]*p[i][1]}return Math.abs(a)/2}
 
-// outer: [[x,y]...] en px; parts opcional (piezas convexas en px). decomp: poly-decomp o null.
+// outer: one outline [[x,y]...] in px, or several separate outlines [[[x,y]...], ...] (a logo made of loose pieces).
+// parts optional (convex pieces in px). decomp: poly-decomp or null.
 function buildShape(outer, decomp, partsPx, innerPx){
+  const polys=Array.isArray(outer[0][0])?outer:[outer];
   let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
-  outer.forEach(p=>{minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);miny=Math.min(miny,p[1]);maxy=Math.max(maxy,p[1])});
+  polys.forEach(P=>P.forEach(p=>{minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);miny=Math.min(miny,p[1]);maxy=Math.max(maxy,p[1])}));
   const cx=(minx+maxx)/2,cy=(miny+maxy)/2,u=(maxy-miny)||1;
   const nrm=p=>[(p[0]-cx)/u,(p[1]-cy)/u];
-  const o=outer.map(nrm);
-  let parts=null;
+  const outs=polys.map(P=>P.map(nrm)).sort((a,b)=>polyArea(b)-polyArea(a));
+  let parts=null,hull=false;
   if(partsPx)parts=partsPx.map(q=>q.map(nrm));
   else{
-    try{
-      if(decomp){
-        const poly=o.map(p=>p.slice());decomp.makeCCW(poly);
-        if(decomp.isSimple&&!decomp.isSimple(poly))throw new Error('no simple');
-        const res=decomp.quickDecomp(poly);
-        parts=res.filter(q=>q.length>=3&&polyArea(q)>1e-7);
-      }
-    }catch(e){parts=null}
-    if(!parts||!parts.length)parts=[convexHull(o)];
+    parts=[];
+    outs.forEach(o=>{
+      let got=null;
+      try{
+        if(decomp){
+          const poly=o.map(p=>p.slice());decomp.makeCCW(poly);
+          if(decomp.isSimple&&!decomp.isSimple(poly))throw new Error('no simple');
+          got=decomp.quickDecomp(poly).filter(q=>q.length>=3&&polyArea(q)>1e-7);
+        }
+      }catch(e){got=null}
+      if(!got||!got.length){got=[convexHull(o)];if(o.length>3)hull=true}
+      parts.push(...got);
+    });
   }
-  let R=0;o.forEach(p=>{R=Math.max(R,Math.hypot(p[0],p[1]))});
-  return {cx,cy,u,outer:o,inner:innerPx?innerPx.map(nrm):null,parts,area:polyArea(o),R,bw:(maxx-minx)/u,bh:(maxy-miny)/u,hull:!partsPx&&parts.length===1};
+  let R=0;outs.forEach(o=>o.forEach(p=>{R=Math.max(R,Math.hypot(p[0],p[1]))}));
+  const area=outs.reduce((a,o)=>a+polyArea(o),0);
+  return {cx,cy,u,outer:outs[0],outers:outs,inner:innerPx?innerPx.map(nrm):null,parts,area,R,bw:(maxx-minx)/u,bh:(maxy-miny)/u,hull:!partsPx&&hull};
 }
 function convexHull(pts){
   const p=pts.map(a=>a.slice()).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
@@ -109,14 +116,39 @@ function simplifyClosed(pts,eps){
   const A=pts.slice(i0,j0+1),B=pts.slice(j0).concat(pts.slice(0,i0+1));
   return rdp(A,eps).slice(0,-1).concat(rdp(B,eps).slice(0,-1));
 }
-// grid: máscara w×h. scale: píxeles de imagen por píxel de rejilla. Devuelve contorno simplificado en px de imagen.
-function outlineFromGrid(g,w,h,scale,maxVerts){
-  const tr=traceOuter(g,w,h);if(!tr||tr.length<3)return null;
-  let eps=0.9,poly=simplifyClosed(tr,eps);
-  while(poly.length>(maxVerts||70)&&eps<12){eps*=1.4;poly=simplifyClosed(tr,eps)}
-  // el borde por centros de píxel queda ~0,5 px por dentro: se expande 0,5 px desde el centroide
-  let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1]});cx/=poly.length;cy/=poly.length;
-  return poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*0.5+0.5)*scale,(p[1]+dy/l*0.5+0.5)*scale]});
+// grid: mask w×h. scale: image px per grid px. Returns the simplified outline in image px (first piece only; kept for compatibility).
+function outlineFromGrid(g,w,h,scale,maxVerts){const r=outlinesFromGrid(g,w,h,scale,maxVerts);return r&&r.length?r[0]:null}
+// Every separate piece of the mask (8-connected), biggest first; specks are dropped, at most 16 pieces.
+// The vertex budget is shared by size, and each outline is simplified until it stays a simple polygon.
+function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
+  maxVerts=maxVerts||110;
+  const lab=new Int32Array(w*h),comps=[];let total=0;
+  const st=new Int32Array(w*h);
+  for(let i=0;i<w*h;i++){
+    if(!g[i]||lab[i])continue;
+    const id=comps.length+1;let sp=0,cnt=0;st[sp++]=i;lab[i]=id;
+    while(sp){const c=st[--sp],x=c%w,y=(c-x)/w;cnt++;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=w||ny>=h)continue;const k=ny*w+nx;if(g[k]&&!lab[k]){lab[k]=id;st[sp++]=k}}}
+    comps.push({id,cnt});total+=cnt;
+  }
+  const keep=comps.filter(c=>c.cnt>=Math.max(6,total*0.004)).sort((a,b)=>b.cnt-a.cnt).slice(0,16);
+  const out=[];
+  keep.forEach(c=>{
+    const m=new Uint8Array(w*h);for(let i=0;i<w*h;i++)if(lab[i]===c.id)m[i]=1;
+    const tr=traceOuter(m,w,h);if(!tr||tr.length<3)return;
+    const budget=Math.max(8,Math.round(maxVerts*c.cnt/total));
+    let eps=0.9,poly=simplifyClosed(tr,eps);
+    while(poly.length>budget&&eps<12){eps*=1.4;poly=simplifyClosed(tr,eps)}
+    if(decomp&&decomp.isSimple){   // a crossing outline can't be split into convex pieces: try other simplifications
+      const ok=P=>{const q=P.map(p=>p.slice());decomp.makeCCW(q);return decomp.isSimple(q)};
+      if(!ok(poly)){for(const f of [0.7,1.4,0.5,2,0.35,2.8]){const q=simplifyClosed(tr,eps*f);if(q.length>=3&&ok(q)){poly=q;break}}}
+    }
+    if(poly.length<3)return;
+    // the outline through pixel centers sits ~0.5 px inside: push it out 0.5 px from the centroid
+    let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1]});cx/=poly.length;cy/=poly.length;
+    out.push(poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*0.5+0.5)*scale,(p[1]+dy/l*0.5+0.5)*scale]}));
+  });
+  return out;
 }
 
 /* ---------- Simulación ---------- */
@@ -273,14 +305,15 @@ function createSim(Matter, shape0, P){
     while(!ready&&now()-t0<ms){
       if(!lat||!lat.v1){
         if(!job)job={gen:StarLattice.latticeGen(shape)};
-        const r=job.gen.next();if(r.done){lat=r.value;job=null}
+        let r;try{r=job.gen.next()}catch(e){r={done:true,value:null}}
+        if(r.done){lat=r.value&&r.value.v1?r.value:{v1:[shape.bw*1.02+0.01,0],v2:[0,shape.bh*1.02+0.01],cell:1};job=null}
         continue;
       }
       const need=neededN();
       if(!need.length){ready=true;break}
       const n=need[0];
       if(!job)job={gen:StarLattice.planGen(shape,lat,n,W,H,P.gap,{}),n};
-      const r=job.gen.next();
+      let r;try{r=job.gen.next()}catch(e){r={done:true,value:null}}   // never stay stuck on "Calculating"
       if(r.done){plans[n]=r.value||gridPlan(n);job=null}
     }
     if(!ready&&lat&&!job&&!neededN().length)ready=true;
@@ -460,5 +493,5 @@ function createSim(Matter, shape0, P){
     get time(){return t},get dbg(){return {ph:phase,si:stepIdx}},get total(){return seq().length*P.stepDur+P.hold},get W(){return W},get H(){return H}};
 }
 
-root.StarCore={createSim,buildShape,starShape,outlineFromGrid,STAR_OUTER,STAR_INNER,polyArea};
+root.StarCore={createSim,buildShape,starShape,outlineFromGrid,outlinesFromGrid,STAR_OUTER,STAR_INNER,polyArea};
 })(typeof window!=='undefined'?window:globalThis);
