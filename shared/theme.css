@@ -43,14 +43,14 @@ h1, h2, p { margin: 0; font: inherit; }
 .credits {
   position: fixed; left: 10px; bottom: 14px; z-index: 10;
   width: max-content; max-width: calc(100% - 20px);
-  display: flex; flex-direction: column; gap: 6px;
-  font-size: var(--fs-foot); font-weight: 700; line-height: 1; pointer-events: none;
+  display: flex; flex-direction: column; gap: 0;
+  font-size: var(--fs-foot); font-weight: 700; line-height: 28px; pointer-events: none;   /* same size and line height as the landing title */
   animation: rise-in .8s var(--vt-ease) .7s both;
 }
 .credits > * { pointer-events: auto; }
 .credits a:hover { opacity: .55; }
 .credits__links { display: flex; flex-wrap: wrap; gap: 0 .4em; }
-.credits .credits__upd { font-size: var(--fs-s); line-height: 1.2; margin-top: 4px; }   /* small text, same as the descriptions */
+.credits .credits__upd { font-size: var(--fs-s); line-height: 1.2; margin-top: 14px; }   /* small text, same as the descriptions */
 
 /* ---- Motion (kept light: opacity/transform only, no filters, no cross-document view transitions) ----
    leaving a page: links add .leaving, the 2/3 area and the 1/3 content fade out (.28s), then the browser navigates.
