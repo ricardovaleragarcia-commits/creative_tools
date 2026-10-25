@@ -1,6 +1,6 @@
 # Creative tools
 
-Open-source library of experimental tools for generating motion and interactions.
+Library of experimental tools for generating motion and interactions.
 Plain HTML + CSS + JS, no build step: works on GitHub Pages and with any static server.
 
 ```
