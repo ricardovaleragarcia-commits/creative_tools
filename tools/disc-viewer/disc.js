@@ -495,6 +495,7 @@ function refresh(){
   $('sReal').classList.toggle('on', real); $('sPlain').classList.toggle('on', !real);
   $('optCD').hidden = mode !== 'cd'; $('optVN').hidden = mode !== 'vinyl';   // by disc type
   // the options of the style that is not active stay visible but switched off
+  $('offNote').hidden = real;
   setOff('optCD', !real); setOff('optVN', !real); setOff('optLights', !real); setOff('optPlain', real);
 }
 const setMode = m => { mode = m; refresh(); };

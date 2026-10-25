@@ -41,7 +41,7 @@ html[data-card="4"] { --card: var(--c4); }
   width: min(calc(100cqw - 2 * var(--pad-x)), calc((100cqh - 2 * var(--pad-y)) * var(--ar, .8)));
 }
 .artwork canvas, .artwork svg, .artwork video { width: 100%; height: 100%; display: block; }
-@media (max-width: 900px) {
+@media (max-width: 640px) {
   .toolpage { height: auto; overflow: visible; display: flex; flex-direction: column; padding: 0; }
   .toolhead { display: block; }
   .toolhead__title { display: none; }
@@ -58,3 +58,9 @@ html[data-card="4"] { --card: var(--c4); }
 .toolhead .instructions { animation: rise-in .8s var(--vt-ease) .45s both; }
 .menu .block { animation: fade-in .5s ease-out both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }
 .toolpage.ready .menu .block { animation: none; }   /* entrance only on arrival: blocks shown later by a toggle appear at once */
+
+/* tablets: keep the two-column workspace, give the controls a bit more width */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .toolpage { grid-template-columns: minmax(290px, 2fr) 3fr; }
+  .artwork { --pad-x: 7cqw; --pad-y: 6cqh; }
+}
