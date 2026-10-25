@@ -56,8 +56,8 @@ html[data-card="4"] { --card: var(--c4); }
 /* motion: texts and controls rise in */
 .toolhead .back { animation: rise-in .8s var(--vt-ease) .35s both; }
 .toolhead .instructions { animation: rise-in .8s var(--vt-ease) .45s both; }
-.menu .block { animation: fade-in .5s ease-out both; animation-delay: calc(.4s + var(--i, 0) * 45ms); }
-.menu .sec__h { animation: fade-in .5s ease-out both; animation-delay: calc(.3s + var(--i, 0) * 45ms); }
+.menu .block, .menu .sec__h { animation: menu-in .55s var(--vt-ease) both; animation-delay: calc(.35s + var(--i, 0) * 38ms); }   /* titles and blocks rise in, top to bottom */
+@keyframes menu-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .toolpage.ready .menu .block, .toolpage.ready .menu .sec__h { animation: none; }   /* entrance only on arrival: blocks shown later by a toggle appear at once */
 
 /* tablets: keep the two-column workspace, give the controls a bit more width */

@@ -57,12 +57,65 @@
     });
   })();
 
-  menu.querySelectorAll(".block").forEach(function (b, i) { b.style.setProperty("--i", i); });
-  // Section headers fade in just before their first block.
-  menu.querySelectorAll(".sec").forEach(function (s) {
-    var b = s.querySelector(".block"), h = s.querySelector(".sec__h");
-    h.style.setProperty("--i", b ? Math.max(0, +b.style.getPropertyValue("--i") - 1) : 0);
+  // Entrance order: section titles and the blocks you can see, top to bottom (the stagger is capped so long menus don't keep you waiting).
+  (function () {
+    var n = 0;
+    Array.prototype.forEach.call(menu.querySelectorAll(".sec__h, .block"), function (el) {
+      var hid = el.closest("[hidden]");
+      el.style.setProperty("--i", hid ? 0 : Math.min(n++, 14));
+    });
+  })();
+
+  // Color fields: a flat rectangle of the color with its hex written on top, in black or white for contrast.
+  var swatches = [];
+  Array.prototype.forEach.call(menu.querySelectorAll('input[type="color"]'), function (inp) {
+    if (!inp.parentElement || !inp.parentElement.classList.contains("block")) return;   // small inline pickers stay plain
+    var w = document.createElement("span"); w.className = "swatch";
+    var hx = document.createElement("span"); hx.className = "swatch__hex"; hx.setAttribute("aria-hidden", "true");
+    inp.parentNode.insertBefore(w, inp); w.appendChild(inp); w.appendChild(hx);
+    swatches.push([inp, hx, ""]);
   });
+  function paintSwatches() {
+    swatches.forEach(function (s) {
+      var v = s[0].value; if (v === s[2]) return; s[2] = v;
+      var r = parseInt(v.substr(1, 2), 16), g = parseInt(v.substr(3, 2), 16), b = parseInt(v.substr(5, 2), 16);
+      s[1].textContent = v; s[1].style.color = (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#000" : "#fff";
+    });
+  }
+
+  // Sliders: the travelled part of the bar is drawn from --p.
+  var ranges = Array.prototype.slice.call(menu.querySelectorAll('input[type="range"]'));
+  function paintRanges() {
+    ranges.forEach(function (r) {
+      var lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, p = hi > lo ? (r.value - lo) / (hi - lo) * 100 : 0;
+      r.style.setProperty("--p", p.toFixed(2) + "%");
+    });
+  }
+  menu.addEventListener("input", function () { paintRanges(); paintSwatches(); });
+  menu.addEventListener("change", function () { paintRanges(); paintSwatches(); });
+  paintRanges(); paintSwatches();
+  setInterval(function () { paintRanges(); paintSwatches(); }, 400);   // values set from code (presets, random, saved settings)
+
+  // Two-column rows: a half-width block left alone in its row takes the whole row, so no holes appear in the grid.
+  function balance() {
+    Array.prototype.forEach.call(menu.querySelectorAll(".sec__body, .menu:not(.sectioned)"), function (body) {
+      var col = 0, prev = null;
+      var walk = function (parent) {
+        Array.prototype.forEach.call(parent.children, function (el) {
+          if (el.hidden) return;
+          if (el.classList.contains("group")) { walk(el); return; }
+          if (!el.classList.contains("block")) return;
+          el.classList.remove("auto-full");
+          if (el.classList.contains("full")) { if (col === 1 && prev) prev.classList.add("auto-full"); col = 0; prev = null; return; }
+          if (col === 0) { col = 1; prev = el; } else { col = 0; prev = null; }
+        });
+      };
+      walk(body);
+      if (col === 1 && prev) prev.classList.add("auto-full");
+    });
+  }
+  balance();
+  new MutationObserver(balance).observe(menu, { attributes: true, attributeFilter: ["hidden"], subtree: true });
 
   setTimeout(function () { page.classList.add("ready"); }, 1800);
 

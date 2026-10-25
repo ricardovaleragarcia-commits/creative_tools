@@ -472,11 +472,12 @@ const cv = $('curve'), cc = cv.getContext('2d'), PAD = 14, S = cv.width - 2*PAD;
 const toC = (x,y) => [PAD + x*S, PAD + (1-y)*S];
 function drawCurve(){
   cc.clearRect(0,0,cv.width,cv.height);
-  cc.strokeStyle = '#ddd'; cc.lineWidth = 1; cc.strokeRect(PAD, PAD, S, S);
+  const ink = getComputedStyle(cv).color || '#fff';                        // drawn in the palette's ink, flat and square like the rest of the menu
+  cc.globalAlpha = .14; cc.fillStyle = ink; cc.fillRect(PAD, PAD, S, S); cc.globalAlpha = 1;
   const P0 = toC(0,0), P1 = toC(CURVE.x1,CURVE.y1), P2 = toC(CURVE.x2,CURVE.y2), P3 = toC(1,1);
-  cc.strokeStyle = '#aaa'; cc.beginPath(); cc.moveTo(...P0); cc.lineTo(...P1); cc.moveTo(...P3); cc.lineTo(...P2); cc.stroke();
-  cc.strokeStyle = '#111'; cc.lineWidth = 2.5; cc.beginPath(); cc.moveTo(...P0); cc.bezierCurveTo(...P1, ...P2, ...P3); cc.stroke();
-  cc.fillStyle = '#111'; for(const P of [P1,P2]){ cc.beginPath(); cc.arc(P[0], P[1], 6, 0, Math.PI*2); cc.fill(); }
+  cc.strokeStyle = ink; cc.globalAlpha = .45; cc.lineWidth = 1.5; cc.beginPath(); cc.moveTo(...P0); cc.lineTo(...P1); cc.moveTo(...P3); cc.lineTo(...P2); cc.stroke(); cc.globalAlpha = 1;
+  cc.lineWidth = 3; cc.beginPath(); cc.moveTo(...P0); cc.bezierCurveTo(...P1, ...P2, ...P3); cc.stroke();
+  cc.fillStyle = ink; for(const P of [P1,P2]) cc.fillRect(P[0]-7, P[1]-7, 14, 14);
 }
 let drag = 0;
 const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX-r.left)*cv.width/r.width, (e.clientY-r.top)*cv.height/r.height]; };
