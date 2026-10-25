@@ -58,7 +58,7 @@ h1, h2, p { margin: 0; font: inherit; }
 :root { --vt-ease: cubic-bezier(.65, 0, .35, 1); }
 .tools, .stage, .toolhead__title { animation: fade-in .7s ease-out .1s both; }
 .leaving .tools, .leaving .stage, .leaving .toolhead__title, .leaving .side__head,
-.leaving .toolhead__side > *, .leaving .menu .block, .leaving .menu > :not(.group), .leaving .credits { opacity: 0 !important; animation: none !important; transition: opacity .28s ease !important; }
+.leaving .toolhead__side > *, .leaving .menu .block, .leaving .menu .sec__h, .leaving .menu > :not(.group), .leaving .credits { opacity: 0 !important; animation: none !important; transition: opacity .28s ease !important; }
 @keyframes fade-in { from { opacity: 0; } }
 /* palette dots drop like they lost their footing when you open a tool (gravity: slow start, accelerating) */
 .leaving .dot { animation: dot-fall .62s cubic-bezier(.55, 0, .95, .6) calc(var(--i, 0) * 40ms) both !important; }

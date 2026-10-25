@@ -19,6 +19,20 @@
     var key = "ct-sec-" + location.pathname, saved = {};
     try { saved = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) {}
     var cur = null, n = 0;
+    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Smooth open/close: animate height + opacity, then hide/restore.
+    function slide(body, open) {
+      if (body._a) body._a.cancel();
+      if (reduce || !body.animate) { body.hidden = !open; return; }
+      var ov = body.style.overflow; body.style.overflow = "hidden";
+      var done = function () { body._a = null; body.style.overflow = ov; if (!open) body.hidden = true; };
+      if (open) body.hidden = false;
+      var full = body.scrollHeight, cs = getComputedStyle(body);
+      var from = open ? { height: "0px", opacity: 0 } : { height: Math.min(body.offsetHeight, full) + "px", opacity: 1 };
+      var to = open ? { height: Math.min(full, parseFloat(cs.maxHeight) || full) + "px", opacity: 1 } : { height: "0px", opacity: 0 };
+      var a = body._a = body.animate([from, to], { duration: 260, easing: "cubic-bezier(.2,.7,.2,1)" });
+      a.onfinish = done; a.oncancel = function () { body.style.overflow = ov; };
+    }
     kids.forEach(function (k) {
       if (k.hasAttribute("data-sec")) {
         var title = k.getAttribute("data-sec"), open = title in saved ? !!saved[title] : k.hasAttribute("data-open");
@@ -32,7 +46,7 @@
         set(open);
         (function (title, h, body) {
           h.addEventListener("click", function () {
-            var o = body.hidden; h.setAttribute("aria-expanded", o ? "true" : "false"); body.hidden = !o;
+            var o = body.hidden; h.setAttribute("aria-expanded", o ? "true" : "false"); slide(body, o);
             saved[title] = o; try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) {}
           });
         })(title, h, body);
@@ -44,6 +58,11 @@
   })();
 
   menu.querySelectorAll(".block").forEach(function (b, i) { b.style.setProperty("--i", i); });
+  // Section headers fade in just before their first block.
+  menu.querySelectorAll(".sec").forEach(function (s) {
+    var b = s.querySelector(".block"), h = s.querySelector(".sec__h");
+    h.style.setProperty("--i", b ? Math.max(0, +b.style.getPropertyValue("--i") - 1) : 0);
+  });
 
   setTimeout(function () { page.classList.add("ready"); }, 1800);
 
