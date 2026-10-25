@@ -84,11 +84,11 @@
     }
     var pop = bezier(.2, .8, .2, 1), fly = bezier(.7, 0, .2, 1), slide = bezier(.76, 0, .24, 1);
     var sr = side.getBoundingClientRect();
-    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .16, vh * .16, 54);     // one radius: a perfect circle, small like a loading spinner
+    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .19, vh * .19, 66);     // one radius: a perfect circle, small like a loading spinner
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
     var items = Array.prototype.map.call(dots, function (d, i) {
       var r = d.getBoundingClientRect();
-      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2 };
+      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2, direct: i >= N - 3 };
     });
     var LAND = LEAVE0 + (N - 1) * LSTAG + TRAVEL, SH0 = LAND - 140, END = SH0 + SHRINK;
     function finish() {
@@ -104,14 +104,14 @@
       items.forEach(function (o) {
         var dt = t - o.appear, k, x, y;
         if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px)"; return; }
-        k = pop(Math.min(1, dt / OUT));                                      // 0 = at the centre point, 1 = on the ring
+        k = o.direct ? 1 : pop(Math.min(1, dt / OUT));                       // 0 = at the centre point, 1 = on the ring (the last few appear straight on it)
         var th = o.slot + W_ROT * t;                                         // the whole ring turns as one
         x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th);
         if (t > o.leave) {                                                   // leaves the ring from where it is, straight home, eased
           var th0 = o.slot + W_ROT * o.leave, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly((t - o.leave) / TRAVEL);
           x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e;
         }
-        o.d.style.opacity = Math.min(1, dt / 100);                           // dots keep their size the whole time
+        o.d.style.opacity = Math.min(1, dt / (o.direct ? 220 : 100));                           // dots keep their size the whole time
         o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px)";
       });
       var sp = slide((t - SH0) / SHRINK);                                    // the panel color slides left as the last dots land
