@@ -488,16 +488,17 @@ const plainBodyMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), s
 const plainEdgeMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
 const plainLabelFrontMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
 const plainLabelBackMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
-function buildPlain(T, R, holeF){
+function buildPlain(T, R, holeF, labelF = 0.35){
   const g = new THREE.Group(), h = T/R/2;
   g.add(new THREE.Mesh(lathe([[1, -h], [1, h]]), plainEdgeMat));
   g.add(face(annulus(holeF, 1), plainBodyMat, h + 0.002, false));
   g.add(face(annulus(holeF, 1), plainBodyMat, -h - 0.002, true));
-  g.add(face(annulus(holeF, 0.35), plainLabelFrontMat, h + 0.004, false));
-  g.add(face(annulus(holeF, 0.35), plainLabelBackMat, -h - 0.004, true));
+  g.add(face(annulus(holeF, labelF), plainLabelFrontMat, h + 0.004, false));
+  g.add(face(annulus(holeF, labelF), plainLabelBackMat, -h - 0.004, true));
   return g;
 }
-const plainVinyl = buildPlain(LP.T, LP.R, 0.061), plainCD = buildPlain(CD.T, CD.R, 0.061);
+// plain vinyl: same hole and label size as the realistic one
+const plainVinyl = buildPlain(LP.T, LP.R, LP.HOLE/LP.R, LP.LABEL/LP.R), plainCD = buildPlain(CD.T, CD.R, 0.061);
 const cdGroup = buildCD(), vinylGroup = buildVinyl();
 const disc = new THREE.Group();
 disc.add(cdGroup, vinylGroup, plainVinyl, plainCD);
