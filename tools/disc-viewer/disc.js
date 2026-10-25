@@ -471,8 +471,8 @@ function buildVinyl(){
   g.add(face(annulus(HOLE, R, 256, false, true), vinylFaceMat, -h - 0.02, true));
   g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, h + 0.04, false));
   g.add(face(annulus(HOLE, R, 256, false, true), grooveMat, -h - 0.04, true));
-  g.add(face(annulus(HOLE, R, 256, false, true), glitterMat, h + 0.05, false));
-  g.add(face(annulus(HOLE, R, 256, false, true), glitterMat, -h - 0.05, true));
+  g.add(face(annulus(LABEL, R, 256, false, true), glitterMat, h + 0.05, false));   // glitter only on the vinyl, not on the label
+  g.add(face(annulus(LABEL, R, 256, false, true), glitterMat, -h - 0.05, true));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, h + 0.06, false));
   g.add(face(annulus(HOLE, R, 256, false, true), dustMat, -h - 0.06, true));
   g.add(face(annulus(HOLE, LABEL), labelFrontMat, h + 0.2, false));
