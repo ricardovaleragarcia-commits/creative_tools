@@ -157,13 +157,14 @@ function saveFile(name,data,mime){
   var blob=data instanceof Blob?data:new Blob([data],{type:mime||'application/octet-stream'});
   return VideoExport.save(name,blob).then(function(r){say(r==='saved'?'Saved '+name:r==='declined'?'Save cancelled.':'Could not save the file.')});
 }
-var notes={video:'Records one full cycle at 1080 px wide, built to loop: the end cuts straight back to the start. MP4 when your browser supports it, otherwise WebM.',
+var notes={video:'Records one full cycle at the chosen quality, built to loop: the end cuts straight back to the start. MP4 when your browser supports it, otherwise WebM.',
   html:'A single HTML file that replays one cycle in a loop. No libraries, works offline, easy to embed.',
   lottie:'One cycle as Lottie JSON (30 fps): every shape is its own layer with position, rotation and scale keyframes. Opens in After Effects (Bodymovin), LottieFiles and others.',
-  png:'The current frame at 1080 px wide.',svg:'The shape as a vector with the current fill.'};
+  png:'The current frame at the chosen quality.',svg:'The shape as a vector with the current fill.'};
 function fmtNote(){$('fmtnote').textContent=notes[$('fmt').value]||''}
 $('fmt').addEventListener('change',fmtNote);fmtNote();
 
+function resK(){return(+$('res').value||1080)/Math.min(P.W,P.H)}
 function setBusy(b){busy=b;$('export').disabled=b;$('play').disabled=b;$('reset').disabled=b}
 function bake(){
   return new Promise(function(res,rej){
@@ -182,7 +183,7 @@ function bake(){
 }
 function bitmapURL(){return custom?custom.bitmap.toDataURL('image/png'):null}
 function playVideo(bk){
-  var k=1080/P.W,cw=Math.round(P.W*k/2)*2,ch=Math.round(P.H*k/2)*2,oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
+  var k=resK(),cw=Math.round(P.W*k/2)*2,ch=Math.round(P.H*k/2)*2,oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
   var octx=oc.getContext('2d'),g=exportG(false),n=bk.frames.length;
   return VideoExport.run({canvas:oc,fps:60,period:n/60,width:cw,height:ch,status:say,
     renderAt:function(t){var i=Math.max(0,Math.min(n-1,Math.round(t*60)));StarExport.drawScene(octx,g,bk.frames[i],k)}});
@@ -194,7 +195,7 @@ $('export').onclick=function(){
   var job;
   try{
     if(f==='png'){
-      var k=1080/P.W,oc=document.createElement('canvas');oc.width=Math.round(P.W*k);oc.height=Math.round(P.H*k);
+      var k=resK(),oc=document.createElement('canvas');oc.width=Math.round(P.W*k);oc.height=Math.round(P.H*k);
       StarExport.drawScene(oc.getContext('2d'),exportG(tr),sim.poses(),k);
       job=new Promise(function(res,rej){oc.toBlob(function(b){b?res(b):rej(new Error('Could not create the PNG'))},'image/png')}).then(function(b){return saveFile('shape-multiplier.png',b)});
     }else if(f==='svg'){

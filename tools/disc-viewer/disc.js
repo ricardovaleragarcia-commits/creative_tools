@@ -810,7 +810,7 @@ CTPersist.init('disc', {
 // ---------- Export loop (shared exporter) ----------
 $('exp').onclick = async () => {
   if(exporting) return;
-  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W, H] = RATIOS[RATIO_KEY], status = t => $('status').textContent = t;
+  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W0, H0] = RATIOS[RATIO_KEY], Q = (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, status = t => $('status').textContent = t;
   exporting = true; $('exp').disabled = true;
   try{
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);

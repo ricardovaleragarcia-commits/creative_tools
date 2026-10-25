@@ -24,7 +24,9 @@
     if (st && st.v) {
       fields().forEach(function (e) {
         if (!(e.id in st.v)) return;
-        if (e.type === "checkbox") e.checked = !!st.v[e.id]; else e.value = st.v[e.id];
+        if (e.type === "checkbox") e.checked = !!st.v[e.id];
+        else if (e.tagName === "SELECT") { var ok = Array.prototype.some.call(e.options, function (o) { return o.value === String(st.v[e.id]); }); if (!ok) return; e.value = st.v[e.id]; }   // option removed since: keep the default
+        else e.value = st.v[e.id];
         e.dispatchEvent(new Event("input", { bubbles: true })); e.dispatchEvent(new Event("change", { bubbles: true }));
       });
       if (opts.set && st.x) { try { opts.set(st.x); } catch (e) {} }

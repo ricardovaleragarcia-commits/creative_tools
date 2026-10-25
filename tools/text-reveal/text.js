@@ -513,7 +513,7 @@ for(const r of Object.keys(RATIOS)){
 }
 $('dl').onclick = async () => {
   if(recording || !letters.length) return;
-  const [W,H] = RATIOS[ratio], ec = document.createElement('canvas');
+  const [W0,H0] = RATIOS[ratio], Q = (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, ec = document.createElement('canvas');
   ec.width = W; ec.height = H; const ectx = ec.getContext('2d');
   const total = timing().total, FPS = +$('fps').value || 60, status = t => $('status').textContent = t;
   recording = true; $('dl').disabled = true;
