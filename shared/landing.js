@@ -74,7 +74,7 @@
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
-    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1150, LSTAG = 0, TRAVEL = 850, SHRINK = 760;   // ms
+    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1150, LSTAG = 0, TRAVEL = 850, SHRINK = 900;   // ms
     var W_ROT = Math.PI * 2 / 1500;                                                                    // ring spin (rad/ms)
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
@@ -90,7 +90,7 @@
       var r = d.getBoundingClientRect();
       return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2, direct: true };
     });
-    var LAND = LEAVE0 + (N - 1) * LSTAG + TRAVEL, SH0 = LAND - 140, END = SH0 + SHRINK;
+    var LAND = LEAVE0 + (N - 1) * LSTAG + TRAVEL, SH0 = LEAVE0, END = Math.max(LAND, SH0 + SHRINK);   // the panel color starts sliding the moment the dots leave the ring
     function finish() {
       if (finished) return; finished = true; cancelAnimationFrame(raf);
       items.forEach(function (o) { o.d.style.transform = ""; o.d.style.opacity = ""; });
