@@ -60,24 +60,27 @@
       <div class="note">Size is automatic: for each number of copies the tool searches for the largest size (and best angle and arrangement) that fits inside the frame.</div>
     </div>
 
-    <div class="block full" id="bgEd"></div>
-    <div class="block full" id="fillEd"></div>
+    <div class="block" id="bgEd"></div>
+    <div class="block" id="fillEd"></div>
     <div class="block full">
       <label class="chk"><input type="checkbox" id="alpha">Transparent background in PNG / HTML / Lottie</label>
-      <div class="note" id="fillnote">Gradients run from the first stop to the last along the chosen angle (0° = top to bottom).</div>
+      <div class="note" id="fillnote" hidden>Gradients run from the first stop to the last along the chosen angle (0° = top to bottom).</div>
     </div>
 
-    <div class="block full" data-sec="Export">
-      <div class="t">Export</div>
-      <div class="t">Quality (video and PNG)</div>
-      <select id="res"><option value="1080" selected>1080 (Full HD, short side)</option><option value="1440">1440 (2K, short side)</option></select>
+    <div class="block" data-sec="Export">
+      <div class="t">Format</div>
       <select id="fmt">
-        <option value="video">Video (MP4 or WebM)</option>
-        <option value="html">Animated HTML (standalone, loops)</option>
-        <option value="lottie">Lottie JSON (editable)</option>
-        <option value="png">PNG image (current frame)</option>
-        <option value="svg">SVG (the shape)</option>
+        <option value="video">Video · MP4</option>
+        <option value="html">Animated HTML</option>
+        <option value="lottie">Lottie JSON</option>
+        <option value="png">PNG · this frame</option>
+        <option value="svg">SVG · the shape</option>
       </select>
+    </div>
+    <div class="block"><div class="t">Quality</div>
+      <select id="res" aria-label="Quality (video and PNG, short side)"><option value="1080" selected>1080 · Full HD</option><option value="1440">1440 · 2K</option></select>
+    </div>
+    <div class="block full">
       <button class="btn solid" id="export">Export</button>
       <div class="note" id="fmtnote"></div>
       <div class="note" id="status" role="status"></div>

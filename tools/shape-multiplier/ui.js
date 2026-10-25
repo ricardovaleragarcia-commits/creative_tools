@@ -42,10 +42,14 @@ function exportG(transparent){var g=Object.assign({},mkG());g.bg=transparent?nul
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function cssGrad(st){return 'linear-gradient(90deg,'+st.stops.map(function(s){return s.c+' '+Math.round(s.p*100)+'%'}).join(',')+')'}
 function makeEditor(root,title,st,note){
-  var box=el('div','style-ed'),head=el('div','head'),ttl=el('span','',title),sel=el('select');
+  // Solid: title, then one row with the color (hex on top) and the type menu, so two editors fit side by side.
+  // Gradient: the editor takes the whole row (stops need the width).
+  var box=el('div','style-ed'),head=el('div','t',title),ctl=el('div','ctl'),sel=el('select');
   [['solid','Solid'],['gradient','Gradient']].forEach(function(o){var op=el('option','',o[1]);op.value=o[0];sel.appendChild(op)});
-  sel.value=st.mode;sel.setAttribute('aria-label',title+' type');head.appendChild(ttl);head.appendChild(sel);box.appendChild(head);
-  var solid=el('div','row'),sc=el('input');sc.type='color';sc.value=st.color;sc.setAttribute('aria-label',title+' color');solid.appendChild(sc);box.appendChild(solid);
+  sel.value=st.mode;sel.setAttribute('aria-label',title+' type');box.appendChild(head);
+  var solid=el('span','swatch'),sc=el('input'),hx=el('span','swatch__hex');sc.type='color';sc.value=st.color;sc.setAttribute('aria-label',title+' color');hx.setAttribute('aria-hidden','true');
+  solid.appendChild(sc);solid.appendChild(hx);ctl.appendChild(solid);ctl.appendChild(sel);box.appendChild(ctl);
+  function paintHex(){var v=sc.value,r=parseInt(v.substr(1,2),16),g=parseInt(v.substr(3,2),16),b=parseInt(v.substr(5,2),16);hx.textContent=v;hx.style.color=(r*299+g*587+b*114)/1000>150?'#000':'#fff'}
   var grad=el('div'),bar=el('div','gbar'),list=el('div'),add=el('button','', '+ Add stop'),angRow=el('label'),angLbl=el('span','','Angle'),ang=el('input'),angV=el('span','v');
   grad.style.display='flex';grad.style.flexDirection='column';grad.style.gap='8px';
   ang.type='range';ang.min=0;ang.max=360;ang.step=5;ang.value=st.angle;ang.setAttribute('aria-label',title+' gradient angle');
@@ -74,14 +78,17 @@ function makeEditor(root,title,st,note){
     for(var i=0;i<s.length-1;i++){var g=s[i+1].p-s[i].p;if(g>bg){bg=g;bi=i}}
     st.stops.push({c:s[bi].c,p:(s[bi].p+s[bi+1].p)/2});paintList();
   });
-  function show(){var g=st.mode==='gradient';solid.classList.toggle('hidden',g);grad.classList.toggle('hidden',!g);angV.textContent=st.angle+'°'}
+  function show(){var g=st.mode==='gradient';solid.classList.toggle('hidden',g);grad.classList.toggle('hidden',!g);box.classList.toggle('is-grad',g);root.classList.toggle('full',g);angV.textContent=st.angle+'°';
+    if(window.ctBalance)window.ctBalance();if(window.onEditorMode)window.onEditorMode()}
   sel.addEventListener('change',function(){st.mode=sel.value;show()});
-  sc.addEventListener('input',function(){st.color=sc.value});
+  sc.addEventListener('input',function(){st.color=sc.value;paintHex()});paintHex();
   ang.addEventListener('input',function(){st.angle=+ang.value;angV.textContent=st.angle+'°'});
   paintList();show();
 }
 makeEditor($('bgEd'),'Background',bgStyle);
 makeEditor($('fillEd'),'Shape fill',fillStyle);
+/* the gradient hint only matters when a gradient is in use */
+window.onEditorMode=function(){$('fillnote').hidden=!(bgStyle.mode==='gradient'||fillStyle.mode==='gradient')};window.onEditorMode();
 
 document.querySelector('.menu').addEventListener('input',saveSettings);
 document.querySelector('.menu').addEventListener('change',saveSettings);
@@ -113,9 +120,10 @@ updWarn();
 $('seq').addEventListener('input',updWarn);
 $('seq').addEventListener('change',function(){updWarn();P.seq=$('seq').value;sim.reset()});
 $('mode').addEventListener('change',function(){P.mode=$('mode').value;sim.reset()});
+function resState(){var f=$('fmt').value;$('res').disabled=$('ratio').value==='custom'||!(f==='video'||f==='png')}   // quality only applies to video and PNG
 function evn(v,d){v=Math.round(+v||d);return Math.min(4096,Math.max(64,v-v%2))}
 function applyRatio(){
-  var cu=$('ratio').value==='custom';$('customSize').hidden=!cu;$('res').disabled=cu;
+  var cu=$('ratio').value==='custom';$('customSize').hidden=!cu;resState();
   var ab=cu?[evn($('cw').value,1080),evn($('ch').value,1350)]:$('ratio').value.split(':').map(Number),L=1000,a=ab[0],b=ab[1];
   var w=a>=b?L:Math.round(L*a/b),h=a>=b?Math.round(L*b/a):L;
   P.W=w;P.H=h;cv.width=w;cv.height=h;$('art').style.setProperty('--ar',w/h);liveG=null;sim.setSize(w,h);
@@ -165,7 +173,7 @@ var notes={video:'Records one full cycle at the chosen quality, built to loop: t
   html:'A single HTML file that replays one cycle in a loop. No libraries, works offline, easy to embed.',
   lottie:'One cycle as Lottie JSON (30 fps): every shape is its own layer with position, rotation and scale keyframes. Opens in After Effects (Bodymovin), LottieFiles and others.',
   png:'The current frame at the chosen quality.',svg:'The shape as a vector with the current fill.'};
-function fmtNote(){$('fmtnote').textContent=notes[$('fmt').value]||''}
+function fmtNote(){$('fmtnote').textContent=notes[$('fmt').value]||'';resState()}
 $('fmt').addEventListener('change',fmtNote);fmtNote();
 
 function outDims(){   // exact export size: the typed one for Custom, otherwise the quality (short side) at the frame's ratio

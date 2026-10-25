@@ -69,7 +69,7 @@
   // Color fields: a flat rectangle of the color with its hex written on top, in black or white for contrast.
   var swatches = [];
   Array.prototype.forEach.call(menu.querySelectorAll('input[type="color"]'), function (inp) {
-    if (!inp.parentElement || !inp.parentElement.classList.contains("block")) return;   // small inline pickers stay plain
+    if (!inp.parentElement || !inp.parentElement.matches(".block, .pair")) return;   // small inline pickers stay plain
     var w = document.createElement("span"); w.className = "swatch";
     var hx = document.createElement("span"); hx.className = "swatch__hex"; hx.setAttribute("aria-hidden", "true");
     inp.parentNode.insertBefore(w, inp); w.appendChild(inp); w.appendChild(hx);
@@ -83,6 +83,28 @@
     });
   }
 
+  // File pickers: the browser's own "Choose File / No file chosen" gets cut in narrow columns, so each one
+  // becomes a flat button plus the file name (the real input stays in the page, hidden, and does the work).
+  var files = [];
+  Array.prototype.forEach.call(menu.querySelectorAll('input[type="file"]'), function (inp) {
+    if (inp.hidden) return;
+    var row = document.createElement("span"); row.className = "filepick";
+    var b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.textContent = "Choose file";
+    if (inp.getAttribute("aria-label")) b.setAttribute("aria-label", inp.getAttribute("aria-label"));
+    var nm = document.createElement("span"); nm.className = "filepick__name";
+    inp.parentNode.insertBefore(row, inp); row.appendChild(b); row.appendChild(nm); row.appendChild(inp);
+    inp.classList.add("filepick__input"); inp.tabIndex = -1;
+    b.addEventListener("click", function () { inp.click(); });
+    files.push([inp, nm, null]);
+  });
+  function paintFiles() {
+    files.forEach(function (f) {
+      var n = f[0].files && f[0].files.length ? f[0].files[0].name : "", e = f[0].dataset.empty || "None", k = n + "|" + e; if (k === f[2]) return; f[2] = k;
+      f[1].textContent = n || e; f[1].title = n; f[1].classList.toggle("is-empty", !n && e === "None");   // data-empty: what a tool restored without a file (e.g. "Saved image")
+    });
+  }
+  paintFiles();
+
   // Sliders: the travelled part of the bar is drawn from --p.
   var ranges = Array.prototype.slice.call(menu.querySelectorAll('input[type="range"]'));
   function paintRanges() {
@@ -92,9 +114,9 @@
     });
   }
   menu.addEventListener("input", function () { paintRanges(); paintSwatches(); });
-  menu.addEventListener("change", function () { paintRanges(); paintSwatches(); });
+  menu.addEventListener("change", function () { paintRanges(); paintSwatches(); paintFiles(); });
   paintRanges(); paintSwatches();
-  setInterval(function () { paintRanges(); paintSwatches(); }, 400);   // values set from code (presets, random, saved settings)
+  setInterval(function () { paintRanges(); paintSwatches(); paintFiles(); }, 400);   // values set from code (presets, random, saved settings)
 
   // Two-column rows: a half-width block left alone in its row takes the whole row, so no holes appear in the grid.
   function balance() {
@@ -115,6 +137,7 @@
     });
   }
   balance();
+  window.ctBalance = balance;   // tools call it after switching a block between half and full width
   new MutationObserver(balance).observe(menu, { attributes: true, attributeFilter: ["hidden"], subtree: true });
 
   setTimeout(function () { page.classList.add("ready"); }, 1800);

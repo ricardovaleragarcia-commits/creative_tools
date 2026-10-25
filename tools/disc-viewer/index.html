@@ -26,14 +26,14 @@
 <div class="toolgrid grid6">
   <aside class="menu" aria-label="Controls">
 
-    <div class="block full" data-sec="Disc &amp; style" data-open>
+    <div class="block" data-sec="Disc &amp; style" data-open>
       <div class="t">Disc</div>
       <div class="btns fill"><button id="tVN" class="on">Vinyl</button><button id="tCD">CD</button></div>
     </div>
 
-    <div class="block full">
+    <div class="block">
       <div class="t">Style</div>
-      <div class="btns fill"><button id="sPlain" class="on">Plain colors</button><button id="sReal">Realistic</button></div>
+      <div class="btns fill"><button id="sPlain" class="on">Plain</button><button id="sReal">Realistic</button></div>
     </div>
 
     <div class="block full" data-sec="Format &amp; motion" data-open>
@@ -54,7 +54,7 @@
 
     <div class="block full"><div class="t">Zoom <output id="zv">100%</output></div><div class="zrow"><button id="zOut" class="zb zb--minus" aria-label="Smaller"></button><input type="range" id="zoom" min="0.3" max="2.5" step="0.01" value="1"><button id="zIn" class="zb zb--plus" aria-label="Bigger"></button></div></div>
 
-    <div class="block full"><div class="t">Background</div><input type="color" id="bg" value="#000000"><input type="file" id="bgImg" accept="image/png,image/jpeg,image/webp"><button class="btn" id="bgClear" hidden>Remove background image</button></div>
+    <div class="block full"><div class="t">Background · color or image</div><div class="pair"><input type="color" id="bg" value="#000000"><input type="file" id="bgImg" accept="image/png,image/jpeg,image/webp" aria-label="Background image"></div><button class="btn" id="bgClear" hidden>Remove background image</button></div>
 
     <div class="block" data-sec="Labels &amp; colors" data-open><div class="t">Label · front (PNG)</div><input type="file" id="fLabF" accept="image/png,image/webp,image/jpeg"></div>
     <div class="block"><div class="t">Label · back</div><input type="file" id="fLabB" accept="image/png,image/webp,image/jpeg"></div>
@@ -96,18 +96,20 @@
       <div class="btns fill" id="lsel"><button data-l="0" class="on">Light 1</button><button data-l="1">Light 2</button><button data-l="2">Light 3</button></div>
       <div class="btns fill" id="lpre"><button data-p="studio">Studio</button><button data-p="top">Top</button><button data-p="side">Side</button><button data-p="rim">Rim</button><button data-p="drama">Drama</button></div>
       <div class="lrow"><label class="chk"><input type="checkbox" id="lOn" checked>On</label><label class="chk"><input type="checkbox" id="lBack">Behind the disc</label><input type="color" id="lColor" value="#ffffff"></div>
-      <div class="t">Intensity <output id="liv">1.50</output></div><input type="range" id="lInt" min="0" max="4" step="0.05" value="1.5">
-      <div class="t">Distance <output id="ldv">7.0</output></div><input type="range" id="lDist" min="3" max="16" step="0.1" value="7">
+      <div class="pair">
+        <div class="cell"><div class="t">Intensity <output id="liv">1.50</output></div><input type="range" id="lInt" min="0" max="4" step="0.05" value="1.5"></div>
+        <div class="cell"><div class="t">Distance <output id="ldv">7.0</output></div><input type="range" id="lDist" min="3" max="16" step="0.1" value="7"></div>
+      </div>
       <div class="btns fill"><button id="aim">Place by clicking the disc</button></div>
     </div>
 
     </div>
 
-    <div class="block full" data-sec="Export">
-      <div class="t">Export loop</div>
-      <div class="t">Quality</div>
-      <select id="res"><option value="1080" selected>1080 (Full HD, short side)</option><option value="1440">1440 (2K, short side)</option></select>
-      <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
+    <div class="block" data-sec="Export"><div class="t">Quality</div>
+      <select id="res" aria-label="Quality (short side)"><option value="1080" selected>1080 · Full HD</option><option value="1440">1440 · 2K</option></select></div>
+    <div class="block"><div class="t">Frame rate</div>
+      <select id="fps" aria-label="Frame rate"><option value="60" selected>60 fps · as preview</option><option value="30">30 fps · lighter</option></select></div>
+    <div class="block full">
       <button class="btn solid" id="exp">Export loop (MP4)</button>
       <div class="note" id="status"></div>
       <div class="note" id="specs"></div>

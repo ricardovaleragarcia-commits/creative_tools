@@ -629,6 +629,7 @@ function fitBg(){
 }
 function setBgImage(url){
   labelImgs.BG = url || null;
+  $('bgImg').dataset.empty = url ? 'Saved image' : '';
   if(!url){ scene.background = null; bgTex = bgImgEl = null; $('bgClear').hidden = true; CTPersist.save(); return; }
   const img = new Image();
   img.onload = () => { bgImgEl = img; bgTex = new THREE.Texture(img); bgTex.encoding = THREE.sRGBEncoding; bgTex.needsUpdate = true;
@@ -747,7 +748,7 @@ stage.addEventListener('pointercancel', endDrag);
 // ---------- Labels: ONE image per side, used by every version (Realistic and Plain, vinyl and CD) ----------
 const labelImgs = {F: null, B: null};   // downscaled data URLs, also what gets remembered
 function setLabel(side, url){
-  labelImgs[side] = url;
+  labelImgs[side] = url; $(side === 'F' ? 'fLabF' : 'fLabB').dataset.empty = url ? 'Saved image' : '';
   const img = new Image();
   img.onload = () => {
     const tex = srgb => { const t = new THREE.Texture(img); if(srgb) t.encoding = THREE.sRGBEncoding; t.needsUpdate = true; return t; };

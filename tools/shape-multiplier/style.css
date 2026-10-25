@@ -6,15 +6,18 @@
 .menu .v, .menu .pct { font-size: var(--fs-s); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
 /* color editors (built by ui.js) */
 .style-ed { display: flex; flex-direction: column; gap: 8px; }
-.style-ed .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: var(--fs-s); line-height: 1; }
-.style-ed .head select { width: auto; flex: 0 0 auto; }
+.style-ed .ctl { display: flex; gap: 4px; align-items: stretch; }
+.style-ed .ctl .swatch { flex: 1; min-width: 0; }
+.style-ed .ctl select { flex: 0 0 96px; width: 96px; }
+.style-ed.is-grad .ctl select { flex: 1; width: 100%; }
 .style-ed .row { display: flex; gap: 6px; flex-wrap: wrap; }
 .style-ed button { font: 700 var(--fs-s)/1 var(--font); color: var(--ink); background: var(--f-rest); border: 0; border-radius: 0; padding: 6px 8px; cursor: pointer; }
 .style-ed button:hover { background: var(--f-hover); }
 .style-ed button:disabled { opacity: .45; cursor: default; }
 .style-ed label { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); }
 .style-ed input[type=range] { flex: 1; min-width: 0; }
-.menu .style-ed input[type=color] { width: 34px; height: 24px; }
+.menu .style-ed .ctl input[type=color] { height: 100%; min-height: 28px; }
+.menu .style-ed .stop input[type=color] { width: 34px; height: 24px; }
 .gbar { height: 14px; border-radius: 0; border: 0; }
 .stop { display: grid; grid-template-columns: 34px 1fr 36px 24px; gap: 6px; align-items: center; }
 .stop button { padding: 2px 0; line-height: 1; }

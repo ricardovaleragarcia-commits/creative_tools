@@ -100,11 +100,11 @@
 
     <div class="block full"><div class="btns fill"><button id="play">Pause</button><button id="reshuffle">Shuffle order</button></div></div>
 
-    <div class="block full" data-sec="Export">
-      <div class="t">Export loop</div>
-      <div class="t">Quality</div>
-      <select id="res"><option value="1080" selected>1080 (Full HD, short side)</option><option value="1440">1440 (2K, short side)</option></select>
-      <select id="fps"><option value="60" selected>60 fps (same as the preview)</option><option value="30">30 fps (smaller file)</option></select>
+    <div class="block" data-sec="Export"><div class="t">Quality</div>
+      <select id="res" aria-label="Quality (short side)"><option value="1080" selected>1080 · Full HD</option><option value="1440">1440 · 2K</option></select></div>
+    <div class="block"><div class="t">Frame rate</div>
+      <select id="fps" aria-label="Frame rate"><option value="60" selected>60 fps · as preview</option><option value="30">30 fps · lighter</option></select></div>
+    <div class="block full">
       <button class="btn solid" id="dl">Export loop (MP4)</button>
       <div class="note" id="status" aria-live="polite"></div>
     </div>
