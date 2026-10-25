@@ -67,31 +67,30 @@
   }
   placeArea(); addEventListener("resize", placeArea);
 
-  // Intro (first visit of the session): the window is the panel color. From the exact centre of the window the dots come out one after another,
-  // run along a perfect circle for almost one lap and then each goes home. When the last ones land, the panel color slides away to the left
-  // until it is the real 1/3 panel, and the page appears.
+  // Intro (first visit of the session). The window is the panel color. Like a loading ring, the dots pop out one by one from the exact centre of the
+  // window into an evenly spaced circle that spins; then each one leaves the ring and flies straight home on a bezier curve. As the last ones land,
+  // the panel color slides left until it is the real 1/3 panel, and the page rises in behind it.
   (function () {
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
-    var N = dots.length, SEQ = 70, OUT = 380, LAP = 1100, TRAVEL = 700, SHRINK = 700, W_ROT = Math.PI * 2 / 1400;   // ms, rad per ms
+    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1250, LSTAG = 40, TRAVEL = 720, SHRINK = 760;   // ms
+    var W_ROT = Math.PI * 2 / 1500, SMALL = .72;                                                       // ring spin (rad/ms) and dot scale while in the ring
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
-    function ease(p) { return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
-    function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
       var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
       var by = function (u) { return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u; };
-      return function (x) { var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
+      return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
     }
-    var fly = bezier(.7, 0, .2, 1);                                         // slow start, fast middle, soft landing
+    var pop = bezier(.2, .8, .2, 1), fly = bezier(.7, 0, .2, 1), slide = bezier(.76, 0, .24, 1);
     var sr = side.getBoundingClientRect();
-    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .18, vh * .18, 58);           // one radius: a perfect circle, small like a loading spinner
+    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .16, vh * .16, 54);     // one radius: a perfect circle, small like a loading spinner
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
     var items = Array.prototype.map.call(dots, function (d, i) {
       var r = d.getBoundingClientRect();
-      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, t: i * SEQ, ph: -Math.PI / 2 };
+      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2 };
     });
-    var LAND = (N - 1) * SEQ + LAP + TRAVEL, SH0 = LAND - 150, END = SH0 + SHRINK, GO = SH0 + 150;
+    var LAND = LEAVE0 + (N - 1) * LSTAG + TRAVEL, SH0 = LAND - 140, END = SH0 + SHRINK;
     function finish() {
       if (finished) return; finished = true; cancelAnimationFrame(raf);
       items.forEach(function (o) { o.d.style.transform = ""; o.d.style.opacity = ""; });
@@ -103,20 +102,21 @@
     function frame(now) {
       if (!t0) t0 = now; var t = now - t0;
       items.forEach(function (o) {
-        var dt = t - o.t;
-        if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px)"; return; }
-        var k = easeOut(Math.min(1, dt / OUT)), th = o.ph + W_ROT * dt;      // leaves the centre point, spiralling out to the circle
-        var x = cx + k * R * Math.cos(th), y = cy + k * R * Math.sin(th);
-        if (dt > LAP) {                                                      // leaves the circle from where it is and flies straight home on a bezier
-          var th0 = o.ph + W_ROT * LAP, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly(Math.min(1, (dt - LAP) / TRAVEL));
-          x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e;
+        var dt = t - o.appear, k, x, y, sc;
+        if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px) scale(0)"; return; }
+        k = pop(Math.min(1, dt / OUT));                                      // 0 = at the centre point, 1 = on the ring
+        var th = o.slot + W_ROT * t;                                         // the whole ring turns as one
+        x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th); sc = SMALL * k;
+        if (t > o.leave) {                                                   // leaves the ring from where it is, straight home, eased
+          var th0 = o.slot + W_ROT * o.leave, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly((t - o.leave) / TRAVEL);
+          x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e; sc = SMALL + (1 - SMALL) * e;
         }
-        o.d.style.opacity = Math.min(1, dt / 120);
-        o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px)";
+        o.d.style.opacity = 1;
+        o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px) scale(" + sc.toFixed(3) + ")";
       });
-      var sp = ease(Math.min(1, Math.max(0, (t - SH0) / SHRINK)));          // the panel color slides left as the last dots land
+      var sp = slide((t - SH0) / SHRINK);                                    // the panel color slides left as the last dots land
       root.style.setProperty("--ir", (cutR * sp).toFixed(1) + "px"); root.style.setProperty("--ib", (cutB * sp).toFixed(1) + "px");
-      if (!go && t > GO) { go = true; root.classList.add("intro-go"); }      // the rest of the page starts rising
+      if (!go && t > SH0) { go = true; root.classList.add("intro-go"); }     // the page starts rising behind the sliding color
       if (t >= END) finish(); else raf = requestAnimationFrame(frame);
     }
     addEventListener("pointerdown", finish); addEventListener("keydown", finish);        // any tap or key skips it

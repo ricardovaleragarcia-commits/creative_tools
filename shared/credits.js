@@ -2,7 +2,7 @@
 (function () {
   var el = document.getElementById("credits");
   if (!el) return;
-  var LAST_UPDATE = "25 Oct 2026, 03:07 CET (Barcelona)";   // set by scripts/stamp.sh before each update of the site
+  var LAST_UPDATE = "25 Oct 2026, 03:12 CET (Barcelona)";   // set by scripts/stamp.sh before each update of the site
   var L = [
     ["email", "mailto:ricardo.valera.garcia@gmail.com"],
     ["website", "https://ricardovaleragarcia.com"],
