@@ -74,7 +74,7 @@
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
-    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1250, LSTAG = 40, TRAVEL = 720, SHRINK = 760;   // ms
+    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1150, LSTAG = 0, TRAVEL = 850, SHRINK = 760;   // ms
     var W_ROT = Math.PI * 2 / 1500;                                                                    // ring spin (rad/ms)
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
@@ -82,7 +82,7 @@
       var by = function (u) { return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u; };
       return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
     }
-    var pop = bezier(.2, .8, .2, 1), fly = bezier(.7, 0, .2, 1), slide = bezier(.76, 0, .24, 1);
+    var pop = bezier(.2, .8, .2, 1), fly = bezier(.65, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
     var sr = side.getBoundingClientRect();
     var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .19, vh * .19, 66);     // one radius: a perfect circle, small like a loading spinner
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
