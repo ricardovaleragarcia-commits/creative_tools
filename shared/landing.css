@@ -5,9 +5,9 @@
   height: 100vh; padding: 0; overflow: hidden;
   display: flex; flex-direction: column;
 }
-.side__head { display: flex; flex-direction: column; gap: 14px; padding: 15px; }
-.head__c { margin: 6px 0 0; font-size: 36px; font-weight: 500; line-height: 1; }
-.head__title { font-size: 36px; font-weight: 500; line-height: .9; }
+.side__head { display: flex; flex-direction: column; gap: 14px; padding: 5px 15px 15px; }   /* first line of the title sits on the same row as the tool titles */
+.head__c { margin: 6px 0 0; font-size: 24px; font-weight: 700; line-height: 32px; }
+.head__title { font-size: 24px; font-weight: 700; line-height: 32px; }   /* same size and weight as the tool titles */
 .dots { position: absolute; left: 0; right: 0; top: 170px; bottom: 68px; pointer-events: none; }  /* free space between the intro text and the credits */
 .dot {
   position: absolute; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; padding: 0;
@@ -50,7 +50,6 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
   .side { position: relative; top: 0; height: auto; min-height: 60vh; }
   .tools { padding: var(--gap); }
   .tools { grid-column: 1; grid-template-columns: 1fr 1fr; }
-  .head__title { font-size: 24px; }
 }
 @media (max-width: 560px) { .tools { grid-template-columns: 1fr; } }
 
