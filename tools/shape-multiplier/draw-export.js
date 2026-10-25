@@ -29,13 +29,35 @@ function drawScene(ctx, G, poses, k) {
     });
     G._path = p;
   }
+  // Uploaded image: drawing the full-size picture for every copy on every frame is slow (Safari above all),
+  // so a smaller copy is kept at the next power-of-two size above what is on screen and only redone when that changes.
+  var img = G.img, iw = 0, ih = 0;
+  if (img) {
+    iw = img.naturalWidth || img.width; ih = img.naturalHeight || img.height;
+    var need = 0;
+    for (var n = 0; n < poses.length; n++) if (poses[n].o > 0 && poses[n].s > need) need = poses[n].s;
+    var f = Math.pow(2, Math.ceil(Math.log(Math.max(need / G.shape.u * k, 1e-3)) / Math.LN2));
+    if (f < 1 && iw && ih && typeof document !== 'undefined') {
+      var m = G._mip;
+      if (!m || m.f !== f || m.src !== G.img) {
+        var c = G.img, cw = iw, ch = ih, tw = Math.max(1, Math.ceil(iw * f)), th = Math.max(1, Math.ceil(ih * f));
+        while (cw > tw || ch > th) {   // halve step by step: smooth result, no shimmer
+          var nw = Math.max(tw, Math.ceil(cw / 2)), nh = Math.max(th, Math.ceil(ch / 2)), cv2 = document.createElement('canvas');
+          cv2.width = nw; cv2.height = nh; var x2 = cv2.getContext('2d'); x2.imageSmoothingQuality = 'high'; x2.drawImage(c, 0, 0, nw, nh);
+          c = cv2; cw = nw; ch = nh;
+        }
+        m = G._mip = { f: f, src: G.img, c: c };
+      }
+      img = m.c;
+    }
+  }
   for (var i = 0; i < poses.length; i++) {
     var q = poses[i];
     if (!(q.o > 0)) continue;
     ctx.save();
     ctx.globalAlpha = Math.min(1, q.o);
     ctx.translate(q.x, q.y); ctx.rotate(q.a);
-    if (G.img) { var sc = q.s / G.shape.u; ctx.scale(sc, sc); ctx.drawImage(G.img, -G.shape.cx, -G.shape.cy); }
+    if (img) { var sc = q.s / G.shape.u; ctx.scale(sc, sc); ctx.drawImage(img, -G.shape.cx, -G.shape.cy, iw, ih); }
     else { ctx.scale(q.s, q.s); ctx.fillStyle = paint(G.fill, G.shape.bw, G.shape.bh, 0, 0); ctx.fill(G._path, 'evenodd'); }
     ctx.restore();
   }

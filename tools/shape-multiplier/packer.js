@@ -83,25 +83,42 @@ root.StarPlanner={offsetConvex,makeMasks,packOnce};
 const TAU=Math.PI*2;
 const OC=StarPlanner.offsetConvex;
 
-function satOverlap(A,B){ // convexos; true si se solapan con profundidad > 0
-  for(const P of [A,B]){
-    for(let i=0;i<P.length;i++){
-      const a=P[i],b=P[(i+1)%P.length];let nx=b[1]-a[1],ny=a[0]-b[0];const l=Math.hypot(nx,ny)||1;nx/=l;ny/=l;
-      let a0=1e18,a1=-1e18,b0=1e18,b1=-1e18;
-      for(const q of A){const d=q[0]*nx+q[1]*ny;if(d<a0)a0=d;if(d>a1)a1=d}
-      for(const q of B){const d=q[0]*nx+q[1]*ny;if(d<b0)b0=d;if(d>b1)b1=d}
-      if(Math.min(a1,b1)-Math.max(a0,b0)<=1e-9)return false;
-    }
-  }
+// Collision checks between convex pieces. Each polygon gets its edge normals and bounding box computed once
+// (cached per polygon), the second polygon is shifted by (vx,vy) on the fly instead of being copied, and
+// boxes that don't touch skip the full test. Same answers as the plain separating-axis test, much faster.
+const PREP=new WeakMap();
+function prep(P){
+  let r=PREP.get(P);if(r)return r;
+  const n=P.length,nx=new Float64Array(n),ny=new Float64Array(n);let x0=1e18,x1=-1e18,y0=1e18,y1=-1e18;
+  for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];let ux=b[1]-a[1],uy=a[0]-b[0];const l=Math.hypot(ux,uy)||1;nx[i]=ux/l;ny[i]=uy/l;
+    if(a[0]<x0)x0=a[0];if(a[0]>x1)x1=a[0];if(a[1]<y0)y0=a[1];if(a[1]>y1)y1=a[1]}
+  r={nx,ny,x0,x1,y0,y1};PREP.set(P,r);return r;
+}
+function sepOn(A,B,vx,vy,nx,ny){ // true if the axis (nx,ny) separates A and B+(vx,vy)
+  let a0=1e18,a1=-1e18,b0=1e18,b1=-1e18;
+  for(let k=0;k<A.length;k++){const q=A[k],d=q[0]*nx+q[1]*ny;if(d<a0)a0=d;if(d>a1)a1=d}
+  const o=vx*nx+vy*ny;
+  for(let k=0;k<B.length;k++){const q=B[k],d=q[0]*nx+q[1]*ny+o;if(d<b0)b0=d;if(d>b1)b1=d}
+  return Math.min(a1,b1)-Math.max(a0,b0)<=1e-9;
+}
+function satOverlapOff(A,B,vx,vy){ // convex; true if A and B shifted by (vx,vy) overlap with depth > 0
+  const pa=prep(A),pb=prep(B);
+  if(pa.x1<=pb.x0+vx||pb.x1+vx<=pa.x0||pa.y1<=pb.y0+vy||pb.y1+vy<=pa.y0)return false;
+  for(let i=0;i<A.length;i++)if(sepOn(A,B,vx,vy,pa.nx[i],pa.ny[i]))return false;
+  for(let i=0;i<B.length;i++)if(sepOn(A,B,vx,vy,pb.nx[i],pb.ny[i]))return false;
   return true;
 }
-function partsOverlap(PA,PB,vx,vy){ // PB trasladado (vx,vy)
-  for(const A of PA){
-    for(const B0 of PB){
-      const B=B0.map(q=>[q[0]+vx,q[1]+vy]);
-      if(satOverlap(A,B))return true;
-    }
-  }
+function satOverlap(A,B){return satOverlapOff(A,B,0,0)}
+const PREPS=new WeakMap();
+function prepSet(PS){ // bounding box of a whole set of pieces
+  let r=PREPS.get(PS);if(r)return r;let x0=1e18,x1=-1e18,y0=1e18,y1=-1e18;
+  for(const P of PS){const p=prep(P);if(p.x0<x0)x0=p.x0;if(p.x1>x1)x1=p.x1;if(p.y0<y0)y0=p.y0;if(p.y1>y1)y1=p.y1}
+  r={x0,x1,y0,y1};PREPS.set(PS,r);return r;
+}
+function partsOverlap(PA,PB,vx,vy){ // PB shifted by (vx,vy)
+  const a=prepSet(PA),b=prepSet(PB);
+  if(a.x1<=b.x0+vx||b.x1+vx<=a.x0||a.y1<=b.y0+vy||b.y1+vy<=a.y0)return false;
+  for(let i=0;i<PA.length;i++)for(let j=0;j<PB.length;j++)if(satOverlapOff(PA[i],PB[j],vx,vy))return true;
   return false;
 }
 
@@ -173,15 +190,21 @@ function evalScale(shape,lat,s,n,W,H,gap,NPHI,NOFF,coll){
     const Ax=ax*c-ay*sn,Ay=ax*sn+ay*c,Bx=bx*c-by*sn,By=bx*sn+by*c;
     for(let u=0;u<NOFF;u++)for(let w=0;w<NOFF;w++){
       const fu=u/NOFF,fw=w/NOFF,bx0=W/2+fu*Ax+fw*Bx,by0=H/2+fu*Ay+fw*By;
-      const pts=[];
-      for(let i=-I;i<=I;i++)for(let j=-I;j<=I;j++){
-        const x=bx0+i*Ax+j*Bx,y=by0+i*Ay+j*By;
-        if(x+mnx>=0&&x+mxx<=W&&y+mny>=0&&y+mxy<=H)pts.push([x,y]);
-      }
-      if(!best||pts.length>best.pts.length)best={pts,phi,mnx,mxx,mny,mxy};
-      if(coll&&pts.length>=n){ // muestreo (reservorio) de las disposiciones válidas, para poder variar
-        coll.seen=(coll.seen||0)+1;const cand={pts,phi,mnx,mxx,mny,mxy};
-        if(coll.length<24)coll.push(cand);else{const j=Math.floor(Math.random()*coll.seen);if(j<24)coll[j]=cand}
+      // count first (no arrays) and only over the j range that can land inside the frame (±1 for rounding,
+      // the exact test below decides); the list of points is only built when this layout is kept
+      const X0=-mnx,X1=W-mxx,Y0=-mny,Y1=H-mxy;
+      const jr=(xi,yi)=>{let a=-I,b=I;
+        if(Math.abs(Bx)>1e-12){let p=(X0-xi)/Bx,q=(X1-xi)/Bx;if(p>q){const t=p;p=q;q=t}a=Math.max(a,Math.floor(p)-1);b=Math.min(b,Math.ceil(q)+1)}
+        if(Math.abs(By)>1e-12){let p=(Y0-yi)/By,q=(Y1-yi)/By;if(p>q){const t=p;p=q;q=t}a=Math.max(a,Math.floor(p)-1);b=Math.min(b,Math.ceil(q)+1)}
+        return [a,b]};
+      let cnt=0;
+      for(let i=-I;i<=I;i++){const xi=bx0+i*Ax,yi=by0+i*Ay,r=jr(xi,yi);for(let j=r[0];j<=r[1];j++){const x=xi+j*Bx,y=yi+j*By;if(x+mnx>=0&&x+mxx<=W&&y+mny>=0&&y+mxy<=H)cnt++}}
+      let pts=null;
+      const list=()=>{if(pts)return pts;pts=[];for(let i=-I;i<=I;i++){const r=jr(bx0+i*Ax,by0+i*Ay);for(let j=r[0];j<=r[1];j++){const x=bx0+i*Ax+j*Bx,y=by0+i*Ay+j*By;if(x+mnx>=0&&x+mxx<=W&&y+mny>=0&&y+mxy<=H)pts.push([x,y])}}return pts};
+      if(!best||cnt>best.pts.length)best={pts:list(),phi,mnx,mxx,mny,mxy};
+      if(coll&&cnt>=n){ // muestreo (reservorio) de las disposiciones válidas, para poder variar
+        coll.seen=(coll.seen||0)+1;
+        if(coll.length<24)coll.push({pts:list(),phi,mnx,mxx,mny,mxy});else{const j=Math.floor(Math.random()*coll.seen);if(j<24)coll[j]={pts:list(),phi,mnx,mxx,mny,mxy}}
       }
     }
   }
