@@ -75,7 +75,7 @@
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
     var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1250, LSTAG = 40, TRAVEL = 720, SHRINK = 760;   // ms
-    var W_ROT = Math.PI * 2 / 1500, SMALL = .72;                                                       // ring spin (rad/ms) and dot scale while in the ring
+    var W_ROT = Math.PI * 2 / 1500;                                                                    // ring spin (rad/ms)
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
       var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
@@ -102,17 +102,17 @@
     function frame(now) {
       if (!t0) t0 = now; var t = now - t0;
       items.forEach(function (o) {
-        var dt = t - o.appear, k, x, y, sc;
-        if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px) scale(0)"; return; }
+        var dt = t - o.appear, k, x, y;
+        if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px)"; return; }
         k = pop(Math.min(1, dt / OUT));                                      // 0 = at the centre point, 1 = on the ring
         var th = o.slot + W_ROT * t;                                         // the whole ring turns as one
-        x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th); sc = SMALL * k;
+        x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th);
         if (t > o.leave) {                                                   // leaves the ring from where it is, straight home, eased
           var th0 = o.slot + W_ROT * o.leave, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly((t - o.leave) / TRAVEL);
-          x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e; sc = SMALL + (1 - SMALL) * e;
+          x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e;
         }
-        o.d.style.opacity = 1;
-        o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px) scale(" + sc.toFixed(3) + ")";
+        o.d.style.opacity = Math.min(1, dt / 100);                           // dots keep their size the whole time
+        o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px)";
       });
       var sp = slide((t - SH0) / SHRINK);                                    // the panel color slides left as the last dots land
       root.style.setProperty("--ir", (cutR * sp).toFixed(1) + "px"); root.style.setProperty("--ib", (cutB * sp).toFixed(1) + "px");
