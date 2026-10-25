@@ -22,7 +22,14 @@
   }
   window.CTPalette = { list: LIST, get: get, set: set };
   // on reload / back-forward the entrance animations are skipped (they made everything flicker)
-  try { var nav = performance.getEntriesByType("navigation")[0]; if (nav && nav.type !== "navigate") document.documentElement.classList.add("no-intro"); } catch (e) {}
+  try {
+    var nav = performance.getEntriesByType("navigation")[0], root = document.documentElement;
+    if (nav && nav.type !== "navigate") root.classList.add("no-intro");
+    else if (!/\/tools\//.test(location.pathname) && !sessionStorage.getItem("ct-intro") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      root.classList.add("intro");                    // landing, first visit of this session: dots orbit first (landing.js ends it)
+      setTimeout(function () { root.classList.remove("intro"); root.classList.add("intro-played"); }, 6000);   // failsafe: never leave the page hidden
+    }
+  } catch (e) {}
   var cur = get();
   document.documentElement.setAttribute("data-palette", cur);
   themeColor(cur);
