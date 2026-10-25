@@ -192,7 +192,7 @@ cv.addEventListener('click', e => {
   const x = (e.clientX - r.left) * cv.width / r.width - cv.width / 2;
   const y = (e.clientY - r.top) * cv.height / r.height - cv.height / 2;
   ctrl.update({ axis: Math.round(Math.atan2(y, x) * 180 / Math.PI + 360) % 360 });
-  sync();
+  sync(); CTPersist.save();
 });
 
 $('#play').onclick = () => {
@@ -232,3 +232,15 @@ $('#code').onclick = () => {
 $('#cp').onclick = () => navigator.clipboard.writeText($('#src').value);
 $('#dl').onclick = () => VideoExport.save('text-on-sphere.html', new Blob([$('#src').value], { type: 'text/html' }));
 $('#close').onclick = () => $('#dlg').close();
+
+/* ---------- remember the settings between visits ---------- */
+const SAVED = ['text', 'font', 'tsize', 'size', 'tilt', 'repeat', 'mode', 'dir', 'T', 'ratio', 'quality', 'bg', 'sc', 'tc', 'border', 'bc', 'bw', 'fx', 'eje', 'axis', 'spin', 'bseed'];
+CTPersist.init('text-on-sphere', {
+  get: () => Object.fromEntries(SAVED.map(k => [k, ctrl.cfg[k]])),
+  set: x => {
+    const c = {}; SAVED.forEach(k => { if (k in x && x[k] !== undefined) c[k] = x[k]; });
+    ctrl.update(c); sync(); syncAr();
+    fxBtns.forEach(b => b.classList.toggle('on', b.dataset.fx === ctrl.cfg.fx));
+    $('#eje').classList.toggle('on', !!ctrl.cfg.eje);
+  }
+});
