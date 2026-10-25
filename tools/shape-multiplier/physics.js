@@ -493,5 +493,5 @@ function createSim(Matter, shape0, P){
     get time(){return t},get dbg(){return {ph:phase,si:stepIdx}},get total(){return seq().length*P.stepDur+P.hold},get W(){return W},get H(){return H}};
 }
 
-root.StarCore={createSim,buildShape,starShape,outlineFromGrid,outlinesFromGrid,STAR_OUTER,STAR_INNER,polyArea};
+root.StarCore={createSim,buildShape,starShape,outlineFromGrid,outlinesFromGrid,convexHull,STAR_OUTER,STAR_INNER,polyArea};
 })(typeof window!=='undefined'?window:globalThis);

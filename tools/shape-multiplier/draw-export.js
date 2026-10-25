@@ -29,27 +29,32 @@ function drawScene(ctx, G, poses, k) {
     });
     G._path = p;
   }
-  // Uploaded image: drawing the full-size picture for every copy on every frame is slow (Safari above all),
-  // so a smaller copy is kept at the next power-of-two size above what is on screen and only redone when that changes.
-  var img = G.img, iw = 0, ih = 0;
+  // Uploaded image: drawing the full picture for every copy on every frame is the slow part, so the picture is
+  // cropped to the shape (no transparent margins) and kept at about the size it has on screen (quarter-octave
+  // steps, never upscaled), and only redone when that size changes.
+  var img = G.img, sx = 0, sy = 0, sw = 0, sh2 = 0;
   if (img) {
-    iw = img.naturalWidth || img.width; ih = img.naturalHeight || img.height;
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, U = G.shape.u;
+    sx = Math.max(0, Math.floor(G.shape.cx - G.shape.bw * U / 2 - 2)); sy = Math.max(0, Math.floor(G.shape.cy - G.shape.bh * U / 2 - 2));
+    sw = Math.min(iw, Math.ceil(G.shape.cx + G.shape.bw * U / 2 + 2)) - sx; sh2 = Math.min(ih, Math.ceil(G.shape.cy + G.shape.bh * U / 2 + 2)) - sy;
     var need = 0;
     for (var n = 0; n < poses.length; n++) if (poses[n].o > 0 && poses[n].s > need) need = poses[n].s;
-    var f = Math.pow(2, Math.ceil(Math.log(Math.max(need / G.shape.u * k, 1e-3)) / Math.LN2));
-    if (f < 1 && iw && ih && typeof document !== 'undefined') {
+    var f = Math.min(1, Math.pow(2, Math.ceil(4 * Math.log(Math.max(need / U * k, 1e-3)) / Math.LN2) / 4));
+    if (sw > 0 && sh2 > 0 && typeof document !== 'undefined') {
       var m = G._mip;
-      if (!m || m.f !== f || m.src !== G.img) {
-        var c = G.img, cw = iw, ch = ih, tw = Math.max(1, Math.ceil(iw * f)), th = Math.max(1, Math.ceil(ih * f));
+      if (!m || m.f !== f || m.src !== G.img || m.sx !== sx || m.sy !== sy) {
+        var tw = Math.max(1, Math.ceil(sw * f)), th = Math.max(1, Math.ceil(sh2 * f));
+        var c = document.createElement('canvas'); c.width = sw; c.height = sh2; c.getContext('2d').drawImage(G.img, sx, sy, sw, sh2, 0, 0, sw, sh2);
+        var cw = sw, ch = sh2;
         while (cw > tw || ch > th) {   // halve step by step: smooth result, no shimmer
           var nw = Math.max(tw, Math.ceil(cw / 2)), nh = Math.max(th, Math.ceil(ch / 2)), cv2 = document.createElement('canvas');
           cv2.width = nw; cv2.height = nh; var x2 = cv2.getContext('2d'); x2.imageSmoothingQuality = 'high'; x2.drawImage(c, 0, 0, nw, nh);
           c = cv2; cw = nw; ch = nh;
         }
-        m = G._mip = { f: f, src: G.img, c: c };
+        m = G._mip = { f: f, src: G.img, sx: sx, sy: sy, c: c };
       }
       img = m.c;
-    }
+    } else if (!(sw > 0 && sh2 > 0)) { sx = sy = 0; sw = iw; sh2 = ih; }
   }
   for (var i = 0; i < poses.length; i++) {
     var q = poses[i];
@@ -57,7 +62,7 @@ function drawScene(ctx, G, poses, k) {
     ctx.save();
     ctx.globalAlpha = Math.min(1, q.o);
     ctx.translate(q.x, q.y); ctx.rotate(q.a);
-    if (img) { var sc = q.s / G.shape.u; ctx.scale(sc, sc); ctx.drawImage(img, -G.shape.cx, -G.shape.cy, iw, ih); }
+    if (img) { var sc = q.s / G.shape.u; ctx.scale(sc, sc); if (img === G.img) ctx.drawImage(img, sx, sy, sw, sh2, sx - G.shape.cx, sy - G.shape.cy, sw, sh2); else ctx.drawImage(img, sx - G.shape.cx, sy - G.shape.cy, sw, sh2); }
     else { ctx.scale(q.s, q.s); ctx.fillStyle = paint(G.fill, G.shape.bw, G.shape.bh, 0, 0); ctx.fill(G._path, 'evenodd'); }
     ctx.restore();
   }

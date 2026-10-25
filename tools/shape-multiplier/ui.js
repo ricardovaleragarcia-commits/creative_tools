@@ -165,13 +165,22 @@ $('file').addEventListener('change',function(e){
         var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
         for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
         if(!n){say('That image has no visible pixels.');return}
-        var outlines=StarCore.outlinesFromGrid(g,gw,gh,w/gw,110,window.decomp);
-        if(!outlines||!outlines.length){say('Could not trace that silhouette.');return}
-        var sh=StarCore.buildShape(outlines,window.decomp);
+        // Collision outline: the picture is always drawn exactly, but the invisible shape it collides with is kept
+        // to at most MAXP convex pieces (every piece of every copy is tested against every other, so detail costs speed).
+        var MAXP=12,sh=null,simple=false;
+        [110,70,45,28,18,12].some(function(mv){
+          var o=StarCore.outlinesFromGrid(g,gw,gh,w/gw,mv,window.decomp);if(!o||!o.length)return true;
+          sh=StarCore.buildShape(o,window.decomp);if(mv<110)simple=true;return sh.parts.length<=MAXP;
+        });
+        if(!sh){say('Could not trace that silhouette.');return}
+        if(sh.parts.length>MAXP){   // still too many: each loose piece by its outer contour, or the whole by one
+          var o2=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null),hulls=o2.map(StarCore.convexHull);
+          sh=StarCore.buildShape(o2,null,hulls.length<=MAXP?hulls:[StarCore.convexHull([].concat.apply([],o2))]);simple=true;
+        }
         custom={bitmap:bm};shape=sh;liveG=null;sim.setShape(sh);
         var opaque=n/(gw*gh)>0.985;
         var np=sh.outers.length;
-        $('shapenote').textContent='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.')+(opaque?' The image is opaque (no transparency), so it collides as a rectangle.':'')+(sh.hull?' Part of the outline was too intricate and collides by its outer contour.':'')+' Uploaded images keep their own colors.';
+        $('shapenote').textContent='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.')+(opaque?' The image is opaque (no transparency), so it collides as a rectangle.':'')+(simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
       }catch(err){say('Could not process that image.')}
     };
     im.onerror=function(){say('Could not read that image.')};
