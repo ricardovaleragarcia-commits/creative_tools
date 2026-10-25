@@ -21,6 +21,11 @@ html[data-palette="orange"] { --main: #ff8f35; --dark: #7a3d12; --ink: #ffffff; 
 html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #9be564; --c6: #19d3da; }
 html[data-palette="white"]  { --main: #ffffff; --dark: #d9d9d9; --ink: #000000; --c1: #ececec; --c2: #c9c9c9; --c3: #a6a6a6; --c4: #7d7d7d; --c5: #dadada; --c6: #939393; }
 html[data-palette="black"]  { --main: #000000; --dark: #2a2a2a; --ink: #ffffff; --c1: #4a4a4a; --c2: #6e6e6e; --c3: #9a9a9a; --c4: #d0d0d0; --c5: #5c5c5c; --c6: #bcbcbc; }
+html[data-palette="pink"]     { --main: #ff4fa0; --dark: #6e1f46; --ink: #ffffff; --c1: #ffe14d; --c2: #3b5bff; --c3: #00d1a0; --c4: #8e5bff; --c5: #ff9a3c; --c6: #5ad8ff; }
+html[data-palette="yellow"]   { --main: #ffd400; --dark: #dcae00; --ink: #111111; --c1: #ff5a36; --c2: #2f5bff; --c3: #14b58a; --c4: #b36bff; --c5: #ff7fb5; --c6: #111111; }
+html[data-palette="teal"]     { --main: #0e9aa7; --dark: #06444a; --ink: #ffffff; --c1: #bdeff2; --c2: #0a6f7a; --c3: #6fd3da; --c4: #04363c; --c5: #dff8fa; --c6: #3fb5c0; }
+html[data-palette="sand"]     { --main: #d8c3a5; --dark: #c4a97f; --ink: #2a1f12; --c1: #f1e4cf; --c2: #a88a60; --c3: #7a5f3c; --c4: #e6d3b3; --c5: #8f7650; --c6: #5e4729; }
+html[data-palette="midnight"] { --main: #14213d; --dark: #0a1226; --ink: #ffffff; --c1: #fca311; --c2: #7b9cff; --c3: #ff6b6b; --c4: #5bc0be; --c5: #9d8cff; --c6: #ffd6a5; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }

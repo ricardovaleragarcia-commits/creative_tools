@@ -3,10 +3,11 @@
    theme-color = a lighter tint of the palette's main color, so Safari's toolbar matches the page. */
 (function () {
   var KEY = "ct-palette";
-  var LIST = ["red", "green", "purple", "orange", "blue", "white", "black"];
+  var LIST = ["red", "green", "purple", "orange", "blue", "white", "black", "pink", "yellow", "teal", "sand", "midnight"];
   var TINT = {          // main color mixed 35% with white
     red: "#ff5959", green: "#59dbb8", purple: "#bea9f5", orange: "#ffb67b",
-    blue: "#6fa2ff", white: "#ffffff", black: "#595959"
+    blue: "#6fa2ff", white: "#ffffff", black: "#595959",
+    pink: "#ff8fc2", yellow: "#ffe666", teal: "#6cc4cc", sand: "#e5d6c0", midnight: "#5a6580"
   };
   function get() { try { var p = localStorage.getItem(KEY); return LIST.indexOf(p) >= 0 ? p : "red"; } catch (e) { return "red"; } }
   function themeColor(p) {

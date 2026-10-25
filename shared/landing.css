@@ -23,6 +23,11 @@
 .dot[data-p="blue"]   { background: #2270ff; }
 .dot[data-p="white"]  { background: #ffffff; }
 .dot[data-p="black"]  { background: #000000; }
+.dot[data-p="pink"]     { background: #ff4fa0; }
+.dot[data-p="yellow"]   { background: #ffd400; }
+.dot[data-p="teal"]     { background: #0e9aa7; }
+.dot[data-p="sand"]     { background: #e6d2b0; }
+.dot[data-p="midnight"] { background: #2a4079; }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
   align-content: start; row-gap: 36px; padding: var(--gap) var(--gap) 120px;
@@ -43,11 +48,12 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 /* transition names (see theme.css) */
 .head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
 .head__a { animation-delay: .45s; } .head__b { animation-delay: .55s; } .head__c { animation-delay: .65s; }
-.dot { animation: rise-in .6s var(--vt-ease) both; animation-delay: calc(.5s + var(--i, 0) * 50ms); }
+.dot { animation: rise-in .6s var(--vt-ease) backwards;   /* not "both": a held end state would block the hover/selected scale */
+   animation-delay: calc(.5s + var(--i, 0) * 50ms); }
 
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
-  .side { position: relative; top: 0; height: auto; min-height: 60vh; }
+  .side { position: relative; top: 0; height: auto; min-height: max(60vh, 560px); }
   .tools { padding: var(--gap); }
   .tools { grid-column: 1; grid-template-columns: 1fr 1fr; }
 }
