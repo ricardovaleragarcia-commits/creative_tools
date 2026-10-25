@@ -345,7 +345,7 @@ const glitterMat = new THREE.ShaderMaterial({
 let patSeed = 1, patTex = null;
 function buildPattern(kind, c1, c2, seed){
   const N = 768, cv = document.createElement('canvas'); cv.width = cv.height = N; const x = cv.getContext('2d');
-  let sd = seed*2654435761 >>> 0; const rnd = () => (sd = (sd*1664525 + 1013904223) >>> 0)/4294967296;
+  let sd = Math.imul(seed|0, 0x9E3779B1) >>> 0; const rnd = () => (sd = (sd*1664525 + 1013904223) >>> 0)/4294967296;
   const col1 = new THREE.Color(c1), col2 = new THREE.Color(c2), css = c => '#' + c.getHexString();
   if(kind === 'marble'){
     const off = [rnd()*100, rnd()*100, rnd()*100, rnd()*100];
@@ -559,7 +559,7 @@ $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent 
 $('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); refreshFinish(); };
 $('vColor2').oninput = () => refreshFinish();
 $('vFinish').onchange = () => { $('vColor2').closest('.block').style.opacity = $('vFinish').value === 'solid' ? .35 : 1; $('vSeed').disabled = $('vFinish').value === 'solid'; refreshFinish(true); };
-$('vSeed').onclick = () => { patSeed = patSeed*7 + 13; refreshFinish(true); CTPersist.save(); };
+$('vSeed').onclick = () => { patSeed = (patSeed*7 + 13) % 1000003; refreshFinish(true); CTPersist.save(); };
 $('glit').oninput = e => { $('glitv').textContent = (+e.target.value).toFixed(2); glitterMat.uniforms.uAmt.value = +e.target.value; };
 $('glitC').oninput = e => glitterMat.uniforms.uCol.value.set(e.target.value);
 $('vTr').oninput = e => { $('vtrv').textContent = (+e.target.value).toFixed(2); applyTrans(+e.target.value); };
@@ -802,7 +802,7 @@ CTPersist.init('disc', {
     if(x.ratio){ const b = document.querySelector(`#ratios button[data-r="${x.ratio}"]`); if(b) b.click(); }
     if(x.lights){ x.lights.forEach((l, k) => { if(lights[k]) Object.assign(lights[k], l); }); selectLight(x.sel || 0); }
     if(x.zoom) setZoom(x.zoom);
-    if(x.seed){ patSeed = x.seed; refreshFinish(true); }
+    if(x.seed){ patSeed = (Math.abs(Math.floor(x.seed)) % 1000003) || 1; refreshFinish(true); }
     if(x.imgs){ if(x.imgs.F) setLabel('F', x.imgs.F); if(x.imgs.B) setLabel('B', x.imgs.B); if(x.imgs.BG) setBgImage(x.imgs.BG); }
   }
 });
