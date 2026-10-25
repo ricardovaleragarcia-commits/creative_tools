@@ -88,7 +88,7 @@
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
     var items = Array.prototype.map.call(dots, function (d, i) {
       var r = d.getBoundingClientRect();
-      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2, direct: i >= N - 3 };
+      return { d: d, fx: r.left + r.width / 2, fy: r.top + r.height / 2, appear: i * SEQ, leave: LEAVE0 + i * LSTAG, slot: -i * Math.PI * 2 / N - Math.PI / 2, direct: true };
     });
     var LAND = LEAVE0 + (N - 1) * LSTAG + TRAVEL, SH0 = LAND - 140, END = SH0 + SHRINK;
     function finish() {
@@ -104,7 +104,7 @@
       items.forEach(function (o) {
         var dt = t - o.appear, k, x, y;
         if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px)"; return; }
-        k = o.direct ? 1 : pop(Math.min(1, dt / OUT));                       // 0 = at the centre point, 1 = on the ring (the last few appear straight on it)
+        k = o.direct ? 1 : pop(Math.min(1, dt / OUT));                       // 1 = on the ring: every dot appears straight on it
         var th = o.slot + W_ROT * t;                                         // the whole ring turns as one
         x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th);
         if (t > o.leave) {                                                   // leaves the ring from where it is, straight home, eased
