@@ -113,11 +113,15 @@ updWarn();
 $('seq').addEventListener('input',updWarn);
 $('seq').addEventListener('change',function(){updWarn();P.seq=$('seq').value;sim.reset()});
 $('mode').addEventListener('change',function(){P.mode=$('mode').value;sim.reset()});
-$('ratio').addEventListener('change',function(){
-  var ab=$('ratio').value.split(':').map(Number),L=1000,a=ab[0],b=ab[1];
+function evn(v,d){v=Math.round(+v||d);return Math.min(4096,Math.max(64,v-v%2))}
+function applyRatio(){
+  var cu=$('ratio').value==='custom';$('customSize').hidden=!cu;$('res').disabled=cu;
+  var ab=cu?[evn($('cw').value,1080),evn($('ch').value,1350)]:$('ratio').value.split(':').map(Number),L=1000,a=ab[0],b=ab[1];
   var w=a>=b?L:Math.round(L*a/b),h=a>=b?Math.round(L*b/a):L;
   P.W=w;P.H=h;cv.width=w;cv.height=h;$('art').style.setProperty('--ar',w/h);liveG=null;sim.setSize(w,h);
-});
+}
+$('ratio').addEventListener('change',applyRatio);
+['cw','ch'].forEach(function(id){$(id).addEventListener('change',function(){$(id).value=evn($(id).value,id==='cw'?1080:1350);if($('ratio').value==='custom')applyRatio()})});
 $('play').onclick=function(){playing=!playing;$('play').textContent=playing?'Pause':'Play'};
 $('reset').onclick=function(){sim.restart()};
 
@@ -164,7 +168,11 @@ var notes={video:'Records one full cycle at the chosen quality, built to loop: t
 function fmtNote(){$('fmtnote').textContent=notes[$('fmt').value]||''}
 $('fmt').addEventListener('change',fmtNote);fmtNote();
 
-function resK(){return(+$('res').value||1080)/Math.min(P.W,P.H)}
+function outDims(){   // exact export size: the typed one for Custom, otherwise the quality (short side) at the frame's ratio
+  if($('ratio').value==='custom')return[evn($('cw').value,1080),evn($('ch').value,1350)];
+  var k=(+$('res').value||1080)/Math.min(P.W,P.H);return[Math.round(P.W*k/2)*2,Math.round(P.H*k/2)*2];
+}
+function resK(){return outDims()[0]/P.W}
 function setBusy(b){busy=b;$('export').disabled=b;$('play').disabled=b;$('reset').disabled=b}
 function bake(){
   return new Promise(function(res,rej){
@@ -183,7 +191,7 @@ function bake(){
 }
 function bitmapURL(){return custom?custom.bitmap.toDataURL('image/png'):null}
 function playVideo(bk){
-  var k=resK(),cw=Math.round(P.W*k/2)*2,ch=Math.round(P.H*k/2)*2,oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
+  var k=resK(),od=outDims(),cw=od[0],ch=od[1],oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
   var octx=oc.getContext('2d'),g=exportG(false),n=bk.frames.length;
   return VideoExport.run({canvas:oc,fps:60,period:n/60,width:cw,height:ch,status:say,
     renderAt:function(t){var i=Math.max(0,Math.min(n-1,Math.round(t*60)));StarExport.drawScene(octx,g,bk.frames[i],k)}});
@@ -195,7 +203,7 @@ $('export').onclick=function(){
   var job;
   try{
     if(f==='png'){
-      var k=resK(),oc=document.createElement('canvas');oc.width=Math.round(P.W*k);oc.height=Math.round(P.H*k);
+      var k=resK(),od=outDims(),oc=document.createElement('canvas');oc.width=od[0];oc.height=od[1];
       StarExport.drawScene(oc.getContext('2d'),exportG(tr),sim.poses(),k);
       job=new Promise(function(res,rej){oc.toBlob(function(b){b?res(b):rej(new Error('Could not create the PNG'))},'image/png')}).then(function(b){return saveFile('shape-multiplier.png',b)});
     }else if(f==='svg'){

@@ -10,6 +10,9 @@ $('specs').textContent = 'Real sizes: CD 120 mm × 1.2 mm (hole 15 mm) · 12" LP
 const RATIOS = {'1:1': [1080,1080], '3:4': [1080,1440], '4:5': [1080,1350], '9:16': [1080,1920], '16:9': [1920,1080]};
 const PERIOD = {frontal: 4, girar: 3.5, 'volteo-y': 6, 'volteo-x': 6, balanceo: 5};
 let RATIO_KEY = '3:4';
+const csz = (v, d) => { v = Math.round(+v || d); return Math.min(4096, Math.max(64, v - v%2)); };   // custom size: even, 64..4096
+const customDims = () => [csz($('cw').value, 1080), csz($('ch').value, 1350)];
+RATIOS.custom = customDims();
 
 // ---------- Escena ----------
 const viewer = $('viewer'), stage = $('stage'), canvas = $('gl');
@@ -546,9 +549,15 @@ document.querySelectorAll('#anims button').forEach(b => b.onclick = () => {
 });
 document.querySelectorAll('#ratios button').forEach(b => b.onclick = () => {
   RATIO_KEY = b.dataset.r;
+  if(RATIO_KEY === 'custom') RATIOS.custom = customDims();
+  $('customSize').hidden = RATIO_KEY !== 'custom'; $('res').disabled = RATIO_KEY === 'custom';
   document.querySelectorAll('#ratios button').forEach(x => x.classList.toggle('on', x === b));
   layoutStage();
 });
+for(const id of ['cw', 'ch']){
+  $(id).addEventListener('input', () => { if(RATIO_KEY === 'custom'){ RATIOS.custom = customDims(); layoutStage(); } });
+  $(id).addEventListener('change', () => { $(id).value = customDims()[id === 'cw' ? 0 : 1]; if(RATIO_KEY === 'custom'){ RATIOS.custom = customDims(); layoutStage(); } });
+}
 $('center').onclick = () => {   // ease back to the front, taking the shortest way round
   userRy = ((userRy + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI; recenter = true;
 };
@@ -578,7 +587,7 @@ function applyGloss(v){
 // ---------- Label paper: fine fibre relief on the vinyl label (bump map; size and strength adjustable) ----------
 const lpBump = new THREE.CanvasTexture(document.createElement('canvas'));
 function paintPaper(size){
-  const N = 1024, c = lpBump.image; c.width = c.height = N; const x = c.getContext('2d');
+  const N = size < 1 ? 2048 : 1024, K = N/1024, c = lpBump.image; c.width = c.height = N; const x = c.getContext('2d');   // below 1 the grain needs a finer texture
   x.fillStyle = '#808080'; x.fillRect(0, 0, N, N);
   const layer = (cell, alpha) => {                                   // random noise at low resolution, smoothly enlarged = grain of that size
     const n = Math.max(8, Math.round(N/cell)), t = document.createElement('canvas'); t.width = t.height = n;
@@ -586,12 +595,12 @@ function paintPaper(size){
     for(let i = 0; i < n*n; i++){ const v = 40 + Math.random()*176; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }
     tx.putImageData(d, 0, 0); x.globalAlpha = alpha; x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(t, 0, 0, N, N);
   };
-  layer(size, 1); layer(size*2.6, 0.3);
+  layer(size*K, 1); layer(size*2.6*K, 0.3);
   x.globalAlpha = 1;
   // pressed ring around the spindle area, as on a real label
-  const R = 0.33*N/2, mid = N/2; x.lineWidth = 5;
+  const R = 0.33*N/2, mid = N/2; x.lineWidth = 5*K;
   x.strokeStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(mid, mid, R, 0, Math.PI*2); x.stroke();
-  x.strokeStyle = 'rgba(0,0,0,0.9)'; x.beginPath(); x.arc(mid, mid, R + 6, 0, Math.PI*2); x.stroke();
+  x.strokeStyle = 'rgba(0,0,0,0.9)'; x.beginPath(); x.arc(mid, mid, R + 6*K, 0, Math.PI*2); x.stroke();
   lpBump.needsUpdate = true;
 }
 function applyPaper(){
@@ -837,13 +846,13 @@ CTPersist.init('disc', {
 // ---------- Export loop (shared exporter) ----------
 $('exp').onclick = async () => {
   if(exporting) return;
-  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W0, H0] = RATIOS[RATIO_KEY], Q = (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, status = t => $('status').textContent = t;
+  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W0, H0] = RATIOS[RATIO_KEY], Q = RATIO_KEY === 'custom' ? 1 : (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, status = t => $('status').textContent = t;
   exporting = true; $('exp').disabled = true;
   try{
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);
     camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix(); fitBg();
     const out = await VideoExport.run({canvas, renderAt, period: P, fps: FPS, width: W, height: H, status});
-    const name = `${mode}-${style}-${animName}-${RATIO_KEY.replace(':','x')}.${out.ext}`;
+    const name = `${mode}-${style}-${animName}-${RATIO_KEY === 'custom' ? W + 'x' + H : RATIO_KEY.replace(':','x')}.${out.ext}`;
     const result = await VideoExport.save(name, out.blob);
     const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', rejected_extension: 'Format not allowed', too_large: 'The file is too large'};
     status(`${msgs[result] || 'Could not save'}: ${name} · ${W}×${H} · ${P} s loop · ${out.note}`);

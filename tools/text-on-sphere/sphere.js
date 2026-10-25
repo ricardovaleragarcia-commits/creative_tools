@@ -21,10 +21,15 @@ function sphereLoop(canvas, cfg) {
   }
 
   function buildGeom() {
-    const r = c.ratio.split(':').map(Number), Q = c.quality;
     const ev = x => 2 * Math.round(x / 2);   // even sizes: H.264 needs them
-    const W = ev(r[0] >= r[1] ? Q * r[0] / r[1] : Q);
-    const H = ev(r[0] >= r[1] ? Q : Q * r[1] / r[0]);
+    const cl = (v, d) => Math.min(4096, Math.max(64, ev(+v || d)));
+    let W, H;
+    if (c.ratio === 'custom') { W = cl(c.cw, 1080); H = cl(c.ch, 1350); }
+    else {
+      const r = c.ratio.split(':').map(Number), Q = c.quality;
+      W = ev(r[0] >= r[1] ? Q * r[0] / r[1] : Q);
+      H = ev(r[0] >= r[1] ? Q : Q * r[1] / r[0]);
+    }
     canvas.width = W; canvas.height = H;
     const cx = W / 2, cy = H / 2, R = Math.min(W, H) * c.size / 200;
     const x0 = Math.floor(cx - R) - 2, y0 = Math.floor(cy - R) - 2, S = Math.ceil(2 * R) + 5;
@@ -135,7 +140,7 @@ function sphereLoop(canvas, cfg) {
   function update(p) {
     const before = Object.assign({}, c);
     Object.assign(c, p);
-    const geo = ['ratio', 'quality', 'size', 'tilt'].some(k => before[k] !== c[k]);
+    const geo = ['ratio', 'quality', 'size', 'tilt', 'cw', 'ch'].some(k => before[k] !== c[k]);
     const tx = ['text', 'font', 'tsize', 'repeat'].some(k => before[k] !== c[k]);
     if (geo || !G) buildGeom();
     if (tx || !ta) {
@@ -151,15 +156,16 @@ function sphereLoop(canvas, cfg) {
 
 /* ---------- interface ---------- */
 const $ = s => document.querySelector(s), cv = $('#cv'), art = $('#art');
-const NUM = ['tsize', 'size', 'tilt', 'T', 'quality', 'bw', 'dir', 'axis', 'spin', 'bseed'];
+const NUM = ['tsize', 'size', 'tilt', 'T', 'quality', 'cw', 'ch', 'bw', 'dir', 'axis', 'spin', 'bseed'];
 const FONTS = ['Archivo', 'Inter', 'Space Grotesk', 'Montserrat', 'Roboto', 'Syne', 'Unbounded', 'Playfair Display', 'DM Serif Display', 'Oswald', 'Anton', 'Bebas Neue', 'Tinos', 'Times New Roman'];
 const RATIOS = { '1:1': 'Square 1:1', '4:5': 'Portrait 4:5', '3:4': 'Portrait 3:4', '9:16': 'Vertical 9:16', '16:9': 'Horizontal 16:9' };
 FONTS.forEach(f => $('#font').add(new Option(f, f)));
 Object.entries(RATIOS).forEach(([k, v]) => $('#ratio').add(new Option(v, k)));
+$('#ratio').add(new Option('Custom size…', 'custom'));
 
 const ctrl = sphereLoop(cv, {
   text: 'your text here', font: 'Archivo', tsize: 30, size: 72, tilt: -30, repeat: true,
-  mode: 'giro', dir: 1, T: 6, ratio: '3:4', quality: 1080,
+  mode: 'giro', dir: 1, T: 6, ratio: '3:4', quality: 1080, cw: 1080, ch: 1350,
   bg: '#000000', sc: '#EAEAEA', tc: '#000000', border: false, bc: '#000000', bw: 1.5, playing: true, fx: '', axis: 0, spin: 6, bseed: 0
 });
 const syncAr = () => art.style.setProperty('--ar', cv.width / cv.height);   // CSS fits the frame inside the stage
@@ -170,8 +176,12 @@ const read = el => el.type === 'checkbox' ? el.checked : NUM.includes(el.dataset
 function sync() {
   inputs.forEach(el => { const v = ctrl.cfg[el.dataset.k]; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; });
 }
-inputs.forEach(el => el.addEventListener('input', () => { ctrl.update({ [el.dataset.k]: read(el) }); syncAr(); }));
-sync();
+inputs.forEach(el => el.addEventListener(el.type === 'number' ? 'change' : 'input', () => {   // numbers apply when committed, not on every keystroke
+  if (el.type === 'number') el.value = Math.min(4096, Math.max(64, 2 * Math.round((+el.value || 1080) / 2)));
+  ctrl.update({ [el.dataset.k]: read(el) }); syncAr(); syncCustom();
+}));
+function syncCustom() { const on = ctrl.cfg.ratio === 'custom'; $('#customSize').hidden = !on; document.querySelector('[data-k=quality]').disabled = on; }
+sync(); syncCustom();
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 $('#rand').onclick = () => {
@@ -234,7 +244,7 @@ $('#dl').onclick = () => VideoExport.save('text-on-sphere.html', new Blob([$('#s
 $('#close').onclick = () => $('#dlg').close();
 
 /* ---------- remember the settings between visits ---------- */
-const SAVED = ['text', 'font', 'tsize', 'size', 'tilt', 'repeat', 'mode', 'dir', 'T', 'ratio', 'quality', 'bg', 'sc', 'tc', 'border', 'bc', 'bw', 'fx', 'eje', 'axis', 'spin', 'bseed'];
+const SAVED = ['text', 'font', 'tsize', 'size', 'tilt', 'repeat', 'mode', 'dir', 'T', 'ratio', 'quality', 'cw', 'ch', 'bg', 'sc', 'tc', 'border', 'bc', 'bw', 'fx', 'eje', 'axis', 'spin', 'bseed'];
 CTPersist.init('text-on-sphere', {
   get: () => Object.fromEntries(SAVED.map(k => [k, ctrl.cfg[k]])),
   set: x => {

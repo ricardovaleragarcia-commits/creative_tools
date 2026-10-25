@@ -39,9 +39,10 @@
     <div class="block full" data-sec="Format &amp; motion" data-open>
       <div class="t">Format</div>
       <div class="btns fill" id="ratios">
-        <button data-r="1:1">1:1</button><button data-r="3:4" class="on">3:4</button><button data-r="4:5">4:5</button><button data-r="9:16">9:16</button><button data-r="16:9">16:9</button>
+        <button data-r="1:1">1:1</button><button data-r="3:4" class="on">3:4</button><button data-r="4:5">4:5</button><button data-r="9:16">9:16</button><button data-r="16:9">16:9</button><button data-r="custom">Custom</button>
       </div>
     </div>
+    <div class="block full" id="customSize" hidden><div class="t">Custom size (px)</div><div class="sizerow"><input type="number" id="cw" min="64" max="4096" step="2" value="1080" inputmode="numeric" aria-label="Width in pixels"><span aria-hidden="true">×</span><input type="number" id="ch" min="64" max="4096" step="2" value="1350" inputmode="numeric" aria-label="Height in pixels"></div><div class="note">Exported at exactly this size (even numbers, 64 to 4096 px). Quality is not used here.</div></div>
 
     <div class="block full">
       <div class="t">Animation</div>
@@ -82,7 +83,7 @@
       <div class="block"><div class="t">Dust &amp; scratches <output id="dustv">0.50</output></div><input type="range" id="dust" min="0" max="1" step="0.01" value="0.5"></div>
       <div class="block"><div class="t">Groove texture <output id="grvv">0.50</output></div><input type="range" id="grv" min="0" max="1" step="0.01" value="0.5"></div>
       <div class="block"><div class="t">Label paper <output id="lpv">0.70</output></div><input type="range" id="lp" min="0" max="1" step="0.01" value="0.7"></div>
-      <div class="block"><div class="t">Paper grain size <output id="lpsv">3.0</output></div><input type="range" id="lps" min="1" max="10" step="0.5" value="3"></div>
+      <div class="block"><div class="t">Paper grain size <output id="lpsv">3.0</output></div><input type="range" id="lps" min="0.5" max="10" step="0.5" value="3"></div>
       <div class="block full"><div class="t">Reflectivity <output id="reflv">0.50</output></div><input type="range" id="refl" min="0" max="1" step="0.01" value="0.5"></div>
     </div>
 

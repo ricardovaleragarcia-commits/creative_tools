@@ -6,6 +6,9 @@ const RATIOS = {"1:1":[1080,1080],"4:5":[1080,1350],"3:4":[1080,1440],"9:16":[10
 const $ = id => document.getElementById(id);
 const prev = $('preview'), pctx = prev.getContext('2d');
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const csz = (v, d) => { v = Math.round(+v || d); return Math.min(4096, Math.max(64, v - v%2)); };   // custom size: even, 64..4096
+const customDims = () => [csz($('cw').value, 1080), csz($('ch').value, 1350)];
+RATIOS.custom = customDims();
 let ratio = '3:4', letters = [], bounds = [0,0,1,1], srcKind = 'text', playing = true, playMs = 0, last = 0, timer = 0, recording = false;
 let CURVE = {x1:0.45, y1:0.05, x2:0.15, y2:1};
 let seed = 1, buildTok = 0;
@@ -396,7 +399,8 @@ function renderFrame(ctx, W, H, t){
 // ---------- Preview ----------
 function resizePreview(){
   const [W,H] = RATIOS[ratio];
-  prev.width = W/2; prev.height = H/2;
+  const ps = Math.min(.5, 1080/Math.max(W,H));   // preview at half size, never above 1080 px
+  prev.width = Math.round(W*ps); prev.height = Math.round(H*ps);
   $('art').style.setProperty('--ar', W/H);
 }
 function frame(now){
@@ -502,30 +506,37 @@ drawCurve();
 const rb = $('ratios');
 function setRatio(r){
   if(!RATIOS[r]) return; ratio = r;
+  if(r === 'custom') RATIOS.custom = customDims();
+  $('customSize').hidden = r !== 'custom'; $('res').disabled = r === 'custom';
   document.querySelectorAll('#ratios button').forEach(x => x.classList.toggle('on', x.dataset.r === r));
   resizePreview();
 }
 for(const r of Object.keys(RATIOS)){
-  const b = document.createElement('button'); b.textContent = r; b.dataset.r = r;
+  const b = document.createElement('button'); b.textContent = r === 'custom' ? 'Custom' : r; b.dataset.r = r;
   if(r === ratio) b.classList.add('on');
   b.onclick = () => setRatio(r);
   rb.appendChild(b);
 }
 $('dl').onclick = async () => {
   if(recording || !letters.length) return;
-  const [W0,H0] = RATIOS[ratio], Q = (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, ec = document.createElement('canvas');
+  const [W0,H0] = RATIOS[ratio], Q = ratio === 'custom' ? 1 : (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, ec = document.createElement('canvas');
   ec.width = W; ec.height = H; const ectx = ec.getContext('2d');
   const total = timing().total, FPS = +$('fps').value || 60, status = t => $('status').textContent = t;
   recording = true; $('dl').disabled = true;
   try{
     const out = await VideoExport.run({canvas: ec, renderAt: t => renderFrame(ectx, W, H, t), period: total, fps: FPS, width: W, height: H, status});
-    const name = `text-reveal-${ratio.replace(':','x')}.${out.ext}`;
+    const name = `text-reveal-${ratio === 'custom' ? W + 'x' + H : ratio.replace(':','x')}.${out.ext}`;
     const r = await VideoExport.save(name, out.blob);
     const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', too_large: 'The file is too large'};
     status(`${msgs[r] || 'Could not save'}: ${name} · ${W}×${H} · ${total.toFixed(1)} s loop · ${out.note}`);
   }catch(err){ status(err && err.message || 'Export failed'); }
   finally { recording = false; $('dl').disabled = false; }
 };
+
+for(const id of ['cw', 'ch']){
+  $(id).addEventListener('input', () => { if(ratio === 'custom'){ RATIOS.custom = customDims(); resizePreview(); } });
+  $(id).addEventListener('change', () => { $(id).value = customDims()[id === 'cw' ? 0 : 1]; if(ratio === 'custom'){ RATIOS.custom = customDims(); resizePreview(); } });
+}
 
 // ---------- Start ----------
 resizePreview();

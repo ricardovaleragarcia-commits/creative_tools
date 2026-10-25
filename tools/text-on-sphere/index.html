@@ -34,6 +34,7 @@
     <div class="block"><div class="t">Axis tilt</div><input type="range" data-k="tilt" min="-60" max="60"></div>
     <div class="block"><div class="t">Format</div><select data-k="ratio" id="ratio"></select></div>
     <div class="block"><div class="t">Quality (short side, px)</div><select data-k="quality"><option value="1080">1080 (Full HD)</option><option value="1440">1440 (2K)</option></select></div>
+    <div class="block full" id="customSize" hidden><div class="t">Custom size (px)</div><div class="sizerow"><input type="number" data-k="cw" id="cw" min="64" max="4096" step="2" value="1080" inputmode="numeric" aria-label="Width in pixels"><span aria-hidden="true">×</span><input type="number" data-k="ch" id="ch" min="64" max="4096" step="2" value="1350" inputmode="numeric" aria-label="Height in pixels"></div><div class="note">Exported at exactly this size (even numbers, 64 to 4096 px). Quality is not used here.</div></div>
 
     <div class="block" data-sec="Colors"><div class="t">Frame background</div><input type="color" data-k="bg"></div>
     <div class="block"><div class="t">Sphere</div><input type="color" data-k="sc"></div>
