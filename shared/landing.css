@@ -67,4 +67,7 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 html.intro * { animation: none !important; }
 html.intro .side__head, html.intro .tools, html.intro .credits { opacity: 0; }
 html.intro .dot { opacity: 0; pointer-events: none; }
+/* the whole window starts in the panel color; landing.js shrinks it (--ir / --ib = what to cut from the right / bottom) down to the real 1/3 panel */
+html.intro::before { content: ""; position: fixed; inset: 0; z-index: 1; background: var(--dark); pointer-events: none; clip-path: inset(0 var(--ir, 0px) var(--ib, 0px) 0); }
+html.intro .side { z-index: 2; overflow: visible; }
 html.intro-played .dot { animation: none; }
