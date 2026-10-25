@@ -363,12 +363,34 @@ function buildPattern(kind, c1, c2, seed){
     x.putImageData(im, 0, 0);
   } else if(kind === 'splatter'){
     x.fillStyle = css(col1); x.fillRect(0, 0, N, N); x.fillStyle = css(col2);
-    for(let n = 0; n < 70; n++){
-      const cx = rnd()*N, cy = rnd()*N, r = 4 + 38*Math.pow(rnd(), 2.4), a = rnd()*Math.PI*2, L = r*(1 + 3*rnd());
-      x.beginPath(); x.ellipse(cx, cy, r, r*(0.6 + 0.4*rnd()), a, 0, 7); x.fill();
-      x.beginPath(); x.ellipse(cx + Math.cos(a)*L*0.5, cy + Math.sin(a)*L*0.5, L*0.5, r*0.35, a, 0, 7); x.fill();   // streak tail
+    const TAUX = Math.PI*2;
+    // an irregular blob: every vertex gets its own radius, so no two blobs share a shape
+    const blob = (cx, cy, r, irr) => {
+      const n = 7 + Math.floor(rnd()*7), ph = rnd()*TAUX, p = [];
+      for(let k = 0; k < n; k++){ const an = ph + k/n*TAUX, rr = r*(1 + (rnd() - 0.5)*irr); p.push([cx + Math.cos(an)*rr, cy + Math.sin(an)*rr*(0.8 + 0.4*rnd())]); }
+      x.beginPath(); x.moveTo((p[0][0] + p[n-1][0])/2, (p[0][1] + p[n-1][1])/2);
+      for(let k = 0; k < n; k++){ const q = p[k], w = p[(k+1) % n]; x.quadraticCurveTo(q[0], q[1], (q[0] + w[0])/2, (q[1] + w[1])/2); }
+      x.fill();
+    };
+    // a teardrop streak: round head that tapers into a thin tail, with a few drops flung along it
+    const streak = (cx, cy, r, an, L) => {
+      const px = -Math.sin(an), py = Math.cos(an), bend = (rnd() - 0.5)*L*0.25;
+      x.beginPath(); x.moveTo(cx + px*r, cy + py*r);
+      x.quadraticCurveTo(cx + Math.cos(an)*L*0.45 + px*r*0.75 + py*bend, cy + Math.sin(an)*L*0.45 + py*r*0.75 - px*bend, cx + Math.cos(an)*L, cy + Math.sin(an)*L);
+      x.quadraticCurveTo(cx + Math.cos(an)*L*0.45 - px*r*0.75 + py*bend, cy + Math.sin(an)*L*0.45 - py*r*0.75 - px*bend, cx - px*r, cy - py*r); x.fill();
+      blob(cx, cy, r*1.05, 0.5);
+      for(let k = 0, m = Math.floor(rnd()*5); k < m; k++){ const d = L*(0.8 + rnd()*0.9); blob(cx + Math.cos(an + (rnd() - 0.5)*0.25)*d, cy + Math.sin(an + (rnd() - 0.5)*0.25)*d, r*(0.08 + 0.2*rnd()), 0.6); }
+    };
+    const events = 38 + Math.floor(rnd()*30);
+    for(let n = 0; n < events; n++){
+      const cx = rnd()*N, cy = rnd()*N, r = 3 + 46*Math.pow(rnd(), 3), kind2 = rnd();
+      if(kind2 < 0.16) streak(cx, cy, r*0.9, rnd()*TAUX, r*(1.6 + 3.2*rnd()));
+      else blob(cx, cy, r, 0.35 + 0.7*rnd());
+      if(r > 14){   // big splashes throw satellite drops around themselves
+        for(let k = 0, m = 3 + Math.floor(rnd()*10); k < m; k++){ const an = rnd()*TAUX, d = r*(1.1 + 2.4*Math.pow(rnd(), 1.4)); blob(cx + Math.cos(an)*d, cy + Math.sin(an)*d, r*(0.04 + 0.16*rnd()), 0.7); }
+      }
     }
-    for(let n = 0; n < 420; n++){ x.beginPath(); x.arc(rnd()*N, rnd()*N, 1 + 4*Math.pow(rnd(), 3), 0, 7); x.fill(); }
+    for(let n = 0; n < 260; n++) blob(rnd()*N, rnd()*N, 0.8 + 3.2*Math.pow(rnd(), 2.5), 0.5);   // fine speckle
   } else {   // half & half
     const a = rnd()*Math.PI*2, dx = Math.cos(a)*N/2, dy = Math.sin(a)*N/2, g = x.createLinearGradient(N/2 - dx, N/2 - dy, N/2 + dx, N/2 + dy);
     g.addColorStop(0, css(col1)); g.addColorStop(0.45, css(col1)); g.addColorStop(0.55, css(col2)); g.addColorStop(1, css(col2));
@@ -536,7 +558,7 @@ $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent 
 // Ajustes
 $('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); refreshFinish(); };
 $('vColor2').oninput = () => refreshFinish();
-$('vFinish').onchange = () => { $('vColor2').closest('.block').style.opacity = $('vFinish').value === 'solid' ? .35 : 1; $('vSeed').disabled = $('vFinish').value === 'solid' || $('vFinish').value === 'half'; refreshFinish(true); };
+$('vFinish').onchange = () => { $('vColor2').closest('.block').style.opacity = $('vFinish').value === 'solid' ? .35 : 1; $('vSeed').disabled = $('vFinish').value === 'solid'; refreshFinish(true); };
 $('vSeed').onclick = () => { patSeed = patSeed*7 + 13; refreshFinish(true); CTPersist.save(); };
 $('glit').oninput = e => { $('glitv').textContent = (+e.target.value).toFixed(2); glitterMat.uniforms.uAmt.value = +e.target.value; };
 $('glitC').oninput = e => glitterMat.uniforms.uCol.value.set(e.target.value);
