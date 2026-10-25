@@ -74,12 +74,18 @@
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
-    var N = dots.length, SEQ = 55, OUT = 500, LAP = 1100, TRAVEL = 750, SHRINK = 700, W_ROT = Math.PI * 2 / 1400;   // ms, rad per ms
+    var N = dots.length, SEQ = 70, OUT = 380, LAP = 1100, TRAVEL = 700, SHRINK = 700, W_ROT = Math.PI * 2 / 1400;   // ms, rad per ms
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function ease(p) { return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
     function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
+    function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
+      var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
+      var by = function (u) { return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u; };
+      return function (x) { var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
+    }
+    var fly = bezier(.7, 0, .2, 1);                                         // slow start, fast middle, soft landing
     var sr = side.getBoundingClientRect();
-    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .3, vh * .3, 260);          // one radius: a perfect circle
+    var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .18, vh * .18, 58);           // one radius: a perfect circle, small like a loading spinner
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
     var items = Array.prototype.map.call(dots, function (d, i) {
       var r = d.getBoundingClientRect();
@@ -101,7 +107,10 @@
         if (dt < 0) { o.d.style.opacity = 0; o.d.style.transform = "translate(" + (cx - o.fx) + "px," + (cy - o.fy) + "px)"; return; }
         var k = easeOut(Math.min(1, dt / OUT)), th = o.ph + W_ROT * dt;      // leaves the centre point, spiralling out to the circle
         var x = cx + k * R * Math.cos(th), y = cy + k * R * Math.sin(th);
-        if (dt > LAP) { var e = ease(Math.min(1, (dt - LAP) / TRAVEL)); x += (o.fx - x) * e; y += (o.fy - y) * e; }
+        if (dt > LAP) {                                                      // leaves the circle from where it is and flies straight home on a bezier
+          var th0 = o.ph + W_ROT * LAP, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly(Math.min(1, (dt - LAP) / TRAVEL));
+          x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e;
+        }
         o.d.style.opacity = Math.min(1, dt / 120);
         o.d.style.transform = "translate(" + (x - o.fx).toFixed(1) + "px," + (y - o.fy).toFixed(1) + "px)";
       });
