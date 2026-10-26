@@ -9,8 +9,8 @@
 .side__head { display: flex; gap: var(--gap); padding: var(--gap); font-size: 24px; }   /* both boxes are as tall as the type plus a hair, so the letters sit almost against the edges (as in the Figma) */
 .head__logo, .head__title { background: var(--ink); color: var(--dark); }
 .head__title { height: 1em; box-sizing: content-box; padding-block: .09em; }
-.head__logo { flex: none; display: flex; align-items: center; justify-content: center; width: .99em; height: 1.18em; padding: 0; box-sizing: border-box; }   /* box shaped like the Figma one (about 0.84 wide per 1 tall); the mark fills ~86% of its height */
-.head__logo svg { height: 1.02em; width: auto; display: block; }
+.head__logo { position: relative; flex: none; width: .99em; height: 1.18em; padding: 0; box-sizing: border-box; }   /* box as on the Figma canvas (285x340 ratio); the mark is placed in it as there: left 27, top 25, 225x294 */
+.head__logo svg { position: absolute; left: 9.47%; top: 7.35%; width: 78.95%; height: 86.47%; display: block; }
 .head__title { flex: 1; min-width: 0; margin: 0; padding-inline: .16em; font-size: 1em; font-weight: 700; line-height: 1em; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
 /* The two small texts sit in the middle of the free area, so the dots can reach the top. */
 .side__mid { position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; }   /* centred on the whole panel: only the two texts count, the arrow hangs below them */
