@@ -74,8 +74,8 @@
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("sns-intro", "1"); } catch (e) {}
-    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1150, LSTAG = 0, TRAVEL = 850, SHRINK = 900;   // ms
-    var W_ROT = Math.PI * 2 / 1500;                                                                    // ring spin (rad/ms)
+    var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1600, LSTAG = 0, TRAVEL = 850, SHRINK = 900;   // ms
+    var W_ROT = Math.PI * 2 / 1200;                                                                    // ring spin (rad/ms)
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
       var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
