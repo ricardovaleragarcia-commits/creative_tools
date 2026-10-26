@@ -1,7 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 454" preserveAspectRatio="xMidYMid slice">
-  <defs><mask id="hole"><rect width="470" height="454" fill="#fff"/><circle cx="235.2" cy="227.2" r="13.1" fill="#000"/></mask></defs>
-  <g mask="url(#hole)">
-    <circle cx="235.2" cy="227.2" r="213.6" fill="#d9d9d9"/>
-    <circle cx="235.2" cy="227.2" r="74.7" fill="#eaeaea"/>
-  </g>
+  <path fill="#d9d9d9" fill-rule="evenodd" d="M21.6 227.2a213.6 213.6 0 1 0 427.2 0a213.6 213.6 0 1 0-427.2 0M222.1 227.2a13.1 13.1 0 1 0 26.2 0a13.1 13.1 0 1 0-26.2 0"/>
+  <path fill="#eaeaea" fill-rule="evenodd" d="M160.5 227.2a74.7 74.7 0 1 0 149.4 0a74.7 74.7 0 1 0-149.4 0M222.1 227.2a13.1 13.1 0 1 0 26.2 0a13.1 13.1 0 1 0-26.2 0"/>
 </svg>
