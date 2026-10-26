@@ -46,8 +46,8 @@ h1, h2, p { margin: 0; font: inherit; }
 /* Credits bar: fixed, over the content. On the landing it sits in the dark panel at the left;
    only on the landing. It rises in on arrival. */
 .credits {
-  position: fixed; left: 10px; bottom: 14px; z-index: 10;
-  width: max-content; max-width: calc(100% - 20px);
+  position: fixed; left: var(--gap); bottom: 14px; z-index: 10;
+  width: max-content; max-width: calc(100% - 10px);
   display: flex; flex-direction: column; gap: 0;
   font-size: var(--fs-foot); font-weight: 700; line-height: 28px; pointer-events: none;   /* same size and line height as the landing title */
   animation: rise-in .8s var(--vt-ease) .7s both;

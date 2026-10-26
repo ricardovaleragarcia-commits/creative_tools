@@ -13,7 +13,7 @@
 .head__title { flex: 1; min-width: 0; margin: 0; padding-inline: .16em; font-size: 1em; font-weight: 700; line-height: 1em; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
 /* The two small texts sit in the middle of the free area, so the dots can reach the top. */
 .side__mid { position: absolute; left: 0; right: 0; top: var(--dots-top, 80px); bottom: 104px; display: flex; align-items: center; pointer-events: none; }
-.mid__text { display: flex; flex-direction: column; gap: 14px; padding: 0 10px; pointer-events: auto; }
+.mid__text { display: flex; flex-direction: column; gap: 14px; padding: 0 var(--gap); pointer-events: auto; }
 .head__c { margin: 0; font-size: 24px; font-weight: 700; line-height: 28px; }
 .dots { position: absolute; left: 0; right: 0; top: var(--dots-top, 300px); bottom: 104px; pointer-events: none; }  /* free space between the intro text and the credits (top is set from the text height in landing.js) */
 .dot {
