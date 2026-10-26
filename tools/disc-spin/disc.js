@@ -495,6 +495,9 @@ function buildPlain(T, R, holeF, labelF, labelIn = holeF){
   g.add(face(annulus(holeF, 1), plainBodyMat, -h - 0.002, true));
   g.add(face(annulus(labelIn, labelF), plainLabelFrontMat, h + 0.004, false));
   g.add(face(annulus(labelIn, labelF), plainLabelBackMat, -h - 0.004, true));
+  // spin marker: a short dark tick on the top face, shown only in "Playing" (a plain disc turning on its own axis would look still otherwise)
+  const mark = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.26), new THREE.MeshBasicMaterial({color: linearHex('#806532'), toneMapped: false}));
+  mark.position.set(0, 0.7, h + 0.006); mark.visible = false; g.add(mark); g.userData.mark = mark;
   return g;
 }
 // same geometry as the realistic discs: vinyl hole + label; CD hole, clear hub ring, and the printed face out to the rim
@@ -546,6 +549,7 @@ function pose(name, t){
 }
 document.querySelectorAll('#anims button').forEach(b => b.onclick = () => {
   animName = b.dataset.a; tAnim = 0;
+  if(animName !== 'frontal'){ animPlaying = true; $('pause').textContent = 'Pause'; }   // picking a moving animation always plays it (Front, still just holds)
   document.querySelectorAll('#anims button').forEach(x => x.classList.toggle('on', x === b));
 });
 document.querySelectorAll('#ratios button').forEach(b => b.onclick = () => {
@@ -809,7 +813,8 @@ function applyLights(){
   } else { U.uLight.value.set(2, 4, 5).normalize(); U.uLightK.value = 1; U.uLightCol.value.set(0xffffff); }
 }
 function renderAt(t){
-  const p = pose(animName, t);
+  const p = pose(animName, t), spinning = animName === 'girar';
+  plainVinyl.userData.mark.visible = plainCD.userData.mark.visible = spinning;
   disc.rotation.set(p.x + userRx, p.y + userRy, p.z);
   disc.scale.setScalar(zoomV);
   U.uCam.value.copy(camera.position);
