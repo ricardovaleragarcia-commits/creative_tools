@@ -30,10 +30,10 @@ fonts/              (not used since the switch to Helvetica Neue)
 ## Tools
 | Tool | Folder |
 |---|---|
-| Disc Spin | `tools/disc-spin/` |
-| Shape Drop | `tools/shape-drop/` |
-| Line Draw | `tools/line-draw/` |
-| Text Orbit | `tools/text-orbit/` |
+| Vinyl & CD Spin | `tools/disc-spin/` |
+| Shape Drop & Multiply | `tools/shape-drop/` |
+| Text & Logo Line Draw | `tools/line-draw/` |
+| Text Orbit Sphere | `tools/text-orbit/` |
 
 ## Publish
 Settings -> Pages -> Deploy from a branch -> `main` / root.
