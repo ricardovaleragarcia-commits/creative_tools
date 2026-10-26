@@ -593,7 +593,7 @@ function paintPaper(size){   // grain size 0 = the finest grain the texture can 
   const layer = (cell, alpha) => {                                   // random noise at low resolution, smoothly enlarged = grain of that size
     const n = Math.max(8, Math.round(N/cell)), t = document.createElement('canvas'); t.width = t.height = n;
     const tx = t.getContext('2d'), d = tx.createImageData(n, n);
-    for(let i = 0; i < n*n; i++){ const v = 128 + (Math.random() - 0.5) * 176 * 0.6; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }   // 0.6 = softer texture (less contrast)
+    for(let i = 0; i < n*n; i++){ const v = 128 + (Math.random() - 0.5) * 176 * 0.4; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }   // 0.4 = softer texture (less contrast)
     tx.putImageData(d, 0, 0); x.globalAlpha = alpha; x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(t, 0, 0, N, N);
   };
   layer(g*K, 1); layer(g*2.6*K, 0.3);
