@@ -4,5 +4,5 @@
 dialog { background: var(--dark); color: var(--ink); border: 0; padding: 15px; width: min(640px, 92vw); font: 700 var(--fs-s)/1.2 var(--font); }
 dialog::backdrop { background: rgba(0, 0, 0, .55); }
 dialog .t { margin-bottom: 8px; }
-dialog textarea { width: 100%; height: 320px; margin-bottom: 8px; font: 12px/1.4 ui-monospace, Menlo, monospace; background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--ink); border: 0; border-radius: 0; padding: 8px; }
+dialog textarea { width: 100%; height: 320px; margin-bottom: 8px; font: 14px/1.4 ui-monospace, Menlo, monospace; background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--ink); border: 0; border-radius: 0; padding: 8px; }
 dialog .btns button { font: 700 var(--fs-s)/1 var(--font); color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); border: 0; border-radius: 0; padding: 8px; cursor: pointer; }
