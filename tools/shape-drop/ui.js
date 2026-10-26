@@ -193,6 +193,7 @@ function useShape(sh,bitmap,bitmaps){custom={bitmap:bitmap,bitmaps:bitmaps||null
 function fileNote(sh,r,pieces){
   var np=sh.outers.length,t;
   if(pieces>1)t='Using '+pieces+' pieces. Each one falls and collides on its own; every copy is the whole group.';
+  else if(lastOne&&lastParts)t='Using the picture as one shape: its '+lastParts.length+' elements move together.';
   else t='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.');
   $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
 }
@@ -237,7 +238,39 @@ function composePieces(items){
     return cv;
   });
 }
-var lastItems=null;
+var lastItems=null,lastOne=null,lastParts=null;
+/* Split one picture into its loose elements (8-connected blobs of visible pixels); returns same-size canvases, one per element. */
+function splitElements(it,MAXE){
+  var w=it.w,h=it.h,sc=256/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
+  var gc=document.createElement('canvas');gc.width=gw;gc.height=gh;var gx=gc.getContext('2d');gx.drawImage(it.bm,0,0,gw,gh);
+  var d=gx.getImageData(0,0,gw,gh).data,lab=new Int32Array(gw*gh),n=0,areas=[],cen=[];
+  for(var s=0;s<gw*gh;s++){
+    if(lab[s]||d[s*4+3]<=40)continue;
+    n++;var st=[s],a=0,sx=0,sy=0;lab[s]=n;
+    while(st.length){var c=st.pop(),cx=c%gw,cy=(c/gw)|0;a++;sx+=cx;sy+=cy;
+      for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){var X=cx+dx,Y=cy+dy;if(X<0||Y<0||X>=gw||Y>=gh)continue;var q=Y*gw+X;if(!lab[q]&&d[q*4+3]>40){lab[q]=n;st.push(q)}}}
+    areas[n]=a;cen[n]=[sx/a,sy/a];
+  }
+  if(n<2)return null;
+  var ids=[];for(var i=1;i<=n;i++)ids.push(i);
+  ids.sort(function(a,b){return areas[b]-areas[a]});
+  var keep=ids.slice(0,Math.min(MAXE,n)),total=areas.reduce(function(a,v){return a+(v||0)},0);
+  keep=keep.filter(function(id,i){return i===0||areas[id]>total*0.004});   // ignore specks: they join the nearest element
+  if(keep.length<2)return null;
+  var map={};
+  ids.forEach(function(id){
+    if(keep.indexOf(id)>=0){map[id]=keep.indexOf(id);return}
+    var b=0,bd=1e18;keep.forEach(function(k,j){var dd=Math.hypot(cen[k][0]-cen[id][0],cen[k][1]-cen[id][1]);if(dd<bd){bd=dd;b=j}});map[id]=b;
+  });
+  var full=it.bm.getContext('2d').getImageData(0,0,w,h),fd=full.data,outs=keep.map(function(){return new Uint8ClampedArray(w*h*4)});
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+    var o=(y*w+x)*4;if(!fd[o+3])continue;
+    var gx0=Math.min(gw-1,(x*gw/w)|0),gy0=Math.min(gh-1,(y*gh/h)|0),L=lab[gy0*gw+gx0];
+    if(!L){var bd2=99;for(var r=1;r<=3&&!L;r++)for(var yy=-r;yy<=r;yy++)for(var xx=-r;xx<=r;xx++){var X2=gx0+xx,Y2=gy0+yy;if(X2<0||Y2<0||X2>=gw||Y2>=gh)continue;var l2=lab[Y2*gw+X2];if(l2&&xx*xx+yy*yy<bd2){bd2=xx*xx+yy*yy;L=l2}}}
+    if(!L)continue;var t=outs[map[L]];t[o]=fd[o];t[o+1]=fd[o+1];t[o+2]=fd[o+2];t[o+3]=fd[o+3];
+  }
+  return outs.map(function(arr){var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').putImageData(new ImageData(arr,w,h),0,0);return {bm:c,w:w,h:h}});
+}
 function buildGroup(){
   var items=lastItems,keep=$('keeplayout').checked;
   try{
@@ -254,6 +287,11 @@ function buildGroup(){
   }catch(err){say('Could not process that image.')}
 }
 $('keeplayout').addEventListener('change',function(){if(lastItems&&lastItems.length>1)buildGroup()});
+$('pieceMode').addEventListener('change',function(){
+  if(!lastOne)return;
+  if($('pieceMode').value==='separate'&&lastParts){lastItems=lastParts;$('keepRow').hidden=false;buildGroup();return}
+  lastItems=null;$('keepRow').hidden=true;var it=lastOne,r=traceBitmap(it.bm,it.w,it.h,12);if(r&&!r.err){useShape(r.sh,it.bm);fileNote(r.sh,r,1)}
+});
 $('file').addEventListener('change',function(e){
   var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
   Promise.all(files.map(readPicture)).then(function(items){
@@ -262,9 +300,12 @@ $('file').addEventListener('change',function(e){
         var it=items[0],r=traceBitmap(it.bm,it.w,it.h,12);
         if(!r){say('That image has no visible pixels.');return}
         if(r.err){say('Could not trace that silhouette.');return}
-        lastItems=null;$('keepRow').hidden=true;useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
+        lastOne=it;lastParts=splitElements(it,8);lastItems=null;
+        $('modeRow').hidden=!lastParts;$('keepRow').hidden=true;
+        if(lastParts&&$('pieceMode').value==='separate'){lastItems=lastParts;$('keepRow').hidden=false;buildGroup();return}
+        useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
       }
-      lastItems=items;$('keepRow').hidden=false;buildGroup();
+      lastOne=null;lastParts=null;$('modeRow').hidden=true;lastItems=items;$('keepRow').hidden=false;buildGroup();
     }catch(err){say('Could not process that image.')}
   }).catch(function(err){say(err&&err.message?err.message:'Could not read that image.')});
 });
