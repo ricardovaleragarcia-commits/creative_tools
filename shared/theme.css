@@ -8,7 +8,7 @@
   --fs-s: 14px;          /* small text, also menu text */
   --fs-l: 36px;          /* titles */
   --fs-foot: 14px;       /* credits bar (name and data): same as the small text */
-  --cover-top: 45px;     /* top of the first row of covers on the landing = top of the card color in a tool */
+  --cover-top: calc(var(--gap) * 2 + 1.18 * 24px);   /* = 5px + header box (1.18em of 24px) + 5px: the top of the first row of covers on the landing = top of the card color in a tool */
   /* red (default, from Figma) */
   --main: #ff0004; --dark: #806532; --ink: #ffffff;
   --c1: #f587ff; --c2: #2270ff; --c3: #cba900; --c4: #00c893; --c5: #ff8f35; --c6: #9b7bf0;
