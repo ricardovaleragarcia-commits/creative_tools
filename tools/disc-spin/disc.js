@@ -550,6 +550,7 @@ function syncAnimUI(){
 document.querySelectorAll('#anims button').forEach(b => b.onclick = () => {
   const a = b.dataset.a;
   if(a === 'girar') spinOn = !spinOn;                       // Playing is a switch: it adds the spin to whatever movement is chosen
+  else if(a !== 'frontal' && a === animName) animName = 'frontal';   // clicking the active movement again switches it off (back to Playing alone, or still)
   else { animName = a; if(a === 'frontal') spinOn = false; } // Front, still holds the disc: no spin either
   tAnim = 0;
   if(animName !== 'frontal' || spinOn){ animPlaying = true; $('pause').textContent = 'Pause'; }   // picking a moving animation always plays it (Front, still just holds)
