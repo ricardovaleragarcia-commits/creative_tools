@@ -59,13 +59,27 @@
   });
   mark();
 
-  // Free area for the dots = from just under the intro text down to the credits (text height changes with the width).
-  var side = document.querySelector(".side"), areaEl = document.getElementById("dots"), headB = document.querySelector(".head__b");
+  // Free area for the dots = from just under the header to the credits. The two small texts sit in the middle of it, so any dot that would
+  // land on them is moved just above or below the text (the x position stays).
+  var side = document.querySelector(".side"), areaEl = document.getElementById("dots"), headEl = document.querySelector(".side__head"), midEl = document.querySelector(".mid__text");
+  var orig = Array.prototype.map.call(dots, function (d) { return { y: parseFloat(d.style.getPropertyValue("--y")), my: parseFloat(d.style.getPropertyValue("--my")) }; });
   function placeArea() {
-    if (!side || !headB) return;
-    areaEl.style.setProperty("--dots-top", Math.round(headB.getBoundingClientRect().bottom - side.getBoundingClientRect().top + 14) + "px");
+    if (!side || !headEl) return;
+    areaEl.style.setProperty("--dots-top", Math.round(headEl.getBoundingClientRect().bottom - side.getBoundingClientRect().top + 5) + "px");
+    side.style.setProperty("--dots-top", areaEl.style.getPropertyValue("--dots-top"));
+    var ar = areaEl.getBoundingClientRect(), small = matchMedia("(max-width: 900px)").matches, h = ar.height;
+    var m = midEl ? midEl.getBoundingClientRect() : null, pad = 16;
+    var lo = m ? m.top - ar.top - pad : -1, hi = m ? m.bottom - ar.top + pad : -1;
+    dots.forEach(function (d, i) {
+      var y = (small ? orig[i].my : orig[i].y) / 100 * h;
+      if (m && y > lo && y < hi) y = (y - lo < hi - y) ? lo : hi;
+      y = Math.max(12, Math.min(h - 12, y));
+      d.style.setProperty(small ? "--my" : "--y", y.toFixed(1) + "px");
+    });
   }
-  placeArea(); addEventListener("resize", placeArea);
+  placeArea(); addEventListener("resize", placeArea); addEventListener("load", placeArea);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeArea);
+  if (window.ResizeObserver) { var ro = new ResizeObserver(placeArea); ro.observe(areaEl); if (midEl) ro.observe(midEl); if (headEl) ro.observe(headEl); }   // text wraps / fonts load / credits grow: re-place
 
   // Intro (first visit of the session). The window is the panel color. Like a loading ring, the dots pop out one by one from the exact centre of the
   // window into an evenly spaced circle that spins; then each one leaves the ring and flies straight home on a bezier curve. As the last ones land,

@@ -5,9 +5,16 @@
   height: 100vh; padding: 0; overflow: hidden;
   display: flex; flex-direction: column;
 }
-.side__head { display: flex; flex-direction: column; gap: 14px; padding: 7px 10px 15px; }   /* first line of the title sits on the same row as the tool titles */
-.head__c { margin: 6px 0 0; font-size: 24px; font-weight: 700; line-height: 28px; }
-.head__title { font-size: 24px; font-weight: 700; line-height: 28px; }   /* same size and weight as the tool titles */
+/* Header: two white boxes in a row, 5px from the edges and 5px apart like the tool cards. Left = the S&S mark, right = the type logo. */
+.side__head { display: flex; gap: var(--gap); padding: var(--gap); font-size: clamp(26px, 2.5vw, 38px); }
+.head__logo, .head__title { background: var(--ink); color: var(--dark); }
+.head__logo { flex: none; display: flex; align-items: center; justify-content: center; padding: 0 .3em; }
+.head__logo svg { height: 1.15em; width: auto; display: block; }
+.head__title { flex: 1; min-width: 0; margin: 0; padding: .24em .32em .2em; font-size: 1em; font-weight: 700; line-height: 1; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
+/* The two small texts sit in the middle of the free area, so the dots can reach the top. */
+.side__mid { position: absolute; left: 0; right: 0; top: var(--dots-top, 80px); bottom: 104px; display: flex; align-items: center; pointer-events: none; }
+.mid__text { display: flex; flex-direction: column; gap: 14px; padding: 0 10px; pointer-events: auto; }
+.head__c { margin: 0; font-size: 24px; font-weight: 700; line-height: 28px; }
 .dots { position: absolute; left: 0; right: 0; top: var(--dots-top, 300px); bottom: 104px; pointer-events: none; }  /* free space between the intro text and the credits (top is set from the text height in landing.js) */
 .dot {
   position: absolute; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; padding: 0;
@@ -48,7 +55,7 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 .tool:nth-child(6) .tool__cover { --cover: var(--c6); }
 
 /* transition names (see theme.css) */
-.head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
+.head__logo, .head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
 .head__a { animation-delay: .45s; } .head__b { animation-delay: .55s; } .head__c { animation-delay: .65s; }
 .dot { animation: rise-in .6s var(--vt-ease) backwards;   /* not "both": a held end state would block the hover/selected scale */
    animation-delay: calc(.5s + var(--i, 0) * 50ms); }
@@ -65,7 +72,7 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 /* First visit of the session: the dots orbit, then park; the rest appears once they have (landing.js).
    The "intro" class is set from palette.js before first paint and removed by landing.js (or by a failsafe timer). */
 html.intro:not(.intro-go) * { animation: none !important; }
-html.intro:not(.intro-go) .side__head, html.intro:not(.intro-go) .tools, html.intro:not(.intro-go) .credits { opacity: 0; }
+html.intro:not(.intro-go) .side__head, html.intro:not(.intro-go) .side__mid, html.intro:not(.intro-go) .tools, html.intro:not(.intro-go) .credits { opacity: 0; }
 html.intro .dot { opacity: 0; pointer-events: none; animation: none !important; transition: none; }   /* (.intro-go = the rest of the page starts appearing) */
 /* the whole window starts in the panel color; landing.js shrinks it (--ir / --ib = what to cut from the right / bottom) down to the real 1/3 panel */
 html.intro::before { content: ""; position: fixed; inset: 0; z-index: 1; background: var(--dark); pointer-events: none; clip-path: inset(0 var(--ir, 0px) var(--ib, 0px) 0); }
