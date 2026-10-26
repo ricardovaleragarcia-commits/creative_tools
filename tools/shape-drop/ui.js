@@ -192,7 +192,7 @@ function readPicture(f){
    but the invisible shape it collides with is kept to at most maxp convex pieces (every piece of every copy is tested
    against every other, so detail costs speed). frame (optional) makes several pieces share one coordinate frame. */
 function traceBitmap(bm,w,h,maxp,frame,hull){
-  var sc=256/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
+  var sc=512/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
   var gc=document.createElement('canvas');gc.width=gw;gc.height=gh;var gx=gc.getContext('2d');gx.drawImage(bm,0,0,gw,gh);
   var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
   for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}

@@ -147,7 +147,7 @@ function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
     const tr=traceOuter(m,w,h);if(!tr||tr.length<3)return;
     const budget=Math.max(8,Math.round(maxVerts*c.cnt/total));
     let eps=0.9,poly=simplifyClosed(tr,eps);
-    while(poly.length>budget&&eps<3){eps*=1.4;poly=simplifyClosed(tr,eps)}
+    while(poly.length>budget&&eps<2.5){eps*=1.4;poly=simplifyClosed(tr,eps)}
     if(decomp&&decomp.isSimple){   // a crossing outline can't be split into convex pieces: try other simplifications
       const ok=P=>{const q=P.map(p=>p.slice());decomp.makeCCW(q);return decomp.isSimple(q)};
       if(!ok(poly)){for(const f of [0.7,1.4,0.5,2,0.35,2.8]){const q=simplifyClosed(tr,eps*f);if(q.length>=3&&ok(q)){poly=q;break}}}
@@ -155,7 +155,7 @@ function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
     if(poly.length<3)return;
     // the outline through pixel centers sits ~0.5 px inside: push it out 0.5 px from the centroid
     let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1]});cx/=poly.length;cy/=poly.length;
-    out.push(poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*1.0+0.5)*scale,(p[1]+dy/l*1.0+0.5)*scale]}));
+    out.push(poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*0.6+0.5)*scale,(p[1]+dy/l*0.6+0.5)*scale]}));
   });
   return out;
 }
