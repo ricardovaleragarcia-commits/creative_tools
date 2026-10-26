@@ -6,11 +6,11 @@
   display: flex; flex-direction: column;
 }
 /* Header: two white boxes in a row, 5px from the edges and 5px apart like the tool cards. Left = the S&S mark, right = the type logo. */
-.side__head { display: flex; gap: var(--gap); padding: var(--gap); font-size: clamp(26px, 2.5vw, 38px); }
-.head__logo, .head__title { background: var(--ink); color: var(--dark); }
-.head__logo { flex: none; display: flex; align-items: center; justify-content: center; padding: 0 .3em; }
-.head__logo svg { height: 1.15em; width: auto; display: block; }
-.head__title { flex: 1; min-width: 0; margin: 0; padding: .24em .32em .2em; font-size: 1em; font-weight: 700; line-height: 1; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
+.side__head { display: flex; gap: var(--gap); padding: var(--gap); font-size: 24px; }   /* both boxes are as tall as the type plus a hair, so the letters sit almost against the edges (as in the Figma) */
+.head__logo, .head__title { background: var(--ink); color: var(--dark); height: 1em; box-sizing: content-box; padding-block: .09em; }
+.head__logo { flex: none; display: flex; align-items: center; justify-content: center; padding-inline: .2em; }
+.head__logo svg { height: 1em; width: auto; display: block; }
+.head__title { flex: 1; min-width: 0; margin: 0; padding-inline: .16em; font-size: 1em; font-weight: 700; line-height: 1em; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
 /* The two small texts sit in the middle of the free area, so the dots can reach the top. */
 .side__mid { position: absolute; left: 0; right: 0; top: var(--dots-top, 80px); bottom: 104px; display: flex; align-items: center; pointer-events: none; }
 .mid__text { display: flex; flex-direction: column; gap: 14px; padding: 0 10px; pointer-events: auto; }
