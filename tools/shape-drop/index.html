@@ -30,7 +30,8 @@
       <div class="t">Shape</div>
       <button class="btn" id="pick">Use my PNG / SVG…</button>
       <input type="file" id="file" multiple accept=".png,.webp,.svg,image/png,image/webp,image/svg+xml" hidden>
-      <div class="note" id="shapenote">Default shape: 6-point star. Upload a PNG or SVG with a transparent background to use its silhouette for collisions. Pick several files to make a group of pieces that fall and collide separately (they are re-arranged into a compact group so the frame fills up) (reload the page to go back to the star).</div>
+      <label class="chk" id="keepRow" hidden><input type="checkbox" id="keeplayout">Appear in the original layout (then they fall apart)</label>
+      <div class="note" id="shapenote">Default shape: 6-point star. Upload a PNG or SVG with a transparent background to use its silhouette for collisions. Pick several files to make a group of pieces that fall and collide separately (reload the page to go back to the star).</div>
     </div>
 
     <div class="block full">

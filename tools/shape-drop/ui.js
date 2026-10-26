@@ -197,6 +197,19 @@ function fileNote(sh,r,pieces){
   $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
 }
 /* Several files = several pieces of one group. */
+function composeLogo(items){   // same-size files are overlaid (keeps a logo exported as layers); different sizes go side by side
+  var same=items.every(function(it){return it.w===items[0].w&&it.h===items[0].h}),W,H,pos;
+  if(same){W=items[0].w;H=items[0].h;pos=items.map(function(){return {x:0,y:0,k:1}})}
+  else{
+    var mh=Math.max.apply(null,items.map(function(it){return it.h})),gap=Math.round(mh*.06),tw=items.reduce(function(a,it){return a+it.w},0)+gap*(items.length-1);
+    var k=Math.min(1,1024/Math.max(tw,mh)),x=0;W=Math.round(tw*k);H=Math.round(mh*k);
+    pos=items.map(function(it){var o={x:x*k,y:(mh-it.h)/2*k,k:k};x+=it.w+gap;return o});
+  }
+  return items.map(function(it,i){
+    var c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(it.bm,pos[i].x,pos[i].y,it.w*pos[i].k,it.h*pos[i].k);
+    return c;
+  });
+}
 function composePieces(items){
   // Each piece is trimmed to its visible pixels and the pieces are re-arranged into the most compact block (rows x columns
   // with the smallest area), so every copy of the group takes little room and the frame can be filled.
@@ -224,17 +237,11 @@ function composePieces(items){
     return cv;
   });
 }
-$('file').addEventListener('change',function(e){
-  var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
-  Promise.all(files.map(readPicture)).then(function(items){
-    try{
-      if(items.length===1){
-        var it=items[0],r=traceBitmap(it.bm,it.w,it.h,12);
-        if(!r){say('That image has no visible pixels.');return}
-        if(r.err){say('Could not trace that silhouette.');return}
-        useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
-      }
-      var cvs=composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=12,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
+var lastItems=null;
+function buildGroup(){
+  var items=lastItems,keep=$('keeplayout').checked;
+  try{
+      var cvs=keep?composeLogo(items):composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=12,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
       if(first.some(function(r){return !r})){say('One of the images has no visible pixels.');return}
       if(first.some(function(r){return r.err})){say('Could not trace one of the silhouettes.');return}
       var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -244,6 +251,20 @@ $('file').addEventListener('change',function(e){
       var comp=document.createElement('canvas');comp.width=W;comp.height=H;var cx2=comp.getContext('2d');cvs.forEach(function(c){cx2.drawImage(c,0,0)});
       useShape(sh,comp,cvs);
       fileNote(sh,{simple:rs.some(function(r){return r.simple}),opaque:rs.some(function(r){return r.opaque})},cvs.length);
+  }catch(err){say('Could not process that image.')}
+}
+$('keeplayout').addEventListener('change',function(){if(lastItems&&lastItems.length>1)buildGroup()});
+$('file').addEventListener('change',function(e){
+  var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
+  Promise.all(files.map(readPicture)).then(function(items){
+    try{
+      if(items.length===1){
+        var it=items[0],r=traceBitmap(it.bm,it.w,it.h,12);
+        if(!r){say('That image has no visible pixels.');return}
+        if(r.err){say('Could not trace that silhouette.');return}
+        lastItems=null;$('keepRow').hidden=true;useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
+      }
+      lastItems=items;$('keepRow').hidden=false;buildGroup();
     }catch(err){say('Could not process that image.')}
   }).catch(function(err){say(err&&err.message?err.message:'Could not read that image.')});
 });
