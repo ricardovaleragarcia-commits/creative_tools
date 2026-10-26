@@ -587,16 +587,16 @@ function applyGloss(v){
 }
 // ---------- Label paper: fine fibre relief on the vinyl label (bump map; size and strength adjustable) ----------
 const lpBump = new THREE.CanvasTexture(document.createElement('canvas'));
-function paintPaper(size){
-  const N = size < 1 ? 2048 : 1024, K = N/1024, c = lpBump.image; c.width = c.height = N; const x = c.getContext('2d');   // below 1 the grain needs a finer texture
+function paintPaper(size){   // grain size 0 = the finest grain the texture can hold (same as 0.5)
+  const N = size < 1 ? 2048 : 1024, K = N/1024, c = lpBump.image, g = Math.max(size, 0.5); c.width = c.height = N; const x = c.getContext('2d');   // below 1 the grain needs a finer texture
   x.fillStyle = '#808080'; x.fillRect(0, 0, N, N);
   const layer = (cell, alpha) => {                                   // random noise at low resolution, smoothly enlarged = grain of that size
     const n = Math.max(8, Math.round(N/cell)), t = document.createElement('canvas'); t.width = t.height = n;
     const tx = t.getContext('2d'), d = tx.createImageData(n, n);
-    for(let i = 0; i < n*n; i++){ const v = 40 + Math.random()*176; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }
+    for(let i = 0; i < n*n; i++){ const v = 128 + (Math.random() - 0.5) * 176 * 0.6; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }   // 0.6 = softer texture (less contrast)
     tx.putImageData(d, 0, 0); x.globalAlpha = alpha; x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(t, 0, 0, N, N);
   };
-  layer(size*K, 1); layer(size*2.6*K, 0.3);
+  layer(g*K, 1); layer(g*2.6*K, 0.3);
   x.globalAlpha = 1;
   // pressed ring around the spindle area, as on a real label
   const R = 0.33*N/2, mid = N/2; x.lineWidth = 5*K;
