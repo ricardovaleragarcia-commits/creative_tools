@@ -83,18 +83,20 @@
       return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
     }
     var run = bezier(.45, 0, .4, 1), fly = bezier(.65, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
-    // The route, traced from Ricardo's sketch (y down): S, & and S on top of each other in the same spot, so each one ends where the next
-    // begins: the S ends at its top right, right where the & starts coming down its right arm; the & ends at its bottom-right tail, and from
-    // there a short hook takes the dots straight into the lower curve of the second S and up it.
+    // The route, traced from Ricardo's sketch (y down): S, & and S on top of each other in the same spot, one continuous line with no going
+    // back: the first S from its bottom end up to its top end, on down into the right arm of the &, round the &, whose last curve turns
+    // right and up, straight up into the top end of the second S, and down that S (the opposite way to the first) to its bottom end.
     function shift(d, dx) { return d.replace(/-?\d+(\.\d+)? -?\d+(\.\d+)?/g, function (p) { var q = p.split(" "); return (+q[0] + dx) + " " + q[1]; }); }
-    var S1 = "C118 390 140 430 190 455 C230 475 300 480 340 445 C370 415 368 360 330 330 C300 305 230 285 190 260" +
-      " C150 235 140 175 165 145 C200 110 300 110 340 150 C355 165 362 180 365 190";                    // S: bottom-left end → top-right end
-    var AMP = "C757 240 756 270 750 300 C735 370 700 440 640 470 C590 492 520 485 497 440 C480 400 505 360 550 320" +   // & from its right arm: down, round the bottom
-      " C600 275 655 230 658 180 C660 140 620 125 590 132 C550 142 540 200 560 240 C600 320 700 430 780 490";   // up the diagonal, top loop to the left, down to the tail
-    var ROUTE = "M115 340 " + S1 +
-      " C368 200 378 180 378 200 " + shift(AMP, -380) +                                                 // straight on into the & (moved onto the S)
-      " C412 500 385 512 350 503 C322 495 318 462 340 445 " +                                          // from the tail, a short hook straight into the lower curve of the S
-      S1.slice(S1.indexOf("C370 415"));                                                                 // and up the rest of the S
+    var S_UP = "C100 600 120 650 160 670 C220 700 300 715 370 705 C420 695 445 650 445 590 C445 520 380 470 320 450" +
+      " C250 425 180 420 150 360 C125 300 150 260 200 245 C270 222 360 220 400 260 C415 275 425 295 430 320";   // S: bottom-left end → top-right end
+    var AMP = "C980 540 960 600 910 640 C860 690 800 725 720 725 C650 725 610 690 605 630 C600 570 640 520 700 480" +   // &: right arm down, round the bottom
+      " C760 440 820 380 840 320 C855 270 830 240 790 240 C740 240 700 260 690 320 C680 370 700 410 740 460" +   // up the diagonal, round the top loop
+      " C800 540 870 620 930 640 C990 655 1040 620 1055 560 C1058 545 1060 525 1060 510";                      // down the other diagonal, then right and up
+    var S_DOWN = "C1490 300 1470 260 1430 245 C1360 225 1270 230 1220 255 C1170 285 1160 350 1190 400 C1220 450 1300 465 1380 490" +
+      " C1450 515 1495 560 1490 630 C1485 690 1420 715 1320 715 C1240 715 1190 690 1170 650 C1160 630 1152 610 1150 595";   // S: top-right end → bottom-left end
+    var ROUTE = "M95 530 " + S_UP +
+      " C434 345 470 380 473 420 C474 440 475 455 475 470 " + shift(AMP, -510) +                        // on down into the right arm of the & (moved onto the S)
+      " C552 470 520 440 480 430 C455 425 450 400 450 360 " + shift(S_DOWN, -1040);                     // up into the top end of the second S (moved onto it too)
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"), path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     svg.setAttribute("aria-hidden", "true"); svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
     path.setAttribute("d", ROUTE); svg.appendChild(path); document.body.appendChild(svg);
