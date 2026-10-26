@@ -345,6 +345,7 @@ function createSim(Matter, shape0, P){
       const v=plan.variants[Math.floor(rnd()*plan.variants.length)];
       slots=StarLattice.layoutFrom(v,n,W,H,rnd);sz=v.s;
     }else slots=plan.items;
+    if(KP()>1)sz*=(P.pieceGrow||1.3);   // las piezas sueltas se acomodan mejor que el grupo rígido: algo más grandes para llenar el marco
     tune(n);
     const KK=KP(),oldAll=stars.slice(),gm={},old=[],pairs=[];
     oldAll.forEach(b=>{const id=b.plugin.id;if(!gm[id]){gm[id]=[];old.push(gm[id])}gm[id].push(b)});   // un grupo = las piezas de una copia

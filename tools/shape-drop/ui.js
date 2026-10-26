@@ -196,19 +196,32 @@ function fileNote(sh,r,pieces){
   else t='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.');
   $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
 }
-/* Several files = several pieces of one group. Same-size files are overlaid (so a logo exported as separate layers keeps its layout);
-   files of different sizes are lined up side by side. */
+/* Several files = several pieces of one group. */
 function composePieces(items){
-  var same=items.every(function(it){return it.w===items[0].w&&it.h===items[0].h}),W,H,pos;
-  if(same){W=items[0].w;H=items[0].h;pos=items.map(function(){return {x:0,y:0,k:1}})}
-  else{
-    var mh=Math.max.apply(null,items.map(function(it){return it.h})),gap=Math.round(mh*.06),tw=items.reduce(function(a,it){return a+it.w},0)+gap*(items.length-1);
-    var k=Math.min(1,1024/Math.max(tw,mh)),x=0;W=Math.round(tw*k);H=Math.round(mh*k);
-    pos=items.map(function(it){var o={x:x*k,y:(mh-it.h)/2*k,k:k};x+=it.w+gap;return o});
+  // Each piece is trimmed to its visible pixels and the pieces are re-arranged into the most compact block (rows x columns
+  // with the smallest area), so every copy of the group takes little room and the frame can be filled.
+  var trimmed=items.map(function(it){
+    var d=it.bm.getContext('2d').getImageData(0,0,it.w,it.h).data,x0=it.w,y0=it.h,x1=-1,y1=-1;
+    for(var y=0;y<it.h;y++)for(var x=0;x<it.w;x++)if(d[(y*it.w+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(x1<0)return {bm:it.bm,sx:0,sy:0,w:it.w,h:it.h};
+    return {bm:it.bm,sx:x0,sy:y0,w:x1-x0+1,h:y1-y0+1};
+  });
+  var mx=Math.max.apply(null,trimmed.map(function(t){return Math.max(t.w,t.h)})),gap=Math.round(mx*.06),n=trimmed.length,best=null;
+  for(var cols=1;cols<=n;cols++){
+    var rows=Math.ceil(n/cols),colW=[],rowH=[];
+    for(var i=0;i<n;i++){var c=i%cols,r=Math.floor(i/cols);colW[c]=Math.max(colW[c]||0,trimmed[i].w);rowH[r]=Math.max(rowH[r]||0,trimmed[i].h)}
+    var tw=colW.reduce(function(a,v){return a+v},0)+gap*(cols-1),th=rowH.reduce(function(a,v){return a+v},0)+gap*(rows-1);
+    var score=tw*th*(1+0.15*Math.abs(Math.log(tw/th)));
+    if(!best||score<best.score)best={score:score,cols:cols,colW:colW,rowH:rowH,tw:tw,th:th};
   }
-  return items.map(function(it,i){
-    var c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(it.bm,pos[i].x,pos[i].y,it.w*pos[i].k,it.h*pos[i].k);
-    return c;
+  var k=Math.min(1,1024/Math.max(best.tw,best.th)),W=Math.max(8,Math.round(best.tw*k)),H=Math.max(8,Math.round(best.th*k));
+  return trimmed.map(function(t,i){
+    var c=i%best.cols,r=Math.floor(i/best.cols),x=0,y=0;
+    for(var a=0;a<c;a++)x+=best.colW[a]+gap;for(var b2=0;b2<r;b2++)y+=best.rowH[b2]+gap;
+    x+=(best.colW[c]-t.w)/2;y+=(best.rowH[r]-t.h)/2;
+    var cv=document.createElement('canvas');cv.width=W;cv.height=H;
+    cv.getContext('2d').drawImage(t.bm,t.sx,t.sy,t.w,t.h,x*k,y*k,t.w*k,t.h*k);
+    return cv;
   });
 }
 $('file').addEventListener('change',function(e){
@@ -221,7 +234,7 @@ $('file').addEventListener('change',function(e){
         if(r.err){say('Could not trace that silhouette.');return}
         useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
       }
-      var cvs=composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=8,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
+      var cvs=composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=12,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
       if(first.some(function(r){return !r})){say('One of the images has no visible pixels.');return}
       if(first.some(function(r){return r.err})){say('Could not trace one of the silhouettes.');return}
       var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
