@@ -497,7 +497,7 @@ disc.add(cdGroup, vinylGroup, plainVinyl, plainCD);
 scene.add(disc);
 
 // ---------- Estado ----------
-let mode = 'vinyl', style = 'plain', animName = 'frontal', animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
+let mode = 'vinyl', style = 'plain', animName = 'frontal', spinOn = false, animPlaying = true, tAnim = 0, lastT = performance.now(), exporting = false;
 let userRx = 0, userRy = 0, dragging = false, lx = 0, ly = 0, recenter = false;
 const BASE = {x: 0, y: 0};   // always seen from the front
 
@@ -526,20 +526,34 @@ $('pLabel').oninput = e => { for(const m of [plainLabelFrontMat, plainLabelBackM
 refresh();
 
 // Cada animación es periódica: su último fotograma enlaza con el primero
+// "Playing" (spinOn) turns the disc on its own axis and stacks on top of Flip / Sway / Vertical flip (two turns per cycle, so it still loops);
+// on its own it has its own period. Front, still never spins.
+function curPeriod(){ return animName === 'frontal' ? (spinOn ? PERIOD.girar : 4) : (PERIOD[animName] || 4); }
 function pose(name, t){
   const P = PERIOD[name] || 4, ph = 2*Math.PI*(t/P);
+  let r;
   switch(name){
-    case 'girar':    return {x: BASE.x, y: BASE.y, z: ph};
-    case 'volteo-y': return {x: BASE.x, y: BASE.y + ph, z: 0};
-    case 'volteo-x': return {x: BASE.x + ph, y: BASE.y, z: 0};
-    case 'balanceo': return {x: BASE.x + 0.12*Math.sin(ph*2), y: BASE.y + 0.8*Math.sin(ph), z: 0};
-    default:         return {x: BASE.x, y: BASE.y, z: 0};
+    case 'volteo-y': r = {x: BASE.x, y: BASE.y + ph, z: 0}; break;
+    case 'volteo-x': r = {x: BASE.x + ph, y: BASE.y, z: 0}; break;
+    case 'balanceo': r = {x: BASE.x + 0.12*Math.sin(ph*2), y: BASE.y + 0.8*Math.sin(ph), z: 0}; break;
+    default:         r = {x: BASE.x, y: BASE.y, z: 0};
   }
+  if(spinOn) r.z = name === 'frontal' ? 2*Math.PI*(t/PERIOD.girar) : 2*ph;
+  return r;
+}
+function syncAnimUI(){
+  document.querySelectorAll('#anims button').forEach(x => {
+    const a = x.dataset.a;
+    x.classList.toggle('on', a === 'girar' ? spinOn : a === 'frontal' ? (animName === 'frontal' && !spinOn) : a === animName);
+  });
 }
 document.querySelectorAll('#anims button').forEach(b => b.onclick = () => {
-  animName = b.dataset.a; tAnim = 0;
-  if(animName !== 'frontal'){ animPlaying = true; $('pause').textContent = 'Pause'; }   // picking a moving animation always plays it (Front, still just holds)
-  document.querySelectorAll('#anims button').forEach(x => x.classList.toggle('on', x === b));
+  const a = b.dataset.a;
+  if(a === 'girar') spinOn = !spinOn;                       // Playing is a switch: it adds the spin to whatever movement is chosen
+  else { animName = a; if(a === 'frontal') spinOn = false; } // Front, still holds the disc: no spin either
+  tAnim = 0;
+  if(animName !== 'frontal' || spinOn){ animPlaying = true; $('pause').textContent = 'Pause'; }   // picking a moving animation always plays it (Front, still just holds)
+  syncAnimUI();
 });
 document.querySelectorAll('#ratios button').forEach(b => b.onclick = () => {
   RATIO_KEY = b.dataset.r;
@@ -802,7 +816,7 @@ function applyLights(){
   } else { U.uLight.value.set(2, 4, 5).normalize(); U.uLightK.value = 1; U.uLightCol.value.set(0xffffff); }
 }
 function renderAt(t){
-  const p = pose(animName, t), spinning = animName === 'girar';
+  const p = pose(animName, t), spinning = spinOn;
   plainVinyl.userData.mark.visible = plainCD.userData.mark.visible = spinning;
   disc.rotation.set(p.x + userRx, p.y + userRy, p.z);
   disc.scale.setScalar(zoomV);
@@ -827,10 +841,13 @@ syncLightUI();
 
 // ---------- Remember the settings and the images between visits ----------
 ToolPersist.init('disc-spin', {
-  get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV, seed: patSeed}),
+  get: () => ({mode, style, anim: animName, spin: spinOn, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV, seed: patSeed}),
   set: x => {
     if(x.mode) mode = x.mode; if(x.style) style = x.style; refresh();
-    if(x.anim){ const b = document.querySelector(`#anims button[data-a="${x.anim}"]`); if(b) b.click(); }
+    if(x.anim === 'girar'){ animName = 'frontal'; spinOn = true; }            // older saves: Playing was a movement of its own
+    else if(x.anim && x.anim !== 'frontal' && PERIOD[x.anim]) animName = x.anim;
+    if(x.spin === true) spinOn = true;
+    if(x.anim || x.spin){ if(animName !== 'frontal' || spinOn){ animPlaying = true; $('pause').textContent = 'Pause'; } syncAnimUI(); }
     if(x.ratio){ const b = document.querySelector(`#ratios button[data-r="${x.ratio}"]`); if(b) b.click(); }
     if(x.lights){ x.lights.forEach((l, k) => { if(lights[k]) Object.assign(lights[k], l); }); selectLight(x.sel || 0); }
     if(x.zoom) setZoom(x.zoom);
@@ -842,13 +859,13 @@ ToolPersist.init('disc-spin', {
 // ---------- Export loop (shared exporter) ----------
 $('exp').onclick = async () => {
   if(exporting) return;
-  const P = PERIOD[animName] || 4, FPS = +$('fps').value || 60, [W0, H0] = RATIOS[RATIO_KEY], Q = RATIO_KEY === 'custom' ? 1 : (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, status = t => $('status').textContent = t;
+  const P = curPeriod(), FPS = +$('fps').value || 60, [W0, H0] = RATIOS[RATIO_KEY], Q = RATIO_KEY === 'custom' ? 1 : (+$('res').value || 1080)/1080, W = Math.round(W0*Q/2)*2, H = Math.round(H0*Q/2)*2, status = t => $('status').textContent = t;
   exporting = true; $('exp').disabled = true;
   try{
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);
     camera.aspect = W/H; camera.position.z = Math.max(5.4, 1.4/(Math.tan(15*Math.PI/180)*(W/H))); camera.updateProjectionMatrix(); fitBg();
     const out = await VideoExport.run({canvas, renderAt, period: P, fps: FPS, width: W, height: H, status});
-    const name = `${mode}-${style}-${animName}-${RATIO_KEY === 'custom' ? W + 'x' + H : RATIO_KEY.replace(':','x')}.${out.ext}`;
+    const name = `${mode}-${style}-${animName}${spinOn ? '-spin' : ''}-${RATIO_KEY === 'custom' ? W + 'x' + H : RATIO_KEY.replace(':','x')}.${out.ext}`;
     const result = await VideoExport.save(name, out.blob);
     const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', rejected_extension: 'Format not allowed', too_large: 'The file is too large'};
     status(`${msgs[result] || 'Could not save'}: ${name} · ${W}×${H} · ${P} s loop · ${out.note}`);
