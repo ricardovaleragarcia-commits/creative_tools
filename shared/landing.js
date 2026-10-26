@@ -62,18 +62,24 @@
   // Free area for the dots = from just under the header to the credits. The two small texts sit in the middle of it, so any dot that would
   // land on them is moved just above or below the text (the x position stays).
   var side = document.querySelector(".side"), areaEl = document.getElementById("dots"), headEl = document.querySelector(".side__head"), midEl = document.querySelector(".mid__text");
-  var orig = Array.prototype.map.call(dots, function (d) { return { y: parseFloat(d.style.getPropertyValue("--y")), my: parseFloat(d.style.getPropertyValue("--my")) }; });
+  var orig = Array.prototype.map.call(dots, function (d) {
+    var g = function (n) { return parseFloat(d.style.getPropertyValue(n)); };
+    return { x: g("--x"), y: g("--y"), mx: g("--mx"), my: g("--my") };
+  });
   function placeArea() {
     if (!side || !headEl) return;
     areaEl.style.setProperty("--dots-top", Math.round(headEl.getBoundingClientRect().bottom - side.getBoundingClientRect().top + 5) + "px");
     side.style.setProperty("--dots-top", areaEl.style.getPropertyValue("--dots-top"));
-    var ar = areaEl.getBoundingClientRect(), small = matchMedia("(max-width: 900px)").matches, h = ar.height;
+    var ar = areaEl.getBoundingClientRect(), small = matchMedia("(max-width: 900px)").matches, w = ar.width, h = ar.height;
     var m = midEl ? midEl.getBoundingClientRect() : null, arrow = document.querySelector(".head__c"), ab = arrow ? arrow.getBoundingClientRect().bottom : 0, pad = 16;
-    var lo = m ? m.top - ar.top - pad : -1, hi = m ? Math.max(m.bottom, ab) - ar.top + pad : -1;   // the band includes the arrow under the texts
+    var lo = m ? m.top - ar.top - pad : -1, hi = m ? Math.max(m.bottom, ab) - ar.top + pad : -1;   // the band of the texts (arrow included)
+    var SPREAD = 1.2, clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };   // spread the dots out from the middle, towards the corners
     dots.forEach(function (d, i) {
-      var y = (small ? orig[i].my : orig[i].y) / 100 * h;
+      var xp = 50 + ((small ? orig[i].mx : orig[i].x) - 50) * SPREAD, yp = 50 + ((small ? orig[i].my : orig[i].y) - 50) * SPREAD;
+      var x = clamp(xp / 100 * w, 12, w - 12), y = clamp(yp / 100 * h, 12, h - 12);
       if (m && y > lo && y < hi) y = (y - lo < hi - y) ? lo : hi;
-      y = Math.max(12, Math.min(h - 12, y));
+      y = clamp(y, 12, h - 12);
+      d.style.setProperty(small ? "--mx" : "--x", x.toFixed(1) + "px");
       d.style.setProperty(small ? "--my" : "--y", y.toFixed(1) + "px");
     });
   }
