@@ -12,7 +12,7 @@
     "href": "tools/shape-drop/"
   },
   {
-    "title": "Text & Shape Line Draw",
+    "title": "Text & Shape Trace and Fill",
     "description": "Draw the outline of text or SVG logos like a pen stroke, then fill it, as a seamless loop.",
     "cover": "shared/covers/line-draw.svg",
     "href": "tools/line-draw/"

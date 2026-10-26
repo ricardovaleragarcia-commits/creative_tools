@@ -32,7 +32,7 @@ fonts/              (not used since the switch to Helvetica Neue)
 |---|---|
 | Vinyl & CD Mockup Animator | `tools/disc-spin/` |
 | Shape Drop & Multiply | `tools/shape-drop/` |
-| Text & Shape Line Draw | `tools/line-draw/` |
+| Text & Shape Trace and Fill | `tools/line-draw/` |
 | Text Orbit Sphere | `tools/text-orbit/` |
 
 ## Publish
