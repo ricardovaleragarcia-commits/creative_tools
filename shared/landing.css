@@ -16,7 +16,7 @@
 .side__mid { position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; }   /* centred on the whole panel: only the two texts count, the arrow hangs below them */
 .mid__text { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 0 10px; pointer-events: auto; }
 .head__c { position: absolute; left: 10px; top: 100%; margin: 6px 0 0; font-size: 24px; font-weight: 700; line-height: 28px; }
-.dots { position: absolute; left: 0; right: 0; top: var(--dots-top, 300px); bottom: 104px; pointer-events: none; }  /* free space between the intro text and the credits (top is set from the text height in landing.js) */
+.dots { position: absolute; inset: 0; pointer-events: none; }  /* free space between the intro text and the credits (top is set from the text height in landing.js) */
 .dot {
   position: absolute; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; padding: 0;
   border: 0; border-radius: 50%; cursor: pointer; pointer-events: auto;

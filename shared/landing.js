@@ -73,7 +73,7 @@
     var ar = areaEl.getBoundingClientRect(), small = matchMedia("(max-width: 900px)").matches, w = ar.width, h = ar.height;
     var m = midEl ? midEl.getBoundingClientRect() : null, arrow = document.querySelector(".head__c"), ab = arrow ? arrow.getBoundingClientRect().bottom : 0, pad = 16;
     var lo = m ? m.top - ar.top - pad : -1, hi = m ? Math.max(m.bottom, ab) - ar.top + pad : -1;   // the band of the texts (arrow included)
-    var SPREAD = 1.2, clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };   // spread the dots out from the middle, towards the corners
+    var SPREAD = 1, clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };   // spread the dots out from the middle, towards the corners
     dots.forEach(function (d, i) {
       var xp = 50 + ((small ? orig[i].mx : orig[i].x) - 50) * SPREAD, yp = 50 + ((small ? orig[i].my : orig[i].y) - 50) * SPREAD;
       var x = clamp(xp / 100 * w, 12, w - 12), y = clamp(yp / 100 * h, 12, h - 12);
