@@ -7,14 +7,15 @@
 }
 /* Header: two white boxes in a row, 5px from the edges and 5px apart like the tool cards. Left = the S&S mark, right = the type logo. */
 .side__head { display: flex; gap: var(--gap); padding: var(--gap); font-size: 24px; }   /* both boxes are as tall as the type plus a hair, so the letters sit almost against the edges (as in the Figma) */
-.head__logo, .head__title { background: var(--ink); color: var(--dark); height: 1em; box-sizing: content-box; padding-block: .09em; }
-.head__logo { flex: none; display: flex; align-items: center; justify-content: center; padding-inline: .2em; }
-.head__logo svg { height: 1em; width: auto; display: block; }
+.head__logo, .head__title { background: var(--ink); color: var(--dark); }
+.head__title { height: 1em; box-sizing: content-box; padding-block: .09em; }
+.head__logo { flex: none; display: flex; align-items: center; justify-content: center; width: .99em; height: 1.18em; padding: 0; box-sizing: border-box; }   /* box shaped like the Figma one (about 0.84 wide per 1 tall); the mark fills ~86% of its height */
+.head__logo svg { height: 1.02em; width: auto; display: block; }
 .head__title { flex: 1; min-width: 0; margin: 0; padding-inline: .16em; font-size: 1em; font-weight: 700; line-height: 1em; letter-spacing: -.035em; white-space: nowrap; overflow: hidden; }
 /* The two small texts sit in the middle of the free area, so the dots can reach the top. */
-.side__mid { position: absolute; left: 0; right: 0; top: var(--dots-top, 80px); bottom: 104px; display: flex; align-items: center; pointer-events: none; }
-.mid__text { display: flex; flex-direction: column; gap: 14px; padding: 0 var(--gap); pointer-events: auto; }
-.head__c { margin: 0; font-size: 24px; font-weight: 700; line-height: 28px; }
+.side__mid { position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; }   /* centred on the whole panel: only the two texts count, the arrow hangs below them */
+.mid__text { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 0 10px; pointer-events: auto; }
+.head__c { position: absolute; left: 10px; top: 100%; margin: 6px 0 0; font-size: 24px; font-weight: 700; line-height: 28px; }
 .dots { position: absolute; left: 0; right: 0; top: var(--dots-top, 300px); bottom: 104px; pointer-events: none; }  /* free space between the intro text and the credits (top is set from the text height in landing.js) */
 .dot {
   position: absolute; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; padding: 0;

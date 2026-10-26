@@ -68,8 +68,8 @@
     areaEl.style.setProperty("--dots-top", Math.round(headEl.getBoundingClientRect().bottom - side.getBoundingClientRect().top + 5) + "px");
     side.style.setProperty("--dots-top", areaEl.style.getPropertyValue("--dots-top"));
     var ar = areaEl.getBoundingClientRect(), small = matchMedia("(max-width: 900px)").matches, h = ar.height;
-    var m = midEl ? midEl.getBoundingClientRect() : null, pad = 16;
-    var lo = m ? m.top - ar.top - pad : -1, hi = m ? m.bottom - ar.top + pad : -1;
+    var m = midEl ? midEl.getBoundingClientRect() : null, arrow = document.querySelector(".head__c"), ab = arrow ? arrow.getBoundingClientRect().bottom : 0, pad = 16;
+    var lo = m ? m.top - ar.top - pad : -1, hi = m ? Math.max(m.bottom, ab) - ar.top + pad : -1;   // the band includes the arrow under the texts
     dots.forEach(function (d, i) {
       var y = (small ? orig[i].my : orig[i].y) / 100 * h;
       if (m && y > lo && y < hi) y = (y - lo < hi - y) ? lo : hi;
