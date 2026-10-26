@@ -33,7 +33,7 @@
     if (nav && nav.type !== "navigate") root.classList.add("no-intro");
     else if (!/\/tools\//.test(location.pathname) && !sessionStorage.getItem("sns-intro") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       root.classList.add("intro");                    // landing, first visit of this session: dots orbit first (landing.js ends it)
-      setTimeout(function () { root.classList.remove("intro"); root.classList.add("intro-played"); }, 6000);   // failsafe: never leave the page hidden
+      setTimeout(function () { root.classList.remove("intro"); root.classList.add("intro-played"); }, 8000);   // failsafe: never leave the page hidden
     }
   } catch (e) {}
   var cur = get();
