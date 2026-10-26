@@ -68,15 +68,15 @@
   placeArea(); addEventListener("resize", placeArea);
 
   // Intro (first visit of the session). The window is the panel color. The dots come out one after another and run, like a little train,
-  // along the route of "S&S" written in one stroke (they only guide the eye, they don't draw it): the first S from its bottom end up, straight
-  // into the right arm of the &, down, up the diagonal, round the top loop to the left and down to its lower-right tail, and from there the
-  // second S, again from the bottom. When the leading dot reaches the end, all of them fly home at once on a bezier curve, and at that same
-  // moment the panel color slides left to the real 1/3 panel and the page rises in behind it.
+  // along a one-stroke route made of S, & and S drawn on top of each other in the same spot (they only guide the eye, they don't draw it):
+  // the S from its bottom end up, down its right side into the right arm of the &, round the &, from its tail under and into the S again.
+  // When the leading dot reaches the end, all of them fly home at once on a bezier curve, and at that same moment the panel color slides
+  // left to the real 1/3 panel and the page rises in behind it.
   (function () {
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("sns-intro", "1"); } catch (e) {}
-    var N = dots.length, RUN = 1750, TRAVEL = 850, SHRINK = 900;   // ms
+    var N = dots.length, RUN = 2000, TRAVEL = 850, SHRINK = 900;   // ms
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
       var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
@@ -84,19 +84,23 @@
       return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
     }
     var run = bezier(.45, 0, .4, 1), fly = bezier(.65, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
-    // The route, in a 210 × 100 box (y down): S, connector, &, connector, S.
-    var ROUTE = "M4 82 C10 96 50 100 56 78 C60 62 46 54 30 50 C14 46 4 40 6 24 C8 6 46 0 56 18" +      // first S, bottom → top
-      " C64 32 118 30 130 42 C134 46 135 52 133 58" +                                                  // into the right arm of the &
-      " C126 82 108 96 92 96 C76 96 68 84 74 74 C80 62 112 48 112 26" +                                // down, round the bottom, up the diagonal
-      " C112 10 94 6 88 12 C80 20 84 32 92 44 C104 64 120 88 136 96" +                                // top loop to the left, down to the tail
-      " C150 104 200 102 206 78 C210 62 196 54 180 50 C164 46 154 40 156 24 C158 6 196 0 206 18";       // second S, bottom → top
+    // The route: S, & and S drawn on top of each other in the same spot (y down), so each one ends near where the next begins.
+    var S1 = "C14 96 54 100 60 78 C64 62 50 54 34 50 C18 46 8 40 10 24 C12 6 50 0 60 18";                 // S from its bottom end up to its top end
+    var ROUTE = "M8 82 " + S1 +
+      " C66 28 70 40 66 52" +                                                                           // down the right side into the right arm of the &
+      " C60 80 42 96 28 96 C12 96 6 84 10 74 C16 62 46 48 46 26" +                                     // down, round the bottom, up the diagonal
+      " C46 10 30 6 24 12 C16 20 20 32 28 44 C40 64 54 88 68 96" +                                     // round the top loop to the left, down to the tail
+      " C74 100 70 106 46 106 C20 106 2 100 2 88 C2 83 5 79 8 82 " +                                  // swing under and hook into the bottom of the S
+      S1;                                                                                               // the S again, bottom → top
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"), path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     svg.setAttribute("aria-hidden", "true"); svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
     path.setAttribute("d", ROUTE); svg.appendChild(path); document.body.appendChild(svg);
     var L = path.getTotalLength(), M = 400, pts = [];
     for (var j = 0; j <= M; j++) { var q = path.getPointAtLength(L * j / M); pts.push([q.x, q.y]); }
     svg.remove();
-    var S = Math.min(vw * .72 / 210, vh * .34 / 100, 2.2), ox = vw / 2 - 105 * S, oy = vh / 2 - 50 * S;
+    var bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9;
+    pts.forEach(function (q) { bx0 = Math.min(bx0, q[0]); bx1 = Math.max(bx1, q[0]); by0 = Math.min(by0, q[1]); by1 = Math.max(by1, q[1]); });
+    var S = Math.min(vw * .6 / (bx1 - bx0), vh * .32 / (by1 - by0), 2.2), ox = vw / 2 - (bx0 + bx1) / 2 * S, oy = vh / 2 - (by0 + by1) / 2 * S;   // centred in the window
     function at(u) {                                                        // point on the route, u = 0..1 of its length
       u = Math.max(0, Math.min(1, u)) * M; var i = Math.min(M - 1, Math.floor(u)), f = u - i, a = pts[i], b = pts[i + 1];
       return [ox + (a[0] + (b[0] - a[0]) * f) * S, oy + (a[1] + (b[1] - a[1]) * f) * S];
