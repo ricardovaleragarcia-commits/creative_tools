@@ -1,4 +1,4 @@
-/* Creative tools: shared identity (landing + every tool). Source: Figma "Creative Tools" (Platform V2).
+/* Shake & Settle: shared identity (landing + every tool). Source: the Figma design (Platform V2).
    Every palette is one combination: --main = page color (the 2/3 on the right), --dark = the 1/3 on the left
    (text and controls sit here), --ink = text on top of them, --c1..--c4 = the four card colors.
    The active palette is set on <html data-palette="..."> (see palette.js). Red is the default. */

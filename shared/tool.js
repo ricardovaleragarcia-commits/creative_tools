@@ -8,7 +8,7 @@
   var menu = page.querySelector(".menu"), stage = page.querySelector(".stage");
 
   var title = page.querySelector(".toolhead__title");
-  if (title) title.textContent = document.title.replace(/\s*[—-]\s*Creative tools\s*$/, "");
+  if (title) title.textContent = document.title.replace(/\s*[—-]\s*Shake (&|&amp;) Settle\s*$/, "");
 
   // Sections: a child of .menu with data-sec starts a collapsible section that runs until the next one.
   // data-open = open by default. The user's choice is remembered. A section titled "Export" sticks to the bottom.
@@ -16,7 +16,7 @@
     var kids = Array.prototype.slice.call(menu.children);
     if (!kids.some(function (k) { return k.hasAttribute("data-sec"); })) return;
     menu.classList.add("sectioned");
-    var key = "ct-sec-" + location.pathname, saved = {};
+    var key = "sns-sec-" + location.pathname, saved = {};
     try { saved = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) {}
     var cur = null, n = 0;
     var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;

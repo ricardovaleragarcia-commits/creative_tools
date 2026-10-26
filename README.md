@@ -1,18 +1,18 @@
-# Creative tools
+# Shake & Settle
 
-Library of experimental tools for generating motion and interactions.
+Library of experimental tools for generating motion and interactions: play with the controls, then export a seamless loop.
 Plain HTML + CSS + JS, no build step: works on GitHub Pages and with any static server.
 
 ```
 index.html          landing (6-column grid of tool cards)
 tools.json          list of tools -> add an object here to add a card
-shared/theme.css    shared identity (Helvetica Neue, the 7 palettes, credits bar)
+shared/theme.css    shared identity (Helvetica Neue, the 12 palettes, credits bar)
 shared/palette.js   palette picked on the landing (the dots), saved per browser
 shared/tool.css     tool screen: dark panel with controls (1/3) + stage with the artwork (2/3)
 shared/tool.js      tool name, workspace on/off (crop marks), frame background helper
 shared/credits.js   credits bar with clickable icons (mail, web, Instagram, LinkedIn)
 shared/leave.js     soft fade-out when navigating between pages (add it before smooth-scroll.js)
-shared/persist.js   remembers a tool's settings between visits (CTPersist.init in the tool script)
+shared/persist.js   remembers a tool's settings between visits (ToolPersist.init in the tool script)
 tools/_template/    copy this folder to start a new tool
 fonts/              (not used since the switch to Helvetica Neue)
 ```
@@ -26,6 +26,14 @@ fonts/              (not used since the switch to Helvetica Neue)
 
 ## Run locally
 `python3 -m http.server 3000` and open http://localhost:3000 (`tools.json` needs http, not `file://`).
+
+## Tools
+| Tool | Folder |
+|---|---|
+| Disc Spin | `tools/disc-spin/` |
+| Shape Drop | `tools/shape-drop/` |
+| Line Draw | `tools/line-draw/` |
+| Text Orbit | `tools/text-orbit/` |
 
 ## Publish
 Settings -> Pages -> Deploy from a branch -> `main` / root.

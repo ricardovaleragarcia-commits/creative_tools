@@ -1,36 +1,36 @@
 [
   {
-    "title": "CT1 — Vinyl/CD Playground",
+    "title": "Disc Spin",
     "description": "CD and vinyl viewer with seamless loop video export.",
-    "cover": "shared/covers/ct1-vinyl.svg",
-    "href": "tools/disc-viewer/"
+    "cover": "shared/covers/disc-spin.svg",
+    "href": "tools/disc-spin/"
   },
   {
-    "title": "CT2 — Multiplication and Gravity",
+    "title": "Shape Drop",
     "description": "Shapes that multiply, fall and fill the frame, exported as a seamless loop.",
-    "cover": "shared/covers/ct2-stars.svg",
-    "href": "tools/shape-multiplier/"
+    "cover": "shared/covers/shape-drop.svg",
+    "href": "tools/shape-drop/"
   },
   {
-    "title": "CT3 — Text/SVG Reveal",
+    "title": "Line Draw",
     "description": "Draw the outline of text or SVG logos like a pen stroke, then fill it, as a seamless loop.",
-    "cover": "shared/covers/ct3-text-reveal.svg",
-    "href": "tools/text-reveal/"
+    "cover": "shared/covers/line-draw.svg",
+    "href": "tools/line-draw/"
   },
   {
-    "title": "CT4 — Text On Sphere",
+    "title": "Text Orbit",
     "description": "Wrap any text around a sphere and export a seamless spinning loop.",
-    "cover": "shared/covers/ct4-text-on-sphere.svg",
-    "href": "tools/text-on-sphere/"
+    "cover": "shared/covers/text-orbit.svg",
+    "href": "tools/text-orbit/"
   },
   {
-    "title": "CT5",
-    "description": "Coming Soon",
-    "cover": "shared/covers/ct5-coming-soon.svg"
+    "title": "Next tool",
+    "description": "Coming soon",
+    "cover": "shared/covers/coming-soon.svg"
   },
   {
-    "title": "CT6",
-    "description": "Coming Soon",
-    "cover": "shared/covers/ct6-coming-soon.svg"
+    "title": "Next tool",
+    "description": "Coming soon",
+    "cover": "shared/covers/coming-soon.svg"
   }
 ]

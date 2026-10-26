@@ -1,8 +1,8 @@
 /* Remembers a tool's settings between visits (localStorage, per tool).
    Saves every input / select / checkbox of the controls menu that has an id (files excluded),
    plus whatever the tool wants in `extra`.
-     CTPersist.init("disc", { get: () => ({...}), set: obj => {...} });   // call once, after the controls are wired
-     CTPersist.save();                                                  // call after a change that is not an input event (button, image) */
+     ToolPersist.init("disc-spin", { get: () => ({...}), set: obj => {...} });   // call once, after the controls are wired
+     ToolPersist.save();                                                  // call after a change that is not an input event (button, image) */
 (function () {
   var key = null, opts = {}, timer = 0;
   function menu() { return document.querySelector(".menu"); }
@@ -19,7 +19,7 @@
   }
   function save() { if (key && !timer) timer = setTimeout(write, 250); }
   function init(name, o) {
-    key = "ct-" + name; opts = o || {};
+    key = "sns-" + name; opts = o || {};
     var st = null; try { st = JSON.parse(localStorage.getItem(key)); } catch (e) {}
     if (st && st.v) {
       fields().forEach(function (e) {
@@ -35,5 +35,5 @@
     ["input", "change", "click"].forEach(function (t) { m.addEventListener(t, save); });
     addEventListener("pagehide", function () { if (timer) { clearTimeout(timer); write(); } });
   }
-  window.CTPersist = { init: init, save: save };
+  window.ToolPersist = { init: init, save: save };
 })();

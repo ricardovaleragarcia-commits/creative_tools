@@ -202,7 +202,7 @@ cv.addEventListener('click', e => {
   const x = (e.clientX - r.left) * cv.width / r.width - cv.width / 2;
   const y = (e.clientY - r.top) * cv.height / r.height - cv.height / 2;
   ctrl.update({ axis: Math.round(Math.atan2(y, x) * 180 / Math.PI + 360) % 360 });
-  sync(); CTPersist.save();
+  sync(); ToolPersist.save();
 });
 
 $('#play').onclick = () => {
@@ -212,7 +212,7 @@ $('#play').onclick = () => {
 
 /* ---------- export ---------- */
 const status = t => { $('#status').textContent = t; };
-$('#png').onclick = () => cv.toBlob(b => VideoExport.save('text-on-sphere.png', b));
+$('#png').onclick = () => cv.toBlob(b => VideoExport.save('text-orbit.png', b));
 
 function loopLength() {
   const c = ctrl.cfg;
@@ -228,7 +228,7 @@ $('#vid').onclick = async () => {
   btn.disabled = true; ctrl.update({ playing: false });
   try {
     const out = await VideoExport.run({ canvas: cv, renderAt: t => ctrl.render(t), period: loopLength(), fps, width: cv.width, height: cv.height, status });
-    const r = await VideoExport.save('text-on-sphere-loop.' + out.ext, out.blob);
+    const r = await VideoExport.save('text-orbit-loop.' + out.ext, out.blob);
     status(r === 'saved' ? 'Saved · ' + out.note : 'Could not save the file (' + r + ').');
   } catch (e) { status('Video export failed: ' + (e.message || e)); }
   finally { ctrl.update({ playing: wasPlaying }); btn.disabled = false; }
@@ -240,12 +240,12 @@ $('#code').onclick = () => {
   $('#dlg').showModal();
 };
 $('#cp').onclick = () => navigator.clipboard.writeText($('#src').value);
-$('#dl').onclick = () => VideoExport.save('text-on-sphere.html', new Blob([$('#src').value], { type: 'text/html' }));
+$('#dl').onclick = () => VideoExport.save('text-orbit.html', new Blob([$('#src').value], { type: 'text/html' }));
 $('#close').onclick = () => $('#dlg').close();
 
 /* ---------- remember the settings between visits ---------- */
 const SAVED = ['text', 'font', 'tsize', 'size', 'tilt', 'repeat', 'mode', 'dir', 'T', 'ratio', 'quality', 'cw', 'ch', 'bg', 'sc', 'tc', 'border', 'bc', 'bw', 'fx', 'eje', 'axis', 'spin', 'bseed'];
-CTPersist.init('text-on-sphere', {
+ToolPersist.init('text-orbit', {
   get: () => Object.fromEntries(SAVED.map(k => [k, ctrl.cfg[k]])),
   set: x => {
     const c = {}; SAVED.forEach(k => { if (k in x && x[k] !== undefined) c[k] = x[k]; });

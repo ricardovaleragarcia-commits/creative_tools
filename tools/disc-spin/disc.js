@@ -569,7 +569,7 @@ $('pause').onclick = () => { animPlaying = !animPlaying; $('pause').textContent 
 $('vColor').oninput = e => { const c = linearHex(e.target.value); vinylBodyMat.color.copy(c); refreshFinish(); };
 $('vColor2').oninput = () => refreshFinish();
 $('vFinish').onchange = () => { $('vColor2').closest('.block').style.opacity = $('vFinish').value === 'solid' ? .35 : 1; $('vSeed').disabled = $('vFinish').value === 'solid'; refreshFinish(true); };
-$('vSeed').onclick = () => { patSeed = (patSeed*7 + 13) % 1000003; refreshFinish(true); CTPersist.save(); };
+$('vSeed').onclick = () => { patSeed = (patSeed*7 + 13) % 1000003; refreshFinish(true); ToolPersist.save(); };
 $('glit').oninput = e => { $('glitv').textContent = (+e.target.value).toFixed(2); glitterMat.uniforms.uAmt.value = +e.target.value; };
 $('glitC').oninput = e => glitterMat.uniforms.uCol.value.set(e.target.value);
 $('vTr').oninput = e => { $('vtrv').textContent = (+e.target.value).toFixed(2); applyTrans(+e.target.value); };
@@ -631,10 +631,10 @@ function fitBg(){
 function setBgImage(url){
   labelImgs.BG = url || null;
   $('bgImg').dataset.empty = url ? 'Saved image' : '';
-  if(!url){ scene.background = null; bgTex = bgImgEl = null; $('bgClear').hidden = true; CTPersist.save(); return; }
+  if(!url){ scene.background = null; bgTex = bgImgEl = null; $('bgClear').hidden = true; ToolPersist.save(); return; }
   const img = new Image();
   img.onload = () => { bgImgEl = img; bgTex = new THREE.Texture(img); bgTex.encoding = THREE.sRGBEncoding; bgTex.needsUpdate = true;
-    scene.background = bgTex; fitBg(); $('bgClear').hidden = false; CTPersist.save(); };
+    scene.background = bgTex; fitBg(); $('bgClear').hidden = false; ToolPersist.save(); };
   img.src = url;
 }
 $('bgImg').onchange = e => {
@@ -670,7 +670,7 @@ const dots = lights.map((l, k) => {
   const d = document.createElement('div'); d.className = 'lp-dot'; d.textContent = k + 1; pad.appendChild(d);
   d.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); selectLight(k); d.setPointerCapture(e.pointerId); d._drag = true; });
   d.addEventListener('pointermove', e => { if(d._drag) moveDot(k, e); });
-  d.addEventListener('pointerup', () => { d._drag = false; CTPersist.save(); });
+  d.addEventListener('pointerup', () => { d._drag = false; ToolPersist.save(); });
   return d;
 });
 function moveDot(k, e){
@@ -704,7 +704,7 @@ $('lDist').oninput = e => { lights[sel].dist = +e.target.value; $('ldv').textCon
 // dragging on the empty pad moves the selected light there
 pad.addEventListener('pointerdown', e => { if(e.target !== pad && !e.target.classList.contains('lp-disc')) return; moveDot(sel, e); pad._drag = true; pad.setPointerCapture(e.pointerId); });
 pad.addEventListener('pointermove', e => { if(pad._drag) moveDot(sel, e); });
-pad.addEventListener('pointerup', () => { pad._drag = false; CTPersist.save(); });
+pad.addEventListener('pointerup', () => { pad._drag = false; ToolPersist.save(); });
 
 // "Place by clicking the disc": the highlight lands where you click (mirror reflection of the camera ray)
 $('aim').onclick = () => { aimMode = !aimMode; $('aim').classList.toggle('on', aimMode); stage.style.cursor = aimMode ? 'crosshair' : ''; };
@@ -727,7 +727,7 @@ function setZoom(v){ zoomV = clamp(v, 0.3, 2.5); $('zoom').value = zoomV; $('zv'
 $('zoom').oninput = e => setZoom(+e.target.value);
 $('zIn').onclick = () => setZoom(zoomV*1.12);
 $('zOut').onclick = () => setZoom(zoomV/1.12);
-stage.addEventListener('wheel', e => { e.preventDefault(); setZoom(zoomV*Math.exp(-e.deltaY*0.0015)); CTPersist.save(); }, {passive: false});
+stage.addEventListener('wheel', e => { e.preventDefault(); setZoom(zoomV*Math.exp(-e.deltaY*0.0015)); ToolPersist.save(); }, {passive: false});
 
 // ---------- Girar manteniendo el clic: se queda donde sueltas ----------
 stage.addEventListener('pointerdown', e => {
@@ -742,7 +742,7 @@ stage.addEventListener('pointermove', e => {
   userRx = clamp(userRx + dy*0.01, -1.5, 1.5);   // stays exactly where the mouse stopped
 });
 let aiming = false;
-const endDrag = () => { dragging = false; if(aiming){ aiming = false; CTPersist.save(); } };
+const endDrag = () => { dragging = false; if(aiming){ aiming = false; ToolPersist.save(); } };
 stage.addEventListener('pointerup', endDrag);
 stage.addEventListener('pointercancel', endDrag);
 
@@ -757,7 +757,7 @@ function setLabel(side, url){
     real.map = tex(true); real.needsUpdate = true;                                     // vinyl label
     (side === 'F' ? cdFrontMat : cdBackMat).uniforms.uMap.value = tex(false);          // CD face
     plain.map = tex(true); plain.color.set(0xffffff); plain.transparent = true; plain.needsUpdate = true;   // plain label
-    CTPersist.save();
+    ToolPersist.save();
   };
   img.src = url;
 }
@@ -832,7 +832,7 @@ requestAnimationFrame(frame);
 syncLightUI();
 
 // ---------- Remember the settings and the images between visits ----------
-CTPersist.init('disc', {
+ToolPersist.init('disc-spin', {
   get: () => ({mode, style, anim: animName, ratio: RATIO_KEY, imgs: labelImgs, lights, sel, zoom: zoomV, seed: patSeed}),
   set: x => {
     if(x.mode) mode = x.mode; if(x.style) style = x.style; refresh();

@@ -11,7 +11,7 @@ var bgStyle={mode:'solid',color:'#000000',stops:[{c:'#2a2a2a',p:0},{c:'#000000',
 var fillStyle={mode:'solid',color:'#eaeaea',stops:[{c:'#ececec',p:0},{c:'#818181',p:1}],angle:0};   // default: the solid color of the cover star
 var shape=StarCore.starShape(),custom=null,playing=true,busy=false,dl=null,liveG=null;
 /* ---- ajustes persistentes: se guardan en el navegador del usuario y se restauran al abrir ---- */
-var STORE_KEY='shape-multiplier-settings-v1',NUM_KEYS=['gravity','bounce','friction','gap','shake','stepDur','hold'];
+var STORE_KEY='sns-shape-drop-v1',NUM_KEYS=['gravity','bounce','friction','gap','shake','stepDur','hold'];
 try{var saved=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
   if(saved){
     NUM_KEYS.forEach(function(k){if(saved.P&&saved.P[k]!=null){P[k]=+saved.P[k];$(k).value=saved.P[k]}});
@@ -243,9 +243,9 @@ $('export').onclick=function(){
       job=saveFile(custom?'silhouette.svg':'star.svg',StarExport.buildShapeSVG(exportG(false)),'image/svg+xml');
     }else{
       job=bake().then(function(bk){
-        if(f==='lottie')return saveFile('shape-multiplier.lottie.json',JSON.stringify(StarExport.buildLottie(bk,exportG(tr),bitmapURL())),'application/json');
-        if(f==='html')return saveFile('shape-multiplier-animation.html',StarExport.buildPlayerHTML(bk,exportG(tr),bitmapURL()),'text/html');
-        return playVideo(bk).then(function(r){return saveFile('shape-multiplier.'+r.ext,r.blob).then(function(){if(r.ext==='webm')say('Saved as WebM (MP4 is not supported by this browser).')})});
+        if(f==='lottie')return saveFile('shape-drop.lottie.json',JSON.stringify(StarExport.buildLottie(bk,exportG(tr),bitmapURL())),'application/json');
+        if(f==='html')return saveFile('shape-drop-animation.html',StarExport.buildPlayerHTML(bk,exportG(tr),bitmapURL()),'text/html');
+        return playVideo(bk).then(function(r){return saveFile('shape-drop.'+r.ext,r.blob).then(function(){if(r.ext==='webm')say('Saved as WebM (MP4 is not supported by this browser).')})});
       });
     }
   }catch(e){job=Promise.reject(e)}

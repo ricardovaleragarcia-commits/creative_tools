@@ -1,4 +1,4 @@
-/* CT3 — Text/SVG Reveal. Outline draw -> fill.
+/* Line Draw (text or SVG logo). Outline draw -> fill.
    Every letter is turned into vector contours (opentype.js for text, own path parser for SVG),
    each contour is stroked progressively ("trim path"), then the letter is filled. */
 const FS = 120, MAXL = 20, EXIT = 0.5, FILL_AT = 0.6;
@@ -448,7 +448,7 @@ document.querySelectorAll('.menu input[type=range]').forEach(r => {
   r.addEventListener('input', u); u();
 });
 $('play').onclick = () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; };
-$('reshuffle').onclick = () => { seed = (seed*7 + 13) % 9973; $('order').value = 'rand'; prepare(); playMs = 0; if(window.CTPersist) CTPersist.save(); };
+$('reshuffle').onclick = () => { seed = (seed*7 + 13) % 9973; $('order').value = 'rand'; prepare(); playMs = 0; if(window.ToolPersist) ToolPersist.save(); };
 $('svgFile').onchange = async e => {
   const file = e.target.files[0]; if(!file) return;
   try{
@@ -486,7 +486,7 @@ function moveHandle(e){
   const [px,py] = pos(e);
   const x = clamp((px-PAD)/S), y = clamp(1-(py-PAD)/S);
   if(drag === 1){ CURVE.x1 = x; CURVE.y1 = y; } else { CURVE.x2 = x; CURVE.y2 = y; }
-  drawCurve(); if(window.CTPersist) CTPersist.save();
+  drawCurve(); if(window.ToolPersist) ToolPersist.save();
 }
 cv.addEventListener('pointerdown', e => {
   const [px,py] = pos(e), A = toC(CURVE.x1,CURVE.y1), B = toC(CURVE.x2,CURVE.y2);
@@ -526,7 +526,7 @@ $('dl').onclick = async () => {
   recording = true; $('dl').disabled = true;
   try{
     const out = await VideoExport.run({canvas: ec, renderAt: t => renderFrame(ectx, W, H, t), period: total, fps: FPS, width: W, height: H, status});
-    const name = `text-reveal-${ratio === 'custom' ? W + 'x' + H : ratio.replace(':','x')}.${out.ext}`;
+    const name = `line-draw-${ratio === 'custom' ? W + 'x' + H : ratio.replace(':','x')}.${out.ext}`;
     const r = await VideoExport.save(name, out.blob);
     const msgs = {saved: 'Done', declined: 'Download cancelled', unavailable: 'Downloads are not available in this view', too_large: 'The file is too large'};
     status(`${msgs[r] || 'Could not save'}: ${name} · ${W}×${H} · ${total.toFixed(1)} s loop · ${out.note}`);
@@ -541,7 +541,7 @@ for(const id of ['cw', 'ch']){
 
 // ---------- Start ----------
 resizePreview();
-if(window.CTPersist) CTPersist.init('text-reveal', {
+if(window.ToolPersist) ToolPersist.init('line-draw', {
   get: () => ({curve:CURVE, ratio, seed}),
   set: x => { if(x.curve) CURVE = x.curve; if(x.ratio) setRatio(x.ratio); if(x.seed) seed = x.seed; drawCurve(); }
 });

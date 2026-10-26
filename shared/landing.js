@@ -20,12 +20,12 @@
     grid.replaceChildren(f);
   }
   var cachedTxt = null;
-  try { cachedTxt = localStorage.getItem("ct-tools"); if (cachedTxt) render(JSON.parse(cachedTxt)); } catch (e) { cachedTxt = null; }
+  try { cachedTxt = localStorage.getItem("sns-tools"); if (cachedTxt) render(JSON.parse(cachedTxt)); } catch (e) { cachedTxt = null; }
   fetch("tools.json").then(function (r) { return r.text(); })
     .then(function (txt) {
       if (txt === cachedTxt) return;               // already drawn from the cache: don't redraw
       render(JSON.parse(txt));
-      try { localStorage.setItem("ct-tools", txt); } catch (e) {}
+      try { localStorage.setItem("sns-tools", txt); } catch (e) {}
     })
     .catch(function () { grid.textContent = "Could not load tools.json (serve the folder over http)."; });
 
@@ -73,7 +73,7 @@
   (function () {
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
-    try { sessionStorage.setItem("ct-intro", "1"); } catch (e) {}
+    try { sessionStorage.setItem("sns-intro", "1"); } catch (e) {}
     var N = dots.length, SEQ = 60, OUT = 400, LEAVE0 = 1150, LSTAG = 0, TRAVEL = 850, SHRINK = 900;   // ms
     var W_ROT = Math.PI * 2 / 1500;                                                                    // ring spin (rad/ms)
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
