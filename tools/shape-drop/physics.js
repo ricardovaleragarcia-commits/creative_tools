@@ -140,14 +140,14 @@ function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
       for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=w||ny>=h)continue;const k=ny*w+nx;if(g[k]&&!lab[k]){lab[k]=id;st[sp++]=k}}}
     comps.push({id,cnt});total+=cnt;
   }
-  const keep=comps.filter(c=>c.cnt>=Math.max(6,total*0.004)).sort((a,b)=>b.cnt-a.cnt).slice(0,16);
+  const keep=comps.filter(c=>c.cnt>=Math.max(4,total*0.002)).sort((a,b)=>b.cnt-a.cnt).slice(0,16);
   const out=[];
   keep.forEach(c=>{
     const m=new Uint8Array(w*h);for(let i=0;i<w*h;i++)if(lab[i]===c.id)m[i]=1;
     const tr=traceOuter(m,w,h);if(!tr||tr.length<3)return;
     const budget=Math.max(8,Math.round(maxVerts*c.cnt/total));
     let eps=0.9,poly=simplifyClosed(tr,eps);
-    while(poly.length>budget&&eps<12){eps*=1.4;poly=simplifyClosed(tr,eps)}
+    while(poly.length>budget&&eps<3){eps*=1.4;poly=simplifyClosed(tr,eps)}
     if(decomp&&decomp.isSimple){   // a crossing outline can't be split into convex pieces: try other simplifications
       const ok=P=>{const q=P.map(p=>p.slice());decomp.makeCCW(q);return decomp.isSimple(q)};
       if(!ok(poly)){for(const f of [0.7,1.4,0.5,2,0.35,2.8]){const q=simplifyClosed(tr,eps*f);if(q.length>=3&&ok(q)){poly=q;break}}}
@@ -155,7 +155,7 @@ function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
     if(poly.length<3)return;
     // the outline through pixel centers sits ~0.5 px inside: push it out 0.5 px from the centroid
     let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1]});cx/=poly.length;cy/=poly.length;
-    out.push(poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*0.5+0.5)*scale,(p[1]+dy/l*0.5+0.5)*scale]}));
+    out.push(poly.map(p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [(p[0]+dx/l*1.0+0.5)*scale,(p[1]+dy/l*1.0+0.5)*scale]}));
   });
   return out;
 }
@@ -345,7 +345,7 @@ function createSim(Matter, shape0, P){
       const v=plan.variants[Math.floor(rnd()*plan.variants.length)];
       slots=StarLattice.layoutFrom(v,n,W,H,rnd);sz=v.s;
     }else slots=plan.items;
-    if(KP()>1)sz*=(P.pieceGrow||1.3);   // las piezas sueltas se acomodan mejor que el grupo rígido: algo más grandes para llenar el marco
+    if(KP()>1)sz*=(shape.grow||1);   // las piezas sueltas se acomodan mejor que el grupo rígido: algo más grandes para llenar el marco
     tune(n);
     const KK=KP(),oldAll=stars.slice(),gm={},old=[],pairs=[];
     oldAll.forEach(b=>{const id=b.plugin.id;if(!gm[id]){gm[id]=[];old.push(gm[id])}gm[id].push(b)});   // un grupo = las piezas de una copia

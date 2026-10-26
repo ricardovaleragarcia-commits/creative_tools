@@ -34,8 +34,28 @@ function saveSettings(){
 
 var sim=StarCore.createSim(Matter,shape,P);
 
-function mkG(){var sh=shape;return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,shape:{outer:sh.outer,outers:sh.outers,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:custom?custom.bitmap:null,imgs:custom&&custom.bitmaps?custom.bitmaps:null}}
-function G(){if(!liveG)liveG=mkG();liveG.bg=bgStyle;liveG.fill=fillStyle;return liveG}
+/* Uploaded pictures are painted with the Shape fill (solid or gradient) when the box is ticked; otherwise they keep their colors. */
+function tintOn(){return !!(custom&&$('tint').checked)}
+function tintKey(){return tintOn()?JSON.stringify(fillStyle)+'|'+shape.cx+'|'+shape.cy+'|'+shape.bw+'|'+shape.bh:''}
+function tintCanvas(c){
+  var o=document.createElement('canvas');o.width=c.width;o.height=c.height;var x=o.getContext('2d'),g=fillStyle,sh=shape;
+  x.drawImage(c,0,0);x.globalCompositeOperation='source-in';
+  if(g.mode==='solid')x.fillStyle=g.color;
+  else{
+    var a=g.angle*Math.PI/180,dx=Math.sin(a),dy=Math.cos(a),w=sh.bw*sh.u,h=sh.bh*sh.u,L=0.5*(Math.abs(dx)*w+Math.abs(dy)*h);
+    var gr=x.createLinearGradient(sh.cx-dx*L,sh.cy-dy*L,sh.cx+dx*L,sh.cy+dy*L);
+    g.stops.forEach(function(s){gr.addColorStop(Math.min(1,Math.max(0,s.p)),s.c)});x.fillStyle=gr;
+  }
+  x.fillRect(0,0,o.width,o.height);return o;
+}
+function curImages(){   // {bitmap, bitmaps} as they are drawn / exported (tinted or original)
+  if(!custom)return {bitmap:null,bitmaps:null};
+  if(!tintOn())return {bitmap:custom.bitmap,bitmaps:custom.bitmaps};
+  var k=tintKey();if(!custom.tint||custom.tint.k!==k)custom.tint={k:k,bitmap:tintCanvas(custom.bitmap),bitmaps:custom.bitmaps?custom.bitmaps.map(tintCanvas):null};
+  return custom.tint;
+}
+function mkG(){var sh=shape,im=curImages();return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,_tk:tintKey(),shape:{outer:sh.outer,outers:sh.outers,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:im.bitmap,imgs:im.bitmaps}}
+function G(){if(liveG&&liveG._tk!==tintKey())liveG=null;if(!liveG)liveG=mkG();liveG.bg=bgStyle;liveG.fill=fillStyle;return liveG}
 function exportG(transparent){var g=Object.assign({},mkG());g.bg=transparent?null:bgStyle;return g}
 
 /* ---------- fill editors (solid or gradient) ---------- */
@@ -178,7 +198,7 @@ function traceBitmap(bm,w,h,maxp,frame,hull){
   for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
   if(!n)return null;
   if(hull){   // each piece collides as its convex hull: hooks cannot nest inside each other
-    var oh=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null);
+    var oh=StarCore.outlinesFromGrid(g,gw,gh,w/gw,400,null);
     if(!oh||!oh.length)return {err:1};
     return {sh:StarCore.buildShape(oh,null,[StarCore.convexHull([].concat.apply([],oh))],null,frame),simple:true,opaque:n/(gw*gh)>0.985};
   }
@@ -189,7 +209,7 @@ function traceBitmap(bm,w,h,maxp,frame,hull){
   });
   if(!sh)return {err:1};
   if(sh.parts.length>maxp){   // still too many: each loose piece by its outer contour, or the whole by one
-    var o2=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null),hulls=o2.map(StarCore.convexHull);
+    var o2=StarCore.outlinesFromGrid(g,gw,gh,w/gw,400,null),hulls=o2.map(StarCore.convexHull);
     sh=StarCore.buildShape(o2,null,hulls.length<=maxp?hulls:[StarCore.convexHull([].concat.apply([],o2))],null,frame);simple=true;
   }
   return {sh:sh,simple:simple,opaque:n/(gw*gh)>0.985};
@@ -200,7 +220,7 @@ function fileNote(sh,r,pieces){
   if(pieces>1)t='Using '+pieces+' pieces. Each one falls and collides on its own; every copy is the whole group.';
   else if(lastOne&&lastParts)t='Using the picture as one shape: its '+lastParts.length+' elements move together.';
   else t='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.');
-  $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
+  $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+(tintOn()?'':' The picture keeps its own colors.');
 }
 /* Several files = several pieces of one group. */
 function composeLogo(items){   // same-size files are overlaid (keeps a logo exported as layers); different sizes go side by side
@@ -285,7 +305,7 @@ function buildGroup(){
       var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
       first.forEach(function(r){var s=r.sh,hw=s.bw*s.u/2,hh=s.bh*s.u/2;x0=Math.min(x0,s.cx-hw);x1=Math.max(x1,s.cx+hw);y0=Math.min(y0,s.cy-hh);y1=Math.max(y1,s.cy+hh)});
       var frame={cx:(x0+x1)/2,cy:(y0+y1)/2,u:(y1-y0)||1};
-      var rs=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,frame,!$('nest').checked)}),sh=StarCore.joinShapes(rs.map(function(r){return r.sh}));
+      var rs=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,frame,!$('nest').checked)}),sh=StarCore.joinShapes(rs.map(function(r){return r.sh}));sh.grow=$('nest').checked?1.15:1;
       var comp=document.createElement('canvas');comp.width=W;comp.height=H;var cx2=comp.getContext('2d');cvs.forEach(function(c){cx2.drawImage(c,0,0)});
       useShape(sh,comp,cvs);
       fileNote(sh,{simple:rs.some(function(r){return r.simple}),opaque:rs.some(function(r){return r.opaque})},cvs.length);
@@ -349,7 +369,7 @@ function bake(){
     }catch(e){rej(e)}
   });
 }
-function bitmapURL(){return custom?(custom.bitmaps?custom.bitmaps.map(function(c){return c.toDataURL('image/png')}):custom.bitmap.toDataURL('image/png')):null}
+function bitmapURL(){if(!custom)return null;var im=curImages();return im.bitmaps?im.bitmaps.map(function(c){return c.toDataURL('image/png')}):im.bitmap.toDataURL('image/png')}
 function playVideo(bk){
   var k=resK(),od=outDims(),cw=od[0],ch=od[1],oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
   var octx=oc.getContext('2d'),g=exportG(false),n=bk.frames.length;
