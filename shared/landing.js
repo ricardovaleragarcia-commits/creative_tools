@@ -82,7 +82,7 @@
       var by = function (u) { return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u; };
       return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var lo = 0, hi = 1, u = x; for (var i = 0; i < 24; i++) { u = (lo + hi) / 2; if (bx(u) < x) lo = u; else hi = u; } return by(u); };
     }
-    var pop = bezier(.2, .8, .2, 1), fly = bezier(.65, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
+    var pop = bezier(.2, .8, .2, 1), fly = bezier(.5, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
     var sr = side.getBoundingClientRect();
     var cx = vw / 2, cy = vh / 2, R = Math.min(vw * .14, vh * .14, 48);     // one radius: a perfect circle, smaller and more condensed, like a loading spinner
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
@@ -108,7 +108,8 @@
         var th = o.slot + W_ROT * t;                                         // the whole ring turns as one
         x = cx + k * R * Math.cos(th); y = cy + k * R * Math.sin(th);
         if (t > o.leave) {                                                   // leaves the ring from where it is, straight home, eased
-          var th0 = o.slot + W_ROT * o.leave, sx = cx + R * Math.cos(th0), sy = cy + R * Math.sin(th0), e = fly((t - o.leave) / TRAVEL);
+          var tau = Math.min(1, (t - o.leave) / TRAVEL), e = fly(tau);       // keeps turning (slowing down) while it drifts home, so there is no sudden stop
+          var th1 = o.slot + W_ROT * o.leave + W_ROT * TRAVEL * (tau - tau * tau / 2), sx = cx + R * Math.cos(th1), sy = cy + R * Math.sin(th1);
           x = sx + (o.fx - sx) * e; y = sy + (o.fy - sy) * e;
         }
         o.d.style.opacity = Math.min(1, dt / (o.direct ? 220 : 100));                           // dots keep their size the whole time
