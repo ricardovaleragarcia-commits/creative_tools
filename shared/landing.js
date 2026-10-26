@@ -75,7 +75,7 @@
     var root = document.documentElement;
     if (!root.classList.contains("intro")) return;
     try { sessionStorage.setItem("sns-intro", "1"); } catch (e) {}
-    var N = dots.length, RUN = 3200, TRAVEL = 850, SHRINK = 900;   // ms
+    var N = dots.length, RUN = 4200, TRAVEL = 850, SHRINK = 900;   // ms
     var t0 = 0, raf = 0, finished = false, vw = innerWidth, vh = innerHeight;
     function bezier(x1, y1, x2, y2) {                                       // CSS-style cubic-bezier easing
       var bx = function (u) { return 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; };
@@ -84,8 +84,8 @@
     }
     var run = bezier(.45, 0, .4, 1), fly = bezier(.65, 0, .25, 1), slide = bezier(.76, 0, .24, 1);
     // The route, traced from Ricardo's sketch (y down): S, & and S on top of each other in the same spot, so each one ends where the next
-    // begins: the S ends at its top right, right where the & starts coming down its right arm; the & ends at its bottom-right tail, from
-    // where the dots swing under and into the bottom end of the S again.
+    // begins: the S ends at its top right, right where the & starts coming down its right arm; the & ends at its bottom-right tail, and from
+    // there a short hook takes the dots straight into the lower curve of the second S and up it.
     function shift(d, dx) { return d.replace(/-?\d+(\.\d+)? -?\d+(\.\d+)?/g, function (p) { var q = p.split(" "); return (+q[0] + dx) + " " + q[1]; }); }
     var S1 = "C118 390 140 430 190 455 C230 475 300 480 340 445 C370 415 368 360 330 330 C300 305 230 285 190 260" +
       " C150 235 140 175 165 145 C200 110 300 110 340 150 C355 165 362 180 365 190";                    // S: bottom-left end → top-right end
@@ -93,8 +93,8 @@
       " C600 275 655 230 658 180 C660 140 620 125 590 132 C550 142 540 200 560 240 C600 320 700 430 780 490";   // up the diagonal, top loop to the left, down to the tail
     var ROUTE = "M115 340 " + S1 +
       " C368 200 378 180 378 200 " + shift(AMP, -380) +                                                 // straight on into the & (moved onto the S)
-      " C425 509 380 545 280 540 C150 533 72 480 80 410 C84 372 104 330 115 340 " +                     // from the tail, under and up into the bottom end of the S
-      S1;                                                                                               // the S again
+      " C412 500 385 512 350 503 C322 495 318 462 340 445 " +                                          // from the tail, a short hook straight into the lower curve of the S
+      S1.slice(S1.indexOf("C370 415"));                                                                 // and up the rest of the S
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"), path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     svg.setAttribute("aria-hidden", "true"); svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
     path.setAttribute("d", ROUTE); svg.appendChild(path); document.body.appendChild(svg);
@@ -103,12 +103,12 @@
     svg.remove();
     var bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9;
     pts.forEach(function (q) { bx0 = Math.min(bx0, q[0]); bx1 = Math.max(bx1, q[0]); by0 = Math.min(by0, q[1]); by1 = Math.max(by1, q[1]); });
-    var S = Math.min(vw * .6 / (bx1 - bx0), vh * .4 / (by1 - by0), .8), ox = vw / 2 - (bx0 + bx1) / 2 * S, oy = vh / 2 - (by0 + by1) / 2 * S;   // centred in the window
+    var S = Math.min(vw * .45 / (bx1 - bx0), vh * .22 / (by1 - by0), .42), ox = vw / 2 - (bx0 + bx1) / 2 * S, oy = vh / 2 - (by0 + by1) / 2 * S;   // centred in the window
     function at(u) {                                                        // point on the route, u = 0..1 of its length
       u = Math.max(0, Math.min(1, u)) * M; var i = Math.min(M - 1, Math.floor(u)), f = u - i, a = pts[i], b = pts[i + 1];
       return [ox + (a[0] + (b[0] - a[0]) * f) * S, oy + (a[1] + (b[1] - a[1]) * f) * S];
     }
-    var GAP = Math.max(.02, 34 / (L * S));                                  // spacing between the dots (share of the route), never closer than 34 px
+    var GAP = Math.max(.018, 22 / (L * S));                                  // spacing between the dots (share of the route), never closer than 22 px
     var sr = side.getBoundingClientRect();
     var cutR = Math.max(0, vw - sr.right), cutB = Math.max(0, vh - sr.bottom);
     var items = Array.prototype.map.call(dots, function (d, i) {
