@@ -1,6 +1,6 @@
 [
   {
-    "title": "Vinyl & CD Spin",
+    "title": "Vinyl & CD Mockup Animator",
     "description": "CD and vinyl viewer with seamless loop video export.",
     "cover": "shared/covers/disc-spin.svg",
     "href": "tools/disc-spin/"
@@ -12,7 +12,7 @@
     "href": "tools/shape-drop/"
   },
   {
-    "title": "Text & Logo Line Draw",
+    "title": "Text & Shape Line Draw",
     "description": "Draw the outline of text or SVG logos like a pen stroke, then fill it, as a seamless loop.",
     "cover": "shared/covers/line-draw.svg",
     "href": "tools/line-draw/"

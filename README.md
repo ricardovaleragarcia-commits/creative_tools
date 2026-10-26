@@ -30,9 +30,9 @@ fonts/              (not used since the switch to Helvetica Neue)
 ## Tools
 | Tool | Folder |
 |---|---|
-| Vinyl & CD Spin | `tools/disc-spin/` |
+| Vinyl & CD Mockup Animator | `tools/disc-spin/` |
 | Shape Drop & Multiply | `tools/shape-drop/` |
-| Text & Logo Line Draw | `tools/line-draw/` |
+| Text & Shape Line Draw | `tools/line-draw/` |
 | Text Orbit Sphere | `tools/text-orbit/` |
 
 ## Publish
