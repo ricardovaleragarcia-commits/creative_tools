@@ -32,6 +32,7 @@
       <input type="file" id="file" multiple accept=".png,.webp,.svg,image/png,image/webp,image/svg+xml" hidden>
       <div class="block full" id="modeRow" hidden><div class="t">Elements of the picture</div><select id="pieceMode" aria-label="Elements of the picture"><option value="separate" selected>Separate: each element falls on its own</option><option value="together">Together: one composite shape</option></select></div>
       <label class="chk" id="keepRow" hidden><input type="checkbox" id="keeplayout">Appear in the original layout (then they fall apart)</label>
+      <label class="chk" id="nestRow" hidden><input type="checkbox" id="nest">Let hooks nest inside each other (tighter, may interlock)</label>
       <div class="note" id="shapenote">Default shape: 6-point star. Upload a PNG or SVG with a transparent background to use its silhouette for collisions. Pick several files to make a group of pieces that fall and collide separately (reload the page to go back to the star).</div>
     </div>
 

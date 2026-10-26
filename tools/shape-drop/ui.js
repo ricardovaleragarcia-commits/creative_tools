@@ -171,12 +171,17 @@ function readPicture(f){
 /* Trace the alpha silhouette of a canvas into a collision shape. Collision outline: the picture is always drawn exactly,
    but the invisible shape it collides with is kept to at most maxp convex pieces (every piece of every copy is tested
    against every other, so detail costs speed). frame (optional) makes several pieces share one coordinate frame. */
-function traceBitmap(bm,w,h,maxp,frame){
+function traceBitmap(bm,w,h,maxp,frame,hull){
   var sc=256/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
   var gc=document.createElement('canvas');gc.width=gw;gc.height=gh;var gx=gc.getContext('2d');gx.drawImage(bm,0,0,gw,gh);
   var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
   for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
   if(!n)return null;
+  if(hull){   // each piece collides as its convex hull: hooks cannot nest inside each other
+    var oh=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null);
+    if(!oh||!oh.length)return {err:1};
+    return {sh:StarCore.buildShape(oh,null,[StarCore.convexHull([].concat.apply([],oh))],null,frame),simple:true,opaque:n/(gw*gh)>0.985};
+  }
   var sh=null,simple=false;
   [110,70,45,28,18,12].some(function(mv){
     var o=StarCore.outlinesFromGrid(g,gw,gh,w/gw,mv,window.decomp);if(!o||!o.length)return true;
@@ -274,23 +279,24 @@ function splitElements(it,MAXE){
 function buildGroup(){
   var items=lastItems,keep=$('keeplayout').checked;
   try{
-      var cvs=keep?composeLogo(items):composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=12,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
+      var cvs=keep?composeLogo(items):composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=12,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,null,!$('nest').checked)});
       if(first.some(function(r){return !r})){say('One of the images has no visible pixels.');return}
       if(first.some(function(r){return r.err})){say('Could not trace one of the silhouettes.');return}
       var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
       first.forEach(function(r){var s=r.sh,hw=s.bw*s.u/2,hh=s.bh*s.u/2;x0=Math.min(x0,s.cx-hw);x1=Math.max(x1,s.cx+hw);y0=Math.min(y0,s.cy-hh);y1=Math.max(y1,s.cy+hh)});
       var frame={cx:(x0+x1)/2,cy:(y0+y1)/2,u:(y1-y0)||1};
-      var rs=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,frame)}),sh=StarCore.joinShapes(rs.map(function(r){return r.sh}));
+      var rs=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,frame,!$('nest').checked)}),sh=StarCore.joinShapes(rs.map(function(r){return r.sh}));
       var comp=document.createElement('canvas');comp.width=W;comp.height=H;var cx2=comp.getContext('2d');cvs.forEach(function(c){cx2.drawImage(c,0,0)});
       useShape(sh,comp,cvs);
       fileNote(sh,{simple:rs.some(function(r){return r.simple}),opaque:rs.some(function(r){return r.opaque})},cvs.length);
   }catch(err){say('Could not process that image.')}
 }
 $('keeplayout').addEventListener('change',function(){if(lastItems&&lastItems.length>1)buildGroup()});
+$('nest').addEventListener('change',function(){if(lastItems&&lastItems.length>1)buildGroup()});
 $('pieceMode').addEventListener('change',function(){
   if(!lastOne)return;
-  if($('pieceMode').value==='separate'&&lastParts){lastItems=lastParts;$('keepRow').hidden=false;buildGroup();return}
-  lastItems=null;$('keepRow').hidden=true;var it=lastOne,r=traceBitmap(it.bm,it.w,it.h,12);if(r&&!r.err){useShape(r.sh,it.bm);fileNote(r.sh,r,1)}
+  if($('pieceMode').value==='separate'&&lastParts){lastItems=lastParts;$('keepRow').hidden=$('nestRow').hidden=false;buildGroup();return}
+  lastItems=null;$('keepRow').hidden=$('nestRow').hidden=true;var it=lastOne,r=traceBitmap(it.bm,it.w,it.h,12);if(r&&!r.err){useShape(r.sh,it.bm);fileNote(r.sh,r,1)}
 });
 $('file').addEventListener('change',function(e){
   var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
@@ -301,11 +307,11 @@ $('file').addEventListener('change',function(e){
         if(!r){say('That image has no visible pixels.');return}
         if(r.err){say('Could not trace that silhouette.');return}
         lastOne=it;lastParts=splitElements(it,8);lastItems=null;
-        $('modeRow').hidden=!lastParts;$('keepRow').hidden=true;
-        if(lastParts&&$('pieceMode').value==='separate'){lastItems=lastParts;$('keepRow').hidden=false;buildGroup();return}
+        $('modeRow').hidden=!lastParts;$('keepRow').hidden=$('nestRow').hidden=true;
+        if(lastParts&&$('pieceMode').value==='separate'){lastItems=lastParts;$('keepRow').hidden=$('nestRow').hidden=false;buildGroup();return}
         useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
       }
-      lastOne=null;lastParts=null;$('modeRow').hidden=true;lastItems=items;$('keepRow').hidden=false;buildGroup();
+      lastOne=null;lastParts=null;$('modeRow').hidden=true;lastItems=items;$('keepRow').hidden=$('nestRow').hidden=false;buildGroup();
     }catch(err){say('Could not process that image.')}
   }).catch(function(err){say(err&&err.message?err.message:'Could not read that image.')});
 });
