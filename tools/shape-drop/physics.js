@@ -7,11 +7,11 @@ function polyArea(p){let a=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.lengt
 
 // outer: one outline [[x,y]...] in px, or several separate outlines [[[x,y]...], ...] (a logo made of loose pieces).
 // parts optional (convex pieces in px). decomp: poly-decomp or null.
-function buildShape(outer, decomp, partsPx, innerPx){
+function buildShape(outer, decomp, partsPx, innerPx, frame){
   const polys=Array.isArray(outer[0][0])?outer:[outer];
   let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
   polys.forEach(P=>P.forEach(p=>{minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);miny=Math.min(miny,p[1]);maxy=Math.max(maxy,p[1])}));
-  const cx=(minx+maxx)/2,cy=(miny+maxy)/2,u=(maxy-miny)||1;
+  const cx=frame?frame.cx:(minx+maxx)/2,cy=frame?frame.cy:(miny+maxy)/2,u=frame?frame.u:((maxy-miny)||1);
   const nrm=p=>[(p[0]-cx)/u,(p[1]-cy)/u];
   const outs=polys.map(P=>P.map(nrm)).sort((a,b)=>polyArea(b)-polyArea(a));
   let parts=null,hull=false;
@@ -34,6 +34,15 @@ function buildShape(outer, decomp, partsPx, innerPx){
   let R=0;outs.forEach(o=>o.forEach(p=>{R=Math.max(R,Math.hypot(p[0],p[1]))}));
   const area=outs.reduce((a,o)=>a+polyArea(o),0);
   return {cx,cy,u,outer:outs[0],outers:outs,inner:innerPx?innerPx.map(nrm):null,parts,area,R,bw:(maxx-minx)/u,bh:(maxy-miny)/u,hull:!partsPx&&hull};
+}
+// Several pieces (one per uploaded file) that share one frame: the group is the union, each piece keeps its own collision parts.
+function joinShapes(list){
+  const outs=[].concat(...list.map(s=>s.outers)).sort((a,b)=>polyArea(b)-polyArea(a));
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9,R=0;
+  outs.forEach(o=>o.forEach(p=>{minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);miny=Math.min(miny,p[1]);maxy=Math.max(maxy,p[1]);R=Math.max(R,Math.hypot(p[0],p[1]))}));
+  const f=list[0];
+  return {cx:f.cx,cy:f.cy,u:f.u,outer:outs[0],outers:outs,inner:null,parts:[].concat(...list.map(s=>s.parts)),
+    area:list.reduce((a,s)=>a+s.area,0),R,bw:maxx-minx,bh:maxy-miny,hull:list.some(s=>s.hull),pieces:list};
 }
 function convexHull(pts){
   const p=pts.map(a=>a.slice()).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
@@ -155,6 +164,7 @@ function outlinesFromGrid(g,w,h,scale,maxVerts,decomp){
 function createSim(Matter, shape0, P){
   const {Engine,Bodies,Body,Composite,Query,Vertices}=Matter;
   let shape=shape0,W=P.W,H=P.H;
+  const KP=()=>shape.pieces?shape.pieces.length:1;   // piezas por grupo (una por archivo subido)
   let engine,world,stars,walls;
   let t,stepIdx,phase,fadeT,scale,alpha,cool=0,lastSpawn=-9;
   let memo={},curStep=null,uid=0;
@@ -180,14 +190,14 @@ function createSim(Matter, shape0, P){
   function sizeFor(n){ // cota superior: las n copias ocupando el 100 % del marco; la búsqueda baja hasta lo que realmente cabe
     return Math.max(Math.min(Math.sqrt(W*H/(n*shape.area)),sMaxFor()),4);
   }
-  function build(s){
-    const k=1,pr={friction:P.friction,frictionStatic:P.friction*1.6,restitution:P.bounce,frictionAir:0.0015,density:0.001,slop:0.02};
-    const parts=shape.parts.map(poly=>{
+  function build(s,pk){
+    pk=pk||0;const k=1,pr={friction:P.friction,frictionStatic:P.friction*1.6,restitution:P.bounce,frictionAir:0.0015,density:0.001,slop:0.02};
+    const parts=(shape.pieces?shape.pieces[pk].parts:shape.parts).map(poly=>{
       const v=offsetConvex(poly.map(p=>[p[0]*s,p[1]*s]),P.gap/2).map(p=>({x:p[0],y:p[1]})),c=Vertices.centre(v);
       return Bodies.fromVertices(c.x,c.y,[v],Object.assign({},pr),false);
     });
     const b=parts.length>1?Body.create(Object.assign({parts},pr)):parts[0];
-    b.plugin={s,k,com:{x:b.position.x,y:b.position.y}};
+    b.plugin={s,k,pk,com:{x:b.position.x,y:b.position.y}};
     return b;
   }
   function makeWalls(){
@@ -214,7 +224,7 @@ function createSim(Matter, shape0, P){
     const old=stars.slice();stars=[];
     old.forEach(o=>{
       if(o.plugin.s<=sNew+1e-6){stars.push(o);return}
-      const n=build(sNew);
+      const n=build(sNew,o.plugin.pk);
       Body.setPosition(n,{x:o.position.x,y:o.position.y});Body.setAngle(n,o.angle);
       Body.setVelocity(n,{x:o.velocity.x,y:o.velocity.y});Body.setAngularVelocity(n,o.angularVelocity);
       n.plugin.born=o.plugin.born;n.plugin.id=o.plugin.id;
@@ -336,18 +346,22 @@ function createSim(Matter, shape0, P){
       slots=StarLattice.layoutFrom(v,n,W,H,rnd);sz=v.s;
     }else slots=plan.items;
     tune(n);
-    const old=stars.slice(),pairs=[];
-    old.forEach((b,i)=>{const o=originOf(b);slots.forEach((sl,j)=>pairs.push([Math.hypot(o.x-sl.x,o.y-sl.y),i,j]))});
+    const KK=KP(),oldAll=stars.slice(),gm={},old=[],pairs=[];
+    oldAll.forEach(b=>{const id=b.plugin.id;if(!gm[id]){gm[id]=[];old.push(gm[id])}gm[id].push(b)});   // un grupo = las piezas de una copia
+    old.forEach((g,i)=>{const o=originOf(g[0]);slots.forEach((sl,j)=>pairs.push([Math.hypot(o.x-sl.x,o.y-sl.y),i,j]))});
     pairs.sort((x,y)=>x[0]-y[0]);
     const uI={},uJ={},assign={};
     pairs.forEach(pr=>{if(uI[pr[1]]||uJ[pr[2]])return;uI[pr[1]]=1;uJ[pr[2]]=1;assign[pr[2]]=old[pr[1]]});
-    old.forEach(b=>Composite.remove(world,b));stars=[];
+    oldAll.forEach(b=>Composite.remove(world,b));stars=[];
     slots.forEach((sl,j)=>{
-      const nb=build(sz),c=Math.cos(sl.a),sn=Math.sin(sl.a),cm=nb.plugin.com,ex=assign[j];
-      Body.setAngle(nb,sl.a);Body.setPosition(nb,{x:sl.x+cm.x*c-cm.y*sn,y:sl.y+cm.x*sn+cm.y*c});
-      Body.setVelocity(nb,{x:0,y:0});Body.setAngularVelocity(nb,0);
-      nb.plugin.id=ex?ex.plugin.id:++uid;nb.plugin.born=ex?ex.plugin.born:t;
-      Composite.add(world,nb);stars.push(nb);
+      const ex=assign[j],gid=ex?ex[0].plugin.id:++uid,born=ex?ex[0].plugin.born:t,c=Math.cos(sl.a),sn=Math.sin(sl.a);
+      for(let pk=0;pk<KK;pk++){   // cada pieza es su propio cuerpo: nacen juntas y luego reaccionan por separado
+        const nb=build(sz,pk),cm=nb.plugin.com;
+        Body.setAngle(nb,sl.a);Body.setPosition(nb,{x:sl.x+cm.x*c-cm.y*sn,y:sl.y+cm.x*sn+cm.y*c});
+        Body.setVelocity(nb,{x:0,y:0});Body.setAngularVelocity(nb,0);
+        nb.plugin.id=gid;nb.plugin.born=born;
+        Composite.add(world,nb);stars.push(nb);
+      }
     });
     scale=sz;curStep=null;lastSpawn=t;asleep=false;restTime=0;
     if(+P.shake>0)shake();
@@ -417,12 +431,12 @@ function createSim(Matter, shape0, P){
   }
 
   /* ---- Presión: tras aparecer las copias, todo se hincha hasta quedar encajado (llenar el marco) ---- */
-  function snapshot(){return stars.map(b=>({x:b.position.x,y:b.position.y,a:b.angle,vx:b.velocity.x,vy:b.velocity.y,w:b.angularVelocity,born:b.plugin.born,id:b.plugin.id}))}
+  function snapshot(){return stars.map(b=>({pk:b.plugin.pk,x:b.position.x,y:b.position.y,a:b.angle,vx:b.velocity.x,vy:b.velocity.y,w:b.angularVelocity,born:b.plugin.born,id:b.plugin.id}))}
   function setAll(sNew,snap){
     const old=stars;stars=[];
     old.forEach((o,i)=>{
-      const q=snap?snap[i]:{x:o.position.x,y:o.position.y,a:o.angle,vx:o.velocity.x,vy:o.velocity.y,w:o.angularVelocity,born:o.plugin.born,id:o.plugin.id};
-      const n=build(sNew);Body.setPosition(n,{x:q.x,y:q.y});Body.setAngle(n,q.a);
+      const q=snap?snap[i]:{pk:o.plugin.pk,x:o.position.x,y:o.position.y,a:o.angle,vx:o.velocity.x,vy:o.velocity.y,w:o.angularVelocity,born:o.plugin.born,id:o.plugin.id};
+      const n=build(sNew,q.pk);Body.setPosition(n,{x:q.x,y:q.y});Body.setAngle(n,q.a);
       Body.setVelocity(n,{x:q.vx,y:q.vy});Body.setAngularVelocity(n,q.w);n.plugin.born=q.born;n.plugin.id=q.id;
       Composite.remove(world,o);Composite.add(world,n);stars.push(n);
     });
@@ -441,7 +455,7 @@ function createSim(Matter, shape0, P){
     shakeCool-=dt;
     if(cool>0){cool-=dt;return}
     if(t-lastSpawn<(+P.pressDelay||0.25)){gStep=0.012;inflAcc=0;return} // deja respirar justo después de aparecer
-    if(stars.length<targets()[Math.max(stepIdx,0)])return;
+    if(stars.length<targets()[Math.max(stepIdx,0)]*KP())return;
     if(!curStep||scale>=curStep.cap-1e-6)return; // el tamaño ya está definido: sin cambios visibles
     inflAcc+=dt;
     const jammed=gStep<=0.0009;
@@ -476,7 +490,7 @@ function createSim(Matter, shape0, P){
     return stars.map(b=>{
       const {s,com}=b.plugin,c=Math.cos(b.angle),sn=Math.sin(b.angle),x=-com.x,y=-com.y;
       const age=t-(b.plugin.born==null?-9:b.plugin.born);
-      return {id:b.plugin.id,x:b.position.x+x*c-y*sn,y:b.position.y+x*sn+y*c,a:b.angle,s,o:alpha};
+      return {id:b.plugin.id*KP()+(b.plugin.pk||0),k:b.plugin.pk||0,x:b.position.x+x*c-y*sn,y:b.position.y+x*sn+y*c,a:b.angle,s,o:alpha};
     });
   }
   function wakeAll(){stars.forEach(b=>Matter.Sleeping.set(b,false))}
@@ -489,9 +503,9 @@ function createSim(Matter, shape0, P){
   return {update,restart,reset,setParams,setShape,setSize,worldPoly,poses,prepareAll,
     get ready(){return ready},get progress(){return progress()},getPlans(){return JSON.parse(JSON.stringify(plans))},setPlans(o){plans=Object.assign({},o);if(!lat)lat={};ready=neededN().length===0;restart()},
     getLearn(){return JSON.parse(JSON.stringify(memo))},setLearn(o){memo=Object.assign({},o)},
-    get stars(){return stars},get fill(){return stars.length?stars.length*shape.area*scale*scale/(W*H):0},get alpha(){return alpha},get scale(){return scale},get shape(){return shape},
+    get stars(){return stars},get fill(){return stars.length?stars.length/KP()*shape.area*scale*scale/(W*H):0},get alpha(){return alpha},get scale(){return scale},get shape(){return shape},
     get time(){return t},get dbg(){return {ph:phase,si:stepIdx}},get total(){return seq().length*P.stepDur+P.hold},get W(){return W},get H(){return H}};
 }
 
-root.StarCore={createSim,buildShape,starShape,outlineFromGrid,outlinesFromGrid,convexHull,STAR_OUTER,STAR_INNER,polyArea};
+root.StarCore={createSim,buildShape,joinShapes,starShape,outlineFromGrid,outlinesFromGrid,convexHull,STAR_OUTER,STAR_INNER,polyArea};
 })(typeof window!=='undefined'?window:globalThis);

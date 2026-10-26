@@ -41,19 +41,23 @@ function drawScene(ctx, G, poses, k) {
     for (var n = 0; n < poses.length; n++) if (poses[n].o > 0 && poses[n].s > need) need = poses[n].s;
     var f = Math.min(1, Math.pow(2, Math.ceil(4 * Math.log(Math.max(need / U * k, 1e-3)) / Math.LN2) / 4));
     if (sw > 0 && sh2 > 0 && typeof document !== 'undefined') {
-      var m = G._mip;
-      if (!m || m.f !== f || m.src !== G.img || m.sx !== sx || m.sy !== sy) {
+      var srcs = G.imgs || [G.img], mips = G._mips = G._mips || [];
+      img = [];
+      for (var pi = 0; pi < srcs.length; pi++) {
+      var m = mips[pi], srcI = srcs[pi];
+      if (!m || m.f !== f || m.src !== srcI || m.sx !== sx || m.sy !== sy) {
         var tw = Math.max(1, Math.ceil(sw * f)), th = Math.max(1, Math.ceil(sh2 * f));
-        var c = document.createElement('canvas'); c.width = sw; c.height = sh2; c.getContext('2d').drawImage(G.img, sx, sy, sw, sh2, 0, 0, sw, sh2);
+        var c = document.createElement('canvas'); c.width = sw; c.height = sh2; c.getContext('2d').drawImage(srcI, sx, sy, sw, sh2, 0, 0, sw, sh2);
         var cw = sw, ch = sh2;
         while (cw > tw || ch > th) {   // halve step by step: smooth result, no shimmer
           var nw = Math.max(tw, Math.ceil(cw / 2)), nh = Math.max(th, Math.ceil(ch / 2)), cv2 = document.createElement('canvas');
           cv2.width = nw; cv2.height = nh; var x2 = cv2.getContext('2d'); x2.imageSmoothingQuality = 'high'; x2.drawImage(c, 0, 0, nw, nh);
           c = cv2; cw = nw; ch = nh;
         }
-        m = G._mip = { f: f, src: G.img, sx: sx, sy: sy, c: c };
+        m = mips[pi] = { f: f, src: srcI, sx: sx, sy: sy, c: c };
       }
-      img = m.c;
+      img.push(m.c);
+      }
     } else if (!(sw > 0 && sh2 > 0)) { sx = sy = 0; sw = iw; sh2 = ih; }
   }
   for (var i = 0; i < poses.length; i++) {
@@ -62,7 +66,11 @@ function drawScene(ctx, G, poses, k) {
     ctx.save();
     ctx.globalAlpha = Math.min(1, q.o);
     ctx.translate(q.x, q.y); ctx.rotate(q.a);
-    if (img) { var sc = q.s / G.shape.u; ctx.scale(sc, sc); if (img === G.img) ctx.drawImage(img, sx, sy, sw, sh2, sx - G.shape.cx, sy - G.shape.cy, sw, sh2); else ctx.drawImage(img, sx - G.shape.cx, sy - G.shape.cy, sw, sh2); }
+    if (img) {
+      var sc = q.s / G.shape.u, im1 = Array.isArray(img) ? img[q.k || 0] : img; ctx.scale(sc, sc);
+      if (!im1) { ctx.restore(); continue; }
+      if (im1 === G.img || (G.imgs && im1 === G.imgs[q.k || 0])) ctx.drawImage(im1, sx, sy, sw, sh2, sx - G.shape.cx, sy - G.shape.cy, sw, sh2); else ctx.drawImage(im1, sx - G.shape.cx, sy - G.shape.cy, sw, sh2);
+    }
     else { ctx.scale(q.s, q.s); ctx.fillStyle = paint(G.fill, G.shape.bw, G.shape.bh, 0, 0); ctx.fill(G._path, 'evenodd'); }
     ctx.restore();
   }
@@ -146,7 +154,7 @@ function buildLottie(bk, G, imgDataURL, opts) {
     if (imgDataURL) {
       ks.a = { a: 0, k: [r1(sh.cx), r1(sh.cy), 0] };
       ks.s = prop(smp, function (q) { var v = r2(q.s / sh.u * 100); return [v, v, 100]; });
-      layer = { ddd: 0, ind: ++ind, ty: 2, nm: 'Shape ' + id, refId: 'img0', sr: 1, ks: ks, ao: 0, ip: smp[0].f, op: smp[smp.length - 1].f + 1, st: 0, bm: 0 };
+      layer = { ddd: 0, ind: ++ind, ty: 2, nm: 'Shape ' + id, refId: 'img' + (smp[0].q.k || 0), sr: 1, ks: ks, ao: 0, ip: smp[0].f, op: smp[smp.length - 1].f + 1, st: 0, bm: 0 };
     } else {
       ks.s = prop(smp, function (q) { var v = r2(q.s / S0 * 100); return [v, v, 100]; });
       var items = (sh.outers || [sh.outer]).map(function (o, i) { return pathItem(o, S0, 'Outline ' + (i + 1)); });
@@ -157,7 +165,7 @@ function buildLottie(bk, G, imgDataURL, opts) {
     }
     layers.push(layer);
   });
-  if (imgDataURL) assets.push({ id: 'img0', w: (G.img && G.img.width) || Math.round(sh.bw * sh.u) || 1, h: (G.img && G.img.height) || Math.round(sh.bh * sh.u) || 1, u: '', p: imgDataURL, e: 1 });   // the picture's own size
+  (Array.isArray(imgDataURL) ? imgDataURL : imgDataURL ? [imgDataURL] : []).forEach(function (du, i) { assets.push({ id: 'img' + i, w: (G.img && G.img.width) || Math.round(sh.bw * sh.u) || 1, h: (G.img && G.img.height) || Math.round(sh.bh * sh.u) || 1, u: '', p: du, e: 1 }); });   // the picture's own size
   if (G.bg) {
     var bgItems = [{ ty: 'rc', d: 1, s: { a: 0, k: [W, H] }, p: { a: 0, k: [W / 2, H / 2] }, r: { a: 0, k: 0 }, nm: 'Rect' }, fillItem(G.bg, W, H, W / 2, H / 2), tr()];
     layers.push({ ddd: 0, ind: ++ind, ty: 4, nm: 'Background', sr: 1, ks: { o: { a: 0, k: 100 }, r: { a: 0, k: 0 }, p: { a: 0, k: [0, 0, 0] }, a: { a: 0, k: [0, 0, 0] }, s: { a: 0, k: [100, 100, 100] } }, ao: 0, shapes: [{ ty: 'gr', nm: 'Background', it: bgItems }], ip: 0, op: F, st: 0, bm: 0 });
@@ -176,16 +184,16 @@ function buildPlayerHTML(bk, G, imgDataURL) {
   var sh = G.shape;
   var data = { W: G.W, H: G.H, fps: bk.fps / step, bg: G.bg, fill: G.fill,
     shape: { outer: sh.outer.map(function (q) { return [r3(q[0]), r3(q[1])]; }), outers: (sh.outers || [sh.outer]).map(function (o) { return o.map(function (q) { return [r3(q[0]), r3(q[1])]; }); }), inner: sh.inner ? sh.inner.map(function (q) { return [r3(q[0]), r3(q[1])]; }) : null, bw: sh.bw, bh: sh.bh, cx: sh.cx, cy: sh.cy, u: sh.u },
-    img: imgDataURL || null, frames: fr };
+    img: Array.isArray(imgDataURL) ? null : (imgDataURL || null), imgs: Array.isArray(imgDataURL) ? imgDataURL : null, K: Array.isArray(imgDataURL) ? imgDataURL.length : 1, frames: fr };
   var json = JSON.stringify(data).replace(/</g, '\\u003c');
   return '<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>Shape multiplier animation</title>\n' +
     '<style>html,body{margin:0;height:100%;background:#1a1a1a}body{display:flex;align-items:center;justify-content:center}canvas{max-width:100vw;max-height:100vh;width:auto;height:auto}</style></head>\n<body><canvas id="c"></canvas>\n' +
     '<script type="application/json" id="d">' + json + '<\/script>\n<script>\n' + drawScene.toString() + '\n' +
     '(function(){var D=JSON.parse(document.getElementById("d").textContent),cv=document.getElementById("c");cv.width=D.W;cv.height=D.H;var ctx=cv.getContext("2d");\n' +
-    'var G={W:D.W,H:D.H,bg:D.bg,fill:D.fill,shape:D.shape,img:null};if(D.img){var im=new Image();im.src=D.img;G.img=im}\n' +
+    'var G={W:D.W,H:D.H,bg:D.bg,fill:D.fill,shape:D.shape,img:null};if(D.imgs){G.imgs=D.imgs.map(function(u){var m=new Image();m.src=u;return m});G.img=G.imgs[0]}else if(D.img){var im=new Image();im.src=D.img;G.img=im}\n' +
     'var N=D.frames.length,maps=D.frames.map(function(f){var m={};for(var i=0;i<f.length;i+=6)m[f[i]]=i;return m});\n' +
     'function at(t){var fi=t*D.fps,i=((Math.floor(fi)%N)+N)%N,j=(i+1)%N,u=fi-Math.floor(fi),A=D.frames[i],B=D.frames[j],mb=maps[j],out=[];\n' +
-    ' for(var k=0;k<A.length;k+=6){var q={id:A[k],x:A[k+1],y:A[k+2],a:A[k+3],s:A[k+4],o:A[k+5]},b=mb[q.id];\n' +
+    ' for(var k=0;k<A.length;k+=6){var q={id:A[k],k:A[k]%(D.K||1),x:A[k+1],y:A[k+2],a:A[k+3],s:A[k+4],o:A[k+5]},b=mb[q.id];\n' +
     '  if(b!==undefined){q.x+=(B[b+1]-q.x)*u;q.y+=(B[b+2]-q.y)*u;q.a+=(B[b+3]-q.a)*u;q.s+=(B[b+4]-q.s)*u;q.o+=(B[b+5]-q.o)*u}out.push(q)}return out}\n' +
     'var t0=performance.now(),L=N/D.fps;function loop(){var t=(((performance.now()-t0)/1000)%L+L)%L;drawScene(ctx,G,at(t),1);requestAnimationFrame(loop)}requestAnimationFrame(loop);\n' +
     '})();\n<\/script></body></html>\n';

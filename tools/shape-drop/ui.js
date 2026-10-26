@@ -34,7 +34,7 @@ function saveSettings(){
 
 var sim=StarCore.createSim(Matter,shape,P);
 
-function mkG(){var sh=shape;return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,shape:{outer:sh.outer,outers:sh.outers,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:custom?custom.bitmap:null}}
+function mkG(){var sh=shape;return {W:P.W,H:P.H,bg:bgStyle,fill:fillStyle,shape:{outer:sh.outer,outers:sh.outers,inner:sh.inner,bw:sh.bw,bh:sh.bh,cx:sh.cx,cy:sh.cy,u:sh.u},img:custom?custom.bitmap:null,imgs:custom&&custom.bitmaps?custom.bitmaps:null}}
 function G(){if(!liveG)liveG=mkG();liveG.bg=bgStyle;liveG.fill=fillStyle;return liveG}
 function exportG(transparent){var g=Object.assign({},mkG());g.bg=transparent?null:bgStyle;return g}
 
@@ -97,7 +97,7 @@ document.querySelector('.menu').addEventListener('change',saveSettings);
 var last=performance.now(),fc=0;
 function frame(now){
   var dt=(now-last)/1000;last=now;
-  if(!busy){if(playing||!sim.ready)sim.update(dt);StarExport.drawScene(ctx,G(),sim.poses(),1);if(++fc%10===0){var n=sim.stars.length;if(!sim.ready){$('fillread').textContent='Calculating the tightest layouts… '+Math.round(sim.progress*100)+'%'}else $('fillread').textContent=n?('Current fill: '+Math.round(sim.fill*100)+'% of the frame area with '+n+' cop'+(n===1?'y':'ies')+' ('+Math.round(sim.scale/P.H*100)+'% of the frame height per shape).'):''}}
+  if(!busy){if(playing||!sim.ready)sim.update(dt);StarExport.drawScene(ctx,G(),sim.poses(),1);if(++fc%10===0){var n=Math.round(sim.stars.length/(shape.pieces?shape.pieces.length:1));if(!sim.ready){$('fillread').textContent='Calculating the tightest layouts… '+Math.round(sim.progress*100)+'%'}else $('fillread').textContent=n?('Current fill: '+Math.round(sim.fill*100)+'% of the frame area with '+n+' cop'+(n===1?'y':'ies')+' ('+Math.round(sim.scale/P.H*100)+'% of the frame height per shape).'):''}}
   requestAnimationFrame(frame);
 }
 
@@ -135,58 +135,104 @@ $('reset').onclick=function(){sim.restart()};
 
 /* ---------- custom shape: trace the alpha silhouette, split into convex pieces ---------- */
 $('pick').onclick=function(){$('file').click()};
-$('file').addEventListener('change',function(e){
-  var f=e.target.files[0];e.target.value='';if(!f)return;
-  var isSVG=/svg/i.test(f.type)||/\.svg$/i.test(f.name);
-  var fr=new FileReader();
-  fr.onload=function(){
-    var src=fr.result;
-    if(isSVG){   // SVGs often have no width/height (only a viewBox): give them a real size so they draw sharp and undistorted
-      try{
-        var doc=new DOMParser().parseFromString(src,'image/svg+xml'),sv=doc.documentElement;
-        if(!sv||sv.nodeName.toLowerCase()!=='svg'||doc.getElementsByTagName('parsererror').length){say('Could not read that SVG.');return}
-        var num=function(v){return v&&!/%/.test(v)?parseFloat(v):NaN},vb=(sv.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
-        var sw=num(sv.getAttribute('width')),sh2=num(sv.getAttribute('height'));
-        if(vb.length===4&&vb[2]>0&&vb[3]>0){if(!(sw>0&&sh2>0)){sw=vb[2];sh2=vb[3]}}
-        else{if(!(sw>0&&sh2>0)){sw=sh2=512}sv.setAttribute('viewBox','0 0 '+sw+' '+sh2)}
-        var kk=1024/Math.max(sw,sh2);sv.setAttribute('width',Math.round(sw*kk));sv.setAttribute('height',Math.round(sh2*kk));
-        if(!sv.getAttribute('xmlns'))sv.setAttribute('xmlns','http://www.w3.org/2000/svg');
-        src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(sv));
-      }catch(err){say('Could not read that SVG.');return}
-    }
-    var im=new Image();
-    im.onload=function(){
-      try{
+/* One file -> {bm (canvas, <=1024px), w, h}. SVGs are given a real size first (many only have a viewBox). */
+function readPicture(f){
+  return new Promise(function(res,rej){
+    var isSVG=/svg/i.test(f.type)||/\.svg$/i.test(f.name),fr=new FileReader();
+    fr.onload=function(){
+      var src=fr.result;
+      if(isSVG){
+        try{
+          var doc=new DOMParser().parseFromString(src,'image/svg+xml'),sv=doc.documentElement;
+          if(!sv||sv.nodeName.toLowerCase()!=='svg'||doc.getElementsByTagName('parsererror').length)return rej(new Error('Could not read that SVG.'));
+          var num=function(v){return v&&!/%/.test(v)?parseFloat(v):NaN},vb=(sv.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
+          var sw=num(sv.getAttribute('width')),sh2=num(sv.getAttribute('height'));
+          if(vb.length===4&&vb[2]>0&&vb[3]>0){if(!(sw>0&&sh2>0)){sw=vb[2];sh2=vb[3]}}
+          else{if(!(sw>0&&sh2>0)){sw=sh2=512}sv.setAttribute('viewBox','0 0 '+sw+' '+sh2)}
+          var kk=1024/Math.max(sw,sh2);sv.setAttribute('width',Math.round(sw*kk));sv.setAttribute('height',Math.round(sh2*kk));
+          if(!sv.getAttribute('xmlns'))sv.setAttribute('xmlns','http://www.w3.org/2000/svg');
+          src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(sv));
+        }catch(err){return rej(new Error('Could not read that SVG.'))}
+      }
+      var im=new Image();
+      im.onload=function(){
         var w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;if(!w||!h){w=h=512}
         var k=Math.min(1,1024/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
         var bm=document.createElement('canvas');bm.width=w;bm.height=h;bm.getContext('2d').drawImage(im,0,0,w,h);
-        var sc=256/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
-        var gc=document.createElement('canvas');gc.width=gw;gc.height=gh;var gx=gc.getContext('2d');gx.drawImage(bm,0,0,gw,gh);
-        var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
-        for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
-        if(!n){say('That image has no visible pixels.');return}
-        // Collision outline: the picture is always drawn exactly, but the invisible shape it collides with is kept
-        // to at most MAXP convex pieces (every piece of every copy is tested against every other, so detail costs speed).
-        var MAXP=12,sh=null,simple=false;
-        [110,70,45,28,18,12].some(function(mv){
-          var o=StarCore.outlinesFromGrid(g,gw,gh,w/gw,mv,window.decomp);if(!o||!o.length)return true;
-          sh=StarCore.buildShape(o,window.decomp);if(mv<110)simple=true;return sh.parts.length<=MAXP;
-        });
-        if(!sh){say('Could not trace that silhouette.');return}
-        if(sh.parts.length>MAXP){   // still too many: each loose piece by its outer contour, or the whole by one
-          var o2=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null),hulls=o2.map(StarCore.convexHull);
-          sh=StarCore.buildShape(o2,null,hulls.length<=MAXP?hulls:[StarCore.convexHull([].concat.apply([],o2))]);simple=true;
-        }
-        custom={bitmap:bm};shape=sh;liveG=null;sim.setShape(sh);
-        var opaque=n/(gw*gh)>0.985;
-        var np=sh.outers.length;
-        $('shapenote').textContent='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.')+(opaque?' The image is opaque (no transparency), so it collides as a rectangle.':'')+(simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
-      }catch(err){say('Could not process that image.')}
+        res({bm:bm,w:w,h:h});
+      };
+      im.onerror=function(){rej(new Error('Could not read that image.'))};
+      im.src=src;
     };
-    im.onerror=function(){say('Could not read that image.')};
-    im.src=src;
-  };
-  if(isSVG)fr.readAsText(f);else fr.readAsDataURL(f);
+    fr.onerror=function(){rej(new Error('Could not read that file.'))};
+    if(isSVG)fr.readAsText(f);else fr.readAsDataURL(f);
+  });
+}
+/* Trace the alpha silhouette of a canvas into a collision shape. Collision outline: the picture is always drawn exactly,
+   but the invisible shape it collides with is kept to at most maxp convex pieces (every piece of every copy is tested
+   against every other, so detail costs speed). frame (optional) makes several pieces share one coordinate frame. */
+function traceBitmap(bm,w,h,maxp,frame){
+  var sc=256/Math.max(w,h),gw=Math.max(3,Math.round(w*sc)),gh=Math.max(3,Math.round(h*sc));
+  var gc=document.createElement('canvas');gc.width=gw;gc.height=gh;var gx=gc.getContext('2d');gx.drawImage(bm,0,0,gw,gh);
+  var d=gx.getImageData(0,0,gw,gh).data,g=new Uint8Array(gw*gh),n=0;
+  for(var i=0;i<gw*gh;i++){if(d[i*4+3]>40){g[i]=1;n++}}
+  if(!n)return null;
+  var sh=null,simple=false;
+  [110,70,45,28,18,12].some(function(mv){
+    var o=StarCore.outlinesFromGrid(g,gw,gh,w/gw,mv,window.decomp);if(!o||!o.length)return true;
+    sh=StarCore.buildShape(o,window.decomp,null,null,frame);if(mv<110)simple=true;return sh.parts.length<=maxp;
+  });
+  if(!sh)return {err:1};
+  if(sh.parts.length>maxp){   // still too many: each loose piece by its outer contour, or the whole by one
+    var o2=StarCore.outlinesFromGrid(g,gw,gh,w/gw,40,null),hulls=o2.map(StarCore.convexHull);
+    sh=StarCore.buildShape(o2,null,hulls.length<=maxp?hulls:[StarCore.convexHull([].concat.apply([],o2))],null,frame);simple=true;
+  }
+  return {sh:sh,simple:simple,opaque:n/(gw*gh)>0.985};
+}
+function useShape(sh,bitmap,bitmaps){custom={bitmap:bitmap,bitmaps:bitmaps||null};shape=sh;liveG=null;sim.setShape(sh)}
+function fileNote(sh,r,pieces){
+  var np=sh.outers.length,t;
+  if(pieces>1)t='Using '+pieces+' pieces. Each one falls and collides on its own; every copy is the whole group.';
+  else t='Silhouette traced'+(np>1?': '+np+' separate pieces, they move as one shape.':'.');
+  $('shapenote').textContent=t+(r.opaque?' An image is opaque (no transparency), so it collides as a rectangle.':'')+(r.simple||sh.hull?' Fine details are simplified for the collisions to keep the motion smooth; the picture itself is unchanged.':'')+' Uploaded images keep their own colors.';
+}
+/* Several files = several pieces of one group. Same-size files are overlaid (so a logo exported as separate layers keeps its layout);
+   files of different sizes are lined up side by side. */
+function composePieces(items){
+  var same=items.every(function(it){return it.w===items[0].w&&it.h===items[0].h}),W,H,pos;
+  if(same){W=items[0].w;H=items[0].h;pos=items.map(function(){return {x:0,y:0,k:1}})}
+  else{
+    var mh=Math.max.apply(null,items.map(function(it){return it.h})),gap=Math.round(mh*.06),tw=items.reduce(function(a,it){return a+it.w},0)+gap*(items.length-1);
+    var k=Math.min(1,1024/Math.max(tw,mh)),x=0;W=Math.round(tw*k);H=Math.round(mh*k);
+    pos=items.map(function(it){var o={x:x*k,y:(mh-it.h)/2*k,k:k};x+=it.w+gap;return o});
+  }
+  return items.map(function(it,i){
+    var c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(it.bm,pos[i].x,pos[i].y,it.w*pos[i].k,it.h*pos[i].k);
+    return c;
+  });
+}
+$('file').addEventListener('change',function(e){
+  var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
+  Promise.all(files.map(readPicture)).then(function(items){
+    try{
+      if(items.length===1){
+        var it=items[0],r=traceBitmap(it.bm,it.w,it.h,12);
+        if(!r){say('That image has no visible pixels.');return}
+        if(r.err){say('Could not trace that silhouette.');return}
+        useShape(r.sh,it.bm);fileNote(r.sh,r,1);return;
+      }
+      var cvs=composePieces(items),W=cvs[0].width,H=cvs[0].height,MAXP=8,first=cvs.map(function(c){return traceBitmap(c,W,H,MAXP)});
+      if(first.some(function(r){return !r})){say('One of the images has no visible pixels.');return}
+      if(first.some(function(r){return r.err})){say('Could not trace one of the silhouettes.');return}
+      var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+      first.forEach(function(r){var s=r.sh,hw=s.bw*s.u/2,hh=s.bh*s.u/2;x0=Math.min(x0,s.cx-hw);x1=Math.max(x1,s.cx+hw);y0=Math.min(y0,s.cy-hh);y1=Math.max(y1,s.cy+hh)});
+      var frame={cx:(x0+x1)/2,cy:(y0+y1)/2,u:(y1-y0)||1};
+      var rs=cvs.map(function(c){return traceBitmap(c,W,H,MAXP,frame)}),sh=StarCore.joinShapes(rs.map(function(r){return r.sh}));
+      var comp=document.createElement('canvas');comp.width=W;comp.height=H;var cx2=comp.getContext('2d');cvs.forEach(function(c){cx2.drawImage(c,0,0)});
+      useShape(sh,comp,cvs);
+      fileNote(sh,{simple:rs.some(function(r){return r.simple}),opaque:rs.some(function(r){return r.opaque})},cvs.length);
+    }catch(err){say('Could not process that image.')}
+  }).catch(function(err){say(err&&err.message?err.message:'Could not read that image.')});
 });
 
 /* ---------- export ---------- */
@@ -222,7 +268,7 @@ function bake(){
     }catch(e){rej(e)}
   });
 }
-function bitmapURL(){return custom?custom.bitmap.toDataURL('image/png'):null}
+function bitmapURL(){return custom?(custom.bitmaps?custom.bitmaps.map(function(c){return c.toDataURL('image/png')}):custom.bitmap.toDataURL('image/png')):null}
 function playVideo(bk){
   var k=resK(),od=outDims(),cw=od[0],ch=od[1],oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
   var octx=oc.getContext('2d'),g=exportG(false),n=bk.frames.length;
