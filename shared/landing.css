@@ -42,7 +42,8 @@
   align-content: start; row-gap: 36px; padding: var(--gap) var(--gap) 120px;
 }
 .tool { display: block; min-width: 0; }
-.tool .title { display: block; font-size: 24px; font-weight: 700; line-height: 32px; height: 32px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tool .title { display: block; font-size: 24px; font-weight: 700; line-height: 1em; height: 1em; padding-block: .09em; box-sizing: content-box; margin-bottom: var(--gap);   /* same metrics as the header boxes: first-row titles share the logotype's baseline, and the cover sits 5px under the title */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tool__cover { display: block; aspect-ratio: 470 / 454; overflow: hidden; background: var(--cover, var(--c1)); }
 .tool__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tool__desc { margin-top: 8px; line-height: 1.2; }
