@@ -45,10 +45,12 @@ html[data-card="4"] { --card: var(--c4); }
   .toolpage { height: auto; overflow: visible; display: flex; flex-direction: column; padding: 0; }
   .toolhead { display: block; }
   .toolhead__title { display: none; }
-  .toolgrid { display: flex; flex-direction: column-reverse; }
-  .stage { margin: 0; height: 56vw; min-height: 260px; position: sticky; top: 0; z-index: 5; }   /* preview stays in view while the controls scroll */
+  .toolgrid { display: flex; flex-direction: column-reverse; padding: var(--gap); gap: var(--gap); }   /* same 5px frame in every tool */
+  /* the black frame spans the phone width with a 5px margin of the card color around it, whatever format is chosen;
+     the card grows with the frame (capped so the controls stay reachable: then the frame fits the height instead) */
+  .stage { margin: 0; height: auto; container-type: normal; padding: var(--gap); position: sticky; top: 0; z-index: 5; }   /* preview stays in view while the controls scroll */
+  .artwork { width: min(100%, calc((66vh - 2 * var(--gap)) * var(--ar, .8))); width: min(100%, calc((66svh - 2 * var(--gap)) * var(--ar, .8))); }
   .menu { grid-auto-rows: auto; align-content: start; overflow: visible; }   /* rows size to their content (desktop stretches them to fill the panel) */
-  .artwork { --pad-x: 4cqw; --pad-y: 4cqh; }
 }
 .artwork.interactive { cursor: grab; touch-action: none; }
 .artwork.interactive:active { cursor: grabbing; }
