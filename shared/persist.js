@@ -4,7 +4,7 @@
      ToolPersist.init("disc-spin", { get: () => ({...}), set: obj => {...} });   // call once, after the controls are wired
      ToolPersist.save();                                                  // call after a change that is not an input event (button, image) */
 (function () {
-  var VER = 2;   // bump to make every tool start from its (new) defaults once
+  var VER = 3;   // bump to make every tool start from its (new) defaults once
   var key = null, opts = {}, timer = 0;
   function menu() { return document.querySelector(".menu"); }
   function fields() { return Array.prototype.filter.call(menu().querySelectorAll("input[id], select[id], textarea[id]"), function (e) { return e.type !== "file"; }); }
