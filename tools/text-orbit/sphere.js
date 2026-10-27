@@ -166,7 +166,7 @@ $('#ratio').add(new Option('Custom size…', 'custom'));
 const ctrl = sphereLoop(cv, {
   text: 'your text here', font: 'Archivo', tsize: 30, size: 72, tilt: -30, repeat: true,
   mode: 'giro', dir: 1, T: 6, ratio: '3:4', quality: 1080, cw: 1080, ch: 1350,
-  bg: '#000000', sc: '#EAEAEA', tc: '#000000', border: false, bc: '#000000', bw: 1.5, playing: true, fx: '', axis: 0, spin: 6, bseed: 0
+  bg: '#000000', sc: '#FFFFFF', tc: '#000000', border: false, bc: '#000000', bw: 1.5, playing: true, fx: '', axis: 0, spin: 6, bseed: 0
 });
 const syncAr = () => art.style.setProperty('--ar', cv.width / cv.height);   // CSS fits the frame inside the stage
 syncAr();

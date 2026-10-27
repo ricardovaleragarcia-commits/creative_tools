@@ -4,6 +4,7 @@
      ToolPersist.init("disc-spin", { get: () => ({...}), set: obj => {...} });   // call once, after the controls are wired
      ToolPersist.save();                                                  // call after a change that is not an input event (button, image) */
 (function () {
+  var VER = 2;   // bump to make every tool start from its (new) defaults once
   var key = null, opts = {}, timer = 0;
   function menu() { return document.querySelector(".menu"); }
   function fields() { return Array.prototype.filter.call(menu().querySelectorAll("input[id], select[id], textarea[id]"), function (e) { return e.type !== "file"; }); }
@@ -12,15 +13,16 @@
     var v = {};
     fields().forEach(function (e) { v[e.id] = e.type === "checkbox" ? e.checked : e.value; });
     var x = opts.get ? opts.get() : {};
-    try { localStorage.setItem(key, JSON.stringify({ v: v, x: x })); }
+    try { localStorage.setItem(key, JSON.stringify({ ver: VER, v: v, x: x })); }
     catch (err) {                                    // quota: keep the settings, drop what is too big
-      try { localStorage.setItem(key, JSON.stringify({ v: v, x: Object.assign({}, x, { imgs: {} }) })); } catch (e2) {}
+      try { localStorage.setItem(key, JSON.stringify({ ver: VER, v: v, x: Object.assign({}, x, { imgs: {} }) })); } catch (e2) {}
     }
   }
   function save() { if (key && !timer) timer = setTimeout(write, 250); }
   function init(name, o) {
     key = "sns-" + name; opts = o || {};
     var st = null; try { st = JSON.parse(localStorage.getItem(key)); } catch (e) {}
+    if (st && st.ver !== VER) st = null;
     if (st && st.v) {
       fields().forEach(function (e) {
         if (!(e.id in st.v)) return;

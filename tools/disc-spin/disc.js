@@ -473,10 +473,10 @@ function buildVinyl(){
   return g;
 }
 // Plain colors: flat, unlit, same colors as the cover of this tool (disc + lighter label, hole through)
-const plainBodyMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
-const plainEdgeMat = new THREE.MeshBasicMaterial({color: linearHex('#d9d9d9'), side: THREE.DoubleSide, toneMapped: false});
-const plainLabelFrontMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
-const plainLabelBackMat = new THREE.MeshBasicMaterial({color: linearHex('#eaeaea'), side: THREE.DoubleSide, toneMapped: false});
+const plainBodyMat = new THREE.MeshBasicMaterial({color: linearHex('#ffffff'), side: THREE.DoubleSide, toneMapped: false});
+const plainEdgeMat = new THREE.MeshBasicMaterial({color: linearHex('#ffffff'), side: THREE.DoubleSide, toneMapped: false});
+const plainLabelFrontMat = new THREE.MeshBasicMaterial({color: linearHex('#ffffff'), side: THREE.DoubleSide, toneMapped: false});
+const plainLabelBackMat = new THREE.MeshBasicMaterial({color: linearHex('#ffffff'), side: THREE.DoubleSide, toneMapped: false});
 function buildPlain(T, R, holeF, labelF, labelIn = holeF){
   const g = new THREE.Group(), h = T/R/2;
   g.add(new THREE.Mesh(lathe([[1, -h], [1, h]]), plainEdgeMat));
