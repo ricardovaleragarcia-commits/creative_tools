@@ -320,6 +320,9 @@ $('pieceMode').addEventListener('change',function(){
 });
 $('file').addEventListener('change',function(e){
   var files=Array.prototype.slice.call(e.target.files||[],0,8);e.target.value='';if(!files.length)return;
+  // a PNG / WebP keeps its own colors by default (box off); an SVG is painted with the Shape fill (box on). Either can be changed afterwards.
+  var allSvg=files.every(function(f){return /svg/i.test(f.type)||/\.svg$/i.test(f.name)});
+  $('tint').checked=allSvg;
   Promise.all(files.map(readPicture)).then(function(items){
     try{
       if(items.length===1){
