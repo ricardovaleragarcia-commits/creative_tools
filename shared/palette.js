@@ -13,7 +13,7 @@
   var TINT = {          // main color mixed 35% with white
     red: "#ff5959", green: "#89eb99", purple: "#ad69e4", orange: "#fa9e59",
     blue: "#7175f2", white: "#ffffff", black: "#5e5e5e",
-    pink: "#fb8abf", yellow: "#f5e45e", teal: "#68caca", sand: "#f5e2c3", midnight: "#6a7387"
+    pink: "#fb8abf", yellow: "#f5e45e", teal: "#68caca", sand: "#f5e2c3", midnight: "#6882ad"
   };
   function get() { try { var p = localStorage.getItem(KEY); return LIST.indexOf(p) >= 0 ? p : "red"; } catch (e) { return "red"; } }
   function themeColor(p) {

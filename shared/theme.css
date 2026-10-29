@@ -70,7 +70,7 @@ html[data-palette="sand"] { --main: #f0d3a3; --dark: #1f5587; --ink: #ffffff; --
   --d1: #a02001; --d2: #437c29; --d3: #a76701; --d4: #30549b; --d5: #a24700; --d6: #916504;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="midnight"] { --main: #1a2846; --dark: #081431; --ink: #ffffff; --c1: #d6bd02; --c2: #578cfe; --c3: #fd6275; --c4: #00d981; --c5: #c27ced; --c6: #ff9477;
+html[data-palette="midnight"] { --main: #173f81; --dark: #081431; --ink: #ffffff; --c1: #d6bd02; --c2: #578cfe; --c3: #fd6275; --c4: #00d981; --c5: #c27ced; --c6: #ff9477;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
   --d1: #867604; --d2: #416ac3; --d3: #c24958; --d4: #048850; --d5: #945eb6; --d6: #b2604a;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;

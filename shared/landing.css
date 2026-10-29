@@ -37,7 +37,7 @@
 .dot[data-p="yellow"]   { background: #f0d507; }
 .dot[data-p="teal"]     { background: #16aeae; }
 .dot[data-p="sand"]     { background: #f0d3a3; }
-.dot[data-p="midnight"] { background: #1a2846; }
+.dot[data-p="midnight"] { background: #173f81; }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
   align-content: start; row-gap: var(--gap); padding: var(--gap) var(--gap) 120px;
