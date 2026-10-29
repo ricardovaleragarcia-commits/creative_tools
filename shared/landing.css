@@ -48,7 +48,7 @@
 .tool { display: flex; flex-direction: column; min-width: 0; container-type: inline-size; background: var(--cover, var(--c1)); color: var(--on, var(--ink)); }
 .tool .title { flex: none; margin: var(--inset) var(--inset) 0; padding: 0 var(--inset); box-sizing: border-box;
   height: calc(var(--bar-row) - var(--inset)); line-height: calc(var(--bar-row) - var(--inset));   /* bottom edge = bottom edge of the header boxes */
-  font-size: clamp(15px, 5.5cqw, 24px); font-weight: 700;                                           /* 24px as the logotype; only shrinks on narrow cards so the longest title still fits */
+  font-size: clamp(15px, 5.5cqw, 24px); font-weight: 500;                                           /* 24px as the logotype; only shrinks on narrow cards so the longest title still fits */
   background: var(--band, var(--d1)); color: var(--on, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tool__cover { display: block; flex: none; aspect-ratio: 470 / 454; overflow: hidden; }
 .tool__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
