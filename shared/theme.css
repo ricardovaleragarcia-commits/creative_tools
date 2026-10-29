@@ -20,60 +20,60 @@
   --d1: #bc66c4; --d2: #1754c4; --d3: #9b8100; --d4: #009970; --d5: #c46d26; --d6: #765db8;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="green"]  { --main: #00c893; --dark: #00573f; --ink: #ffffff; --c1: #f587ff; --c2: #ff0004; --c3: #2270ff; --c4: #cba900; --c5: #ff6b4a; --c6: #7ad7ff;
+html[data-palette="green"] { --main: #4ae062; --dark: #482441; --ink: #ffffff; --c1: #fe6fc1; --c2: #7042bd; --c3: #33ccff; --c4: #fdaa00; --c5: #7aa0fd; --c6: #9cb110;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #bc66c4; --d2: #c40002; --d3: #1754c4; --d4: #9b8100; --d5: #c45037; --d6: #5ca5c4;
-  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
-}
-html[data-palette="purple"] { --main: #9b7bf0; --dark: #3f2e73; --ink: #ffffff; --c1: #00c893; --c2: #ff0004; --c3: #cba900; --c4: #ff8f35; --c5: #2270ff; --c6: #f587ff;
-  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #009970; --d2: #c40002; --d3: #9b8100; --d4: #c46d26; --d5: #1754c4; --d6: #bc66c4;
+  --d1: #c35494; --d2: #543090; --d3: #259cc4; --d4: #c28200; --d5: #5c7ac2; --d6: #778709;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="orange"] { --main: #ff8f35; --dark: #7a3d12; --ink: #ffffff; --c1: #2270ff; --c2: #00c893; --c3: #9b7bf0; --c4: #f587ff; --c5: #ff0004; --c6: #cba900;
+html[data-palette="purple"] { --main: #8118d5; --dark: #033d2f; --ink: #ffffff; --c1: #f5a88e; --c2: #7cd49f; --c3: #c1c476; --c4: #c276a0; --c5: #2896e4; --c6: #c532a7;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #1754c4; --d2: #009970; --d3: #765db8; --d4: #bc66c4; --d5: #c40002; --d6: #9b8100;
+  --d1: #bc806c; --d2: #5ea279; --d3: #949659; --d4: #94597a; --d5: #1c72af; --d6: #97247f;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #9be564; --c6: #19d3da;
+html[data-palette="orange"] { --main: #f86a00; --dark: #053f4e; --ink: #ffffff; --c1: #0d7a9a; --c2: #d9be05; --c3: #4e8536; --c4: #fe9ac6; --c5: #84cbd8; --c6: #ce4148;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #c40002; --d2: #9b8100; --d3: #bc66c4; --d4: #009970; --d5: #76b04b; --d6: #10a2a7;
-  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #000000; --o6: #ffffff;
+  --d1: #075c75; --d2: #a69103; --d3: #3a6527; --d4: #c37597; --d5: #649ba5; --d6: #9e3035;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="white"]  { --main: #ffffff; --dark: #d9d9d9; --ink: #000000; --c1: #ececec; --c2: #c9c9c9; --c3: #a6a6a6; --c4: #7d7d7d; --c5: #dadada; --c6: #939393;
+html[data-palette="blue"] { --main: #242beb; --dark: #5d341b; --ink: #ffffff; --c1: #dda65f; --c2: #1bd9ce; --c3: #e350ce; --c4: #57c04f; --c5: #19b0e2; --c6: #ec5b55;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #b5b5b5; --d2: #9a9a9a; --d3: #7e7e7e; --d4: #5e5e5e; --d5: #a7a7a7; --d6: #707070;
-  --o1: #000000; --o2: #000000; --o3: #000000; --o4: #000000; --o5: #000000; --o6: #000000;
+  --d1: #a97e47; --d2: #12a69e; --d3: #ae3b9e; --d4: #41933b; --d5: #1086ad; --d6: #b5443f;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="black"]  { --main: #000000; --dark: #2a2a2a; --ink: #ffffff; --c1: #4a4a4a; --c2: #6e6e6e; --c3: #9a9a9a; --c4: #d0d0d0; --c5: #5c5c5c; --c6: #bcbcbc;
+html[data-palette="white"] { --main: #f9fafb; --dark: #e7e8eb; --ink: #0e0f12; --c1: #34373c; --c2: #5350d5; --c3: #758598; --c4: #a39e93; --c5: #3e4f67; --c6: #5a6b6a;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #373737; --d2: #535353; --d3: #757575; --d4: #9f9f9f; --d5: #454545; --d6: #909090;
-  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #000000; --o5: #ffffff; --o6: #ffffff;
+  --d1: #25282c; --d2: #3e3ba3; --d3: #586574; --d4: #7c7870; --d5: #2d3b4d; --d6: #435050;
+  --o1: #ffffff; --o2: #ffffff; --o3: #0e0f12; --o4: #0e0f12; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="pink"]     { --main: #ff4fa0; --dark: #6e1f46; --ink: #ffffff; --c1: #ffe14d; --c2: #3b5bff; --c3: #00d1a0; --c4: #8e5bff; --c5: #ff9a3c; --c6: #5ad8ff;
+html[data-palette="black"] { --main: #0b0b0e; --dark: #1e1f25; --ink: #f4f4f6; --c1: #423f51; --c2: #e879f9; --c3: #585761; --c4: #727581; --c5: #2a2a38; --c6: #8f91a2;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #c4ac39; --d2: #2b44c4; --d3: #00a07a; --d4: #6c44c4; --d5: #c4752c; --d6: #43a5c4;
-  --o1: #000000; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
+  --d1: #302e3c; --d2: #b25bbf; --d3: #424149; --d4: #565862; --d5: #1e1e29; --d6: #6d6e7b;
+  --o1: #f4f4f6; --o2: #f4f4f6; --o3: #f4f4f6; --o4: #f4f4f6; --o5: #f4f4f6; --o6: #f4f4f6;
 }
-html[data-palette="yellow"]   { --main: #ffd400; --dark: #dcae00; --ink: #111111; --c1: #ff5a36; --c2: #2f5bff; --c3: #14b58a; --c4: #b36bff; --c5: #ff7fb5; --c6: #111111;
+html[data-palette="pink"] { --main: #f94b9d; --dark: #374619; --ink: #ffffff; --c1: #acc91f; --c2: #3b6dcd; --c3: #78b77c; --c4: #8c5ece; --c5: #d98b08; --c6: #17ac95;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #c44327; --d2: #2244c4; --d3: #0d8a69; --d4: #8950c4; --d5: #c4608a; --d6: #0a0a0a;
-  --o1: #111111; --o2: #ffffff; --o3: #111111; --o4: #111111; --o5: #111111; --o6: #ffffff;
+  --d1: #839a15; --d2: #2b529d; --d3: #5b8c5e; --d4: #6a469e; --d5: #a66904; --d6: #0f8371;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="teal"]     { --main: #0e9aa7; --dark: #06444a; --ink: #ffffff; --c1: #bdeff2; --c2: #0a6f7a; --c3: #6fd3da; --c4: #04363c; --c5: #dff8fa; --c6: #3fb5c0;
+html[data-palette="yellow"] { --main: #f0d507; --dark: #322255; --ink: #ffffff; --c1: #bc56ce; --c2: #1bbec4; --c3: #55a630; --c4: #fe7a90; --c5: #6a45fa; --c6: #4f88b4;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #90b7ba; --d2: #06545c; --d3: #54a2a7; --d4: #02272c; --d5: #abbec0; --d6: #2e8a93;
-  --o1: #000000; --o2: #ffffff; --o3: #000000; --o4: #ffffff; --o5: #000000; --o6: #ffffff;
+  --d1: #90409e; --d2: #129196; --d3: #3f7e22; --d4: #c35c6d; --d5: #5033c0; --d6: #3b6789;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="sand"]     { --main: #d8c3a5; --dark: #c4a97f; --ink: #2a1f12; --c1: #f1e4cf; --c2: #a88a60; --c3: #7a5f3c; --c4: #e6d3b3; --c5: #8f7650; --c6: #5e4729;
+html[data-palette="teal"] { --main: #0d989f; --dark: #4e1924; --ink: #ffffff; --c1: #d78468; --c2: #c8b89e; --c3: #ada049; --c4: #81b8ad; --c5: #036b6e; --c6: #db91af;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #b9af9e; --d2: #806948; --d3: #5c472c; --d4: #b0a289; --d5: #6d593b; --d6: #46341d;
-  --o1: #2a1f12; --o2: #2a1f12; --o3: #ffffff; --o4: #2a1f12; --o5: #ffffff; --o6: #ffffff;
+  --d1: #a5644e; --d2: #998c78; --d3: #847a36; --d4: #628c84; --d5: #025053; --d6: #a86e85;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="midnight"] { --main: #14213d; --dark: #0a1226; --ink: #ffffff; --c1: #fca311; --c2: #7b9cff; --c3: #ff6b6b; --c4: #5bc0be; --c5: #9d8cff; --c6: #ffd6a5;
+html[data-palette="sand"] { --main: #dcc8a6; --dark: #312e20; --ink: #ffffff; --c1: #955641; --c2: #758836; --c3: #e1b856; --c4: #4d6887; --c5: #822c1d; --c6: #9d9368;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #c27c0a; --d2: #5d77c4; --d3: #c45050; --d4: #449391; --d5: #776ac4; --d6: #c4a47e;
-  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
+  --d1: #714030; --d2: #586727; --d3: #ac8c40; --d4: #394e66; --d5: #621f14; --d6: #77704e;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
+}
+html[data-palette="midnight"] { --main: #1a2846; --dark: #0e1528; --ink: #ffffff; --c1: #ea9900; --c2: #8289dc; --c3: #f28f78; --c4: #66cab7; --c5: #e3a9ce; --c6: #c5a580;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #b47400; --d2: #6268a9; --d3: #ba6d5b; --d4: #4d9b8c; --d5: #ae819e; --d6: #977e61;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

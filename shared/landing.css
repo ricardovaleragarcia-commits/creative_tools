@@ -27,17 +27,17 @@
 .dot:hover { transform: scale(1.25); }
 .dot[aria-checked="true"], .dot[aria-selected="true"] { transform: scale(1.35); }
 .dot[data-p="red"]    { background: #ff0004; }
-.dot[data-p="green"]  { background: #00c893; }
-.dot[data-p="purple"] { background: #9b7bf0; }
-.dot[data-p="orange"] { background: #ff8f35; }
-.dot[data-p="blue"]   { background: #2270ff; }
-.dot[data-p="white"]  { background: #ffffff; }
-.dot[data-p="black"]  { background: #000000; }
-.dot[data-p="pink"]     { background: #ff4fa0; }
-.dot[data-p="yellow"]   { background: #ffd400; }
-.dot[data-p="teal"]     { background: #0e9aa7; }
-.dot[data-p="sand"]     { background: #e6d2b0; }
-.dot[data-p="midnight"] { background: #2a4079; }
+.dot[data-p="green"]  { background: #4ae062; }
+.dot[data-p="purple"] { background: #8118d5; }
+.dot[data-p="orange"] { background: #f86a00; }
+.dot[data-p="blue"]   { background: #242beb; }
+.dot[data-p="white"]  { background: #f9fafb; }
+.dot[data-p="black"]  { background: #0b0b0e; }
+.dot[data-p="pink"]     { background: #f94b9d; }
+.dot[data-p="yellow"]   { background: #f0d507; }
+.dot[data-p="teal"]     { background: #0d989f; }
+.dot[data-p="sand"]     { background: #dcc8a6; }
+.dot[data-p="midnight"] { background: #1a2846; }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
   align-content: start; row-gap: var(--gap); padding: var(--gap) var(--gap) 120px;
@@ -93,3 +93,9 @@ html.intro .dot { opacity: 0; pointer-events: none; animation: none !important; 
 html.intro::before { content: ""; position: fixed; inset: 0; z-index: 1; background: var(--dark); pointer-events: none; clip-path: inset(0 var(--ir, 0px) var(--ib, 0px) 0); }
 html.intro .side { z-index: 2; overflow: visible; }
 html.intro-played .dot { animation: none; }
+
+/* the white / black dots are the same color as their page: a ring marks them while their own palette is active */
+html[data-palette="white"] .dot[data-p="white"] { box-shadow: 0 0 0 1.5px var(--ink); }
+html[data-palette="black"] .dot[data-p="black"] { box-shadow: 0 0 0 1.5px var(--ink); }
+html[data-palette="black"] .dot[data-p="midnight"] { box-shadow: 0 0 0 1px #3b4a70; }
+html[data-palette="white"] .dot[data-p="white"]:not([aria-checked="true"]) { box-shadow: 0 0 0 1px rgba(14,15,18,.25); }
