@@ -35,8 +35,8 @@
 .dot[data-p="black"]  { background: #0a0a0a; }
 .dot[data-p="pink"]     { background: #f94b9d; }
 .dot[data-p="yellow"]   { background: #f0d507; }
-.dot[data-p="teal"]     { background: #0d989f; }
-.dot[data-p="sand"]     { background: #dcc8a6; }
+.dot[data-p="teal"]     { background: #16aeae; }
+.dot[data-p="sand"]     { background: #f0d3a3; }
 .dot[data-p="midnight"] { background: #1a2846; }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
