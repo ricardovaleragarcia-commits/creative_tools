@@ -40,9 +40,9 @@ html[data-palette="blue"] { --main: #242beb; --dark: #5d341b; --ink: #ffffff; --
   --d1: #a97e47; --d2: #12a69e; --d3: #ae3b9e; --d4: #41933b; --d5: #1086ad; --d6: #b5443f;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="white"] { --main: #ffffff; --dark: #f3f3f2; --ink: #111111; --c1: #959595; --c2: #959595; --c3: #959595; --c4: #959595; --c5: #959595; --c6: #959595;
+html[data-palette="white"] { --main: #ffffff; --dark: #f3f3f2; --ink: #111111; --c1: #aaaaaa; --c2: #aaaaaa; --c3: #aaaaaa; --c4: #aaaaaa; --c5: #aaaaaa; --c6: #aaaaaa;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #717171; --d2: #717171; --d3: #717171; --d4: #717171; --d5: #717171; --d6: #717171;
+  --d1: #828282; --d2: #828282; --d3: #828282; --d4: #828282; --d5: #828282; --d6: #828282;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="black"] { --main: #0a0a0a; --dark: #181818; --ink: #ededed; --c1: #2e2e2e; --c2: #2e2e2e; --c3: #2e2e2e; --c4: #2e2e2e; --c5: #2e2e2e; --c6: #2e2e2e;
