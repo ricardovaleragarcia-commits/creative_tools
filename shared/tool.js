@@ -159,3 +159,17 @@
   window.addEventListener("error", function (e) { show(String((e && e.message) || "error").slice(0, 120)); });
   window.addEventListener("unhandledrejection", function (e) { show(String((e && e.reason && e.reason.message) || "error").slice(0, 120)); });
 })();
+
+/* WebGL context lost (Safari does it when memory is low): say so while it comes back; the tool restores itself. */
+(function () {
+  var cv = document.querySelector(".artwork canvas"), note;
+  if (!cv) return;
+  cv.addEventListener("webglcontextlost", function () {
+    var st = document.querySelector(".stage"); if (!st || note) return;
+    note = document.createElement("div");
+    note.style.cssText = "position:absolute;left:12px;right:12px;bottom:12px;padding:8px;background:rgba(0,0,0,.75);color:#fff;font:700 12px/1.3 system-ui,sans-serif;z-index:9";
+    note.textContent = "The browser paused the graphics to save memory. Restoring… if the preview stays empty, reload the page.";
+    st.appendChild(note);
+  });
+  cv.addEventListener("webglcontextrestored", function () { if (note) { note.remove(); note = null; } });
+})();

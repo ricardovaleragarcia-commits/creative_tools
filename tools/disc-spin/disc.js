@@ -422,6 +422,18 @@ function applyTrans(t){
 const labelFrontMat = new THREE.MeshStandardMaterial({map: labelTex(false), transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 const labelBackMat  = new THREE.MeshStandardMaterial({map: labelTex(true),  transparent: false, alphaTest: 0.5, roughness: 0.55, metalness: 0, envMap: envDark.map, envMapIntensity: 0.5, side: THREE.DoubleSide});
 
+// Safari (and phones) can drop the WebGL context when memory is tight or the tab was in the background. three.js restores its own state,
+// but the reflection maps were rendered into GPU targets that are gone: rebuild them and hand them to the materials again.
+canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); canvas.dataset.lost = '1'; });
+canvas.addEventListener('webglcontextrestored', () => {
+  const nb = envFrom(false), nd = envFrom(true);
+  envBright.map = nb.map; envDark.map = nd.map;
+  cdBodyMat.envMap = nb.map;
+  for(const m of [vinylBodyMat, vinylFaceMat, labelFrontMat, labelBackMat]) m.envMap = nd.map;
+  for(const m of [cdBodyMat, vinylBodyMat, vinylFaceMat, labelFrontMat, labelBackMat]) m.needsUpdate = true;
+  delete canvas.dataset.lost;
+});
+
 // ---------- Geometría ----------
 function lathe(profile){
   const g = new THREE.LatheGeometry(profile.map(p => new THREE.Vector2(p[0], p[1])), 192);
