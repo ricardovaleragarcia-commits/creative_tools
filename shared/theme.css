@@ -40,15 +40,15 @@ html[data-palette="blue"] { --main: #242beb; --dark: #5d341b; --ink: #ffffff; --
   --d1: #a97e47; --d2: #12a69e; --d3: #ae3b9e; --d4: #41933b; --d5: #1086ad; --d6: #b5443f;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="white"] { --main: #f9fafb; --dark: #e7e8eb; --ink: #0e0f12; --c1: #34373c; --c2: #5350d5; --c3: #758598; --c4: #a39e93; --c5: #3e4f67; --c6: #5a6b6a;
+html[data-palette="white"] { --main: #ffffff; --dark: #f3f3f2; --ink: #111111; --c1: #2e2e2e; --c2: #595959; --c3: #7d7d7d; --c4: #999999; --c5: #444444; --c6: #8a8a8a;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #25282c; --d2: #3e3ba3; --d3: #586574; --d4: #7c7870; --d5: #2d3b4d; --d6: #435050;
-  --o1: #ffffff; --o2: #ffffff; --o3: #0e0f12; --o4: #0e0f12; --o5: #ffffff; --o6: #ffffff;
+  --d1: #212121; --d2: #424242; --d3: #5e5e5e; --d4: #747474; --d5: #323232; --d6: #696969;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #111111; --o5: #ffffff; --o6: #111111;
 }
-html[data-palette="black"] { --main: #0b0b0e; --dark: #1e1f25; --ink: #f4f4f6; --c1: #423f51; --c2: #e879f9; --c3: #585761; --c4: #727581; --c5: #2a2a38; --c6: #8f91a2;
+html[data-palette="black"] { --main: #0a0a0a; --dark: #181818; --ink: #ededed; --c1: #2c2c2c; --c2: #3d3d3d; --c3: #525252; --c4: #686868; --c5: #222222; --c6: #787878;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #302e3c; --d2: #b25bbf; --d3: #424149; --d4: #565862; --d5: #1e1e29; --d6: #6d6e7b;
-  --o1: #f4f4f6; --o2: #f4f4f6; --o3: #f4f4f6; --o4: #f4f4f6; --o5: #f4f4f6; --o6: #f4f4f6;
+  --d1: #1f1f1f; --d2: #2d2d2d; --d3: #3d3d3d; --d4: #4e4e4e; --d5: #171717; --d6: #5b5b5b;
+  --o1: #ededed; --o2: #ededed; --o3: #ededed; --o4: #ededed; --o5: #ededed; --o6: #ededed;
 }
 html[data-palette="pink"] { --main: #f94b9d; --dark: #374619; --ink: #ffffff; --c1: #acc91f; --c2: #3b6dcd; --c3: #78b77c; --c4: #8c5ece; --c5: #d98b08; --c6: #17ac95;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */

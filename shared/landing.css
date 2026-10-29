@@ -31,8 +31,8 @@
 .dot[data-p="purple"] { background: #8118d5; }
 .dot[data-p="orange"] { background: #f86a00; }
 .dot[data-p="blue"]   { background: #242beb; }
-.dot[data-p="white"]  { background: #f9fafb; }
-.dot[data-p="black"]  { background: #0b0b0e; }
+.dot[data-p="white"]  { background: #ffffff; }
+.dot[data-p="black"]  { background: #0a0a0a; }
 .dot[data-p="pink"]     { background: #f94b9d; }
 .dot[data-p="yellow"]   { background: #f0d507; }
 .dot[data-p="teal"]     { background: #0d989f; }
@@ -97,5 +97,5 @@ html.intro-played .dot { animation: none; }
 /* the white / black dots are the same color as their page: a ring marks them while their own palette is active */
 html[data-palette="white"] .dot[data-p="white"] { box-shadow: 0 0 0 1.5px var(--ink); }
 html[data-palette="black"] .dot[data-p="black"] { box-shadow: 0 0 0 1.5px var(--ink); }
-html[data-palette="black"] .dot[data-p="midnight"] { box-shadow: 0 0 0 1px #3b4a70; }
+html[data-palette="black"] .dot[data-p="midnight"] { box-shadow: 0 0 0 1px #444; }
 html[data-palette="white"] .dot[data-p="white"]:not([aria-checked="true"]) { box-shadow: 0 0 0 1px rgba(14,15,18,.25); }
