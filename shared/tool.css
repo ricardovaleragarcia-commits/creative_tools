@@ -8,14 +8,14 @@
 }
 .toolhead { display: contents; }
 .toolhead__side { grid-column: 1; grid-row: 1; background: var(--dark); padding: var(--gap) 10px; }
-.toolhead .back { display: inline-block; font-size: 24px; font-weight: 500; line-height: 32px; height: 32px; }   /* same size as the tool title */
+.toolhead .back { display: inline-block; font-size: 20px; font-weight: 500; line-height: 32px; height: 32px; }   /* same size as the tool title */
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
 /* The tool's title is the same band as on its card on the landing: the card's dark tone, --inset from the card's top, left and right,
    and its bottom edge level with the header boxes of the landing (--bar-row). */
 .toolhead__title {
   grid-column: 2; grid-row: 1; align-self: start; justify-self: stretch; position: relative; z-index: 1; box-sizing: border-box;
   margin: calc(var(--gap) + var(--inset)) calc(var(--gap) + var(--inset)) 0; padding: 0 var(--inset);
-  height: calc(var(--bar-row) - var(--inset)); line-height: calc(var(--bar-row) - var(--inset)); font-size: 24px; font-weight: 500;
+  height: calc(var(--bar-row) - var(--inset)); line-height: calc(var(--bar-row) - var(--inset)); font-size: 20px; font-weight: 500;
   background: var(--band, var(--d1)); color: var(--on, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toolgrid { display: contents; }

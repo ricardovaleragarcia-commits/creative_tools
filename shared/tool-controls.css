@@ -98,7 +98,7 @@
 .sec { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--gap); }
 .sec + .sec { margin-top: 14px; }
 .menu .sec__h { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 36px; border: 0; border-radius: 0; cursor: pointer; text-align: left;
-  padding: 6px 8px 4px; font: 500 16px/1.1 var(--font); color: var(--ink); background: transparent; transition: background-color .2s ease; }
+  padding: 6px 8px 4px; font: 500 20px/1.1 var(--font); color: var(--ink); background: transparent; transition: background-color .2s ease; }
 .sec__h:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .sec__c { flex: none; width: 10px; height: 6px; background: currentColor; clip-path: polygon(0 0, 100% 0, 50% 100%); transition: transform .25s var(--vt-ease, ease); }   /* solid triangle */
 .sec__h[aria-expanded="false"] .sec__c { transform: rotate(-90deg); }
