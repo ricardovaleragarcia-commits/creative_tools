@@ -17,32 +17,32 @@
   --block: color-mix(in srgb, var(--dark) 84%, #000);   /* controls blocks: a shade darker than the panel */
   --frame-bg: #000;                                       /* artwork background when the workspace is off */
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #bc66c4; --d2: #1754c4; --d3: #9b8100; --d4: #009970; --d5: #c46d26; --d6: #765db8;
+  --d1: #aa55b2; --d2: #1754c4; --d3: #8c7406; --d4: #018762; --d5: #b55f12; --d6: #765db8;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="green"] { --main: #4ae062; --dark: #482441; --ink: #ffffff; --c1: #fe6fc1; --c2: #7042bd; --c3: #33ccff; --c4: #fdaa00; --c5: #7aa0fd; --c6: #9cb110;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #c35494; --d2: #543090; --d3: #259cc4; --d4: #c28200; --d5: #5c7ac2; --d6: #778709;
+  --d1: #bd4e8e; --d2: #543090; --d3: #097fa2; --d4: #a16b07; --d5: #5774bc; --d6: #6f7e00;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="purple"] { --main: #8118d5; --dark: #033d2f; --ink: #ffffff; --c1: #f5a88e; --c2: #7cd49f; --c3: #c1c476; --c4: #c276a0; --c5: #2896e4; --c6: #c532a7;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #bc806c; --d2: #5ea279; --d3: #949659; --d4: #94597a; --d5: #1c72af; --d6: #97247f;
+  --d1: #a26855; --d2: #3f845c; --d3: #787a3e; --d4: #94597a; --d5: #1c72af; --d6: #97247f;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="orange"] { --main: #f86a00; --dark: #053f4e; --ink: #ffffff; --c1: #0d7a9a; --c2: #d9be05; --c3: #4e8536; --c4: #fe9ac6; --c5: #84cbd8; --c6: #ce4148;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #075c75; --d2: #a69103; --d3: #3a6527; --d4: #c37597; --d5: #649ba5; --d6: #9e3035;
+  --d1: #075c75; --d2: #877602; --d3: #3a6527; --d4: #aa5f81; --d5: #477e88; --d6: #9e3035;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="blue"] { --main: #242beb; --dark: #5d341b; --ink: #ffffff; --c1: #dda65f; --c2: #1bd9ce; --c3: #e350ce; --c4: #57c04f; --c5: #19b0e2; --c6: #ec5b55;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #a97e47; --d2: #12a69e; --d3: #ae3b9e; --d4: #41933b; --d5: #1086ad; --d6: #b5443f;
+  --d1: #976d36; --d2: #05857e; --d3: #ae3b9e; --d4: #34872e; --d5: #0c80a5; --d6: #b5443f;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="white"] { --main: #ffffff; --dark: #f3f3f2; --ink: #111111; --c1: #aaaaaa; --c2: #aaaaaa; --c3: #aaaaaa; --c4: #aaaaaa; --c5: #aaaaaa; --c6: #aaaaaa;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #828282; --d2: #828282; --d3: #828282; --d4: #828282; --d5: #828282; --d6: #828282;
+  --d1: #767676; --d2: #767676; --d3: #767676; --d4: #767676; --d5: #767676; --d6: #767676;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="black"] { --main: #0a0a0a; --dark: #181818; --ink: #ededed; --c1: #2e2e2e; --c2: #2e2e2e; --c3: #2e2e2e; --c4: #2e2e2e; --c5: #2e2e2e; --c6: #2e2e2e;
@@ -52,27 +52,27 @@ html[data-palette="black"] { --main: #0a0a0a; --dark: #181818; --ink: #ededed; -
 }
 html[data-palette="pink"] { --main: #f94b9d; --dark: #374619; --ink: #ffffff; --c1: #acc91f; --c2: #3b6dcd; --c3: #78b77c; --c4: #8c5ece; --c5: #d98b08; --c6: #17ac95;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #839a15; --d2: #2b529d; --d3: #5b8c5e; --d4: #6a469e; --d5: #a66904; --d6: #0f8371;
+  --d1: #6b7e07; --d2: #2b529d; --d3: #508153; --d4: #6a469e; --d5: #a66904; --d6: #0f8371;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="yellow"] { --main: #f0d507; --dark: #322255; --ink: #ffffff; --c1: #bc56ce; --c2: #1bbec4; --c3: #55a630; --c4: #fe7a90; --c5: #6a45fa; --c6: #4f88b4;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #90409e; --d2: #129196; --d3: #3f7e22; --d4: #c35c6d; --d5: #5033c0; --d6: #3b6789;
+  --d1: #90409e; --d2: #088387; --d3: #3f7e22; --d4: #bc5567; --d5: #5033c0; --d6: #3b6789;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="teal"] { --main: #0d989f; --dark: #4e1924; --ink: #ffffff; --c1: #d78468; --c2: #c8b89e; --c3: #ada049; --c4: #81b8ad; --c5: #036b6e; --c6: #db91af;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #a5644e; --d2: #998c78; --d3: #847a36; --d4: #628c84; --d5: #025053; --d6: #a86e85;
+  --d1: #a5644e; --d2: #817561; --d3: #817733; --d4: #547e76; --d5: #025053; --d6: #9e657d;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="sand"] { --main: #dcc8a6; --dark: #312e20; --ink: #ffffff; --c1: #955641; --c2: #758836; --c3: #e1b856; --c4: #4d6887; --c5: #822c1d; --c6: #9d9368;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #714030; --d2: #586727; --d3: #ac8c40; --d4: #394e66; --d5: #621f14; --d6: #77704e;
+  --d1: #714030; --d2: #586727; --d3: #917222; --d4: #394e66; --d5: #621f14; --d6: #77704e;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 html[data-palette="midnight"] { --main: #1a2846; --dark: #0e1528; --ink: #ffffff; --c1: #ea9900; --c2: #8289dc; --c3: #f28f78; --c4: #66cab7; --c5: #e3a9ce; --c6: #c5a580;
   /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
-  --d1: #b47400; --d2: #6268a9; --d3: #ba6d5b; --d4: #4d9b8c; --d5: #ae819e; --d6: #977e61;
+  --d1: #a36a09; --d2: #6268a9; --d3: #ad6150; --d4: #338375; --d5: #956985; --d6: #8a7255;
   --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
 

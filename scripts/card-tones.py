@@ -12,7 +12,7 @@ import math, re, sys, pathlib
 
 K_L, K_C = 0.82, 0.82
 MIN_LARGE = 3.0   # WCAG AA large text (24px bold titles)
-MIN_SMALL = 4.5   # WCAG AA normal text (14px descriptions) -- reported, not forced
+MIN_SMALL = 4.5   # WCAG AA normal text (14px descriptions) -- enforced: a band that misses it is darkened further
 
 def hex2rgb(h):
     h = h.lstrip('#')
@@ -51,7 +51,12 @@ def contrast(a, b):
     return (la + .05) / (lb + .05)
 def darken(h):
     L, C, H = to_oklch(h)
-    return to_hex(L * K_L, C * K_C, H)
+    d = to_hex(L * K_L, C * K_C, H)
+    k = K_L
+    while contrast("#ffffff", d) < MIN_SMALL and k > 0.2:     # AA floor for the 14px descriptions: keep darkening (same hue and chroma ratio) only as far as needed
+        k -= 0.005
+        d = to_hex(L * k, C * K_C, H)
+    return d
 
 CSS = pathlib.Path(__file__).resolve().parent.parent / "shared" / "theme.css"
 src = CSS.read_text()
