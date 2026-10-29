@@ -99,3 +99,6 @@ html[data-palette="white"] .dot[data-p="white"] { box-shadow: 0 0 0 1.5px var(--
 html[data-palette="black"] .dot[data-p="black"] { box-shadow: 0 0 0 1.5px var(--ink); }
 html[data-palette="black"] .dot[data-p="midnight"] { box-shadow: 0 0 0 1px #444; }
 html[data-palette="white"] .dot[data-p="white"]:not([aria-checked="true"]) { box-shadow: 0 0 0 1px rgba(14,15,18,.25); }
+
+/* no container queries (Safari before 16): give the description band the tallest height so no text is cut */
+@supports not (container-type: inline-size) { .tool__desc { --lines: 5; } }

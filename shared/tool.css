@@ -42,6 +42,7 @@ html[data-card="4"] { --card: var(--c4); --band: var(--d4); --on: var(--o4); }
 .artwork {
   --pad-x: 17.6cqw; --pad-y: 8.6cqh;   /* matches the Figma margins (168px / 80px) */
   background: #000; position: relative; overflow: hidden; aspect-ratio: var(--ar, .8);
+  width: min(calc(66.67vw * .58), calc((100vh - 150px) * var(--ar, .8)));   /* fallback for browsers without container units (Safari before 16): without it the frame collapsed to nothing */
   width: min(calc(100cqw - 2 * var(--pad-x)), calc((100cqh - 2 * var(--pad-y)) * var(--ar, .8)));
 }
 .artwork canvas, .artwork svg, .artwork video { width: 100%; height: 100%; display: block; }

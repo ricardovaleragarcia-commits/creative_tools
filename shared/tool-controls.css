@@ -127,3 +127,8 @@
 .menu input[type=number]::-webkit-inner-spin-button, .menu input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 @media (prefers-reduced-motion: reduce) { .sec__c, .menu input[type=checkbox], .menu input[type=range]::-webkit-slider-thumb { transition: none; } }
+
+/* Browsers without color-mix() (Safari before 16.2): plain fallbacks so the controls keep their blocks and fields */
+@supports not (color: color-mix(in srgb, red, blue)) {
+  :root { --block: rgba(0, 0, 0, .16); --f-rest: rgba(128, 128, 128, .22); --f-hover: rgba(128, 128, 128, .34); --f-track: rgba(128, 128, 128, .4); }
+}

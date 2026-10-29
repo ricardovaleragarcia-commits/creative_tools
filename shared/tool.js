@@ -145,3 +145,17 @@
   window.setFrameBg = function (css) { stage.style.setProperty("--frame-bg", css); };
 
 })();
+
+/* If a tool fails to start (older Safari, no WebGL...), say so on the stage instead of leaving it empty. */
+(function () {
+  function show(msg) {
+    var st = document.querySelector(".stage");
+    if (!st || st.querySelector(".stage__err")) return;
+    var d = document.createElement("div"); d.className = "stage__err";
+    d.style.cssText = "position:absolute;left:12px;right:12px;bottom:12px;padding:8px;background:rgba(0,0,0,.75);color:#fff;font:700 12px/1.3 system-ui,sans-serif;z-index:9";
+    d.textContent = "This tool could not start in this browser (" + msg + "). Try updating it, or open the page in Chrome.";
+    st.appendChild(d);
+  }
+  window.addEventListener("error", function (e) { show(String((e && e.message) || "error").slice(0, 120)); });
+  window.addEventListener("unhandledrejection", function (e) { show(String((e && e.reason && e.reason.message) || "error").slice(0, 120)); });
+})();
