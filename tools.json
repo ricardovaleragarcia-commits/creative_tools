@@ -1,25 +1,25 @@
 [
   {
     "title": "Vinyl & CD Mockup Animator",
-    "description": "CD and vinyl viewer with seamless loop video export.",
+    "description": "Drop your artwork on a vinyl or a CD, turn it in 3D under your own lights, then export a seamless MP4 loop for stories and reels.",
     "cover": "shared/covers/disc-spin.svg",
     "href": "tools/disc-spin/"
   },
   {
     "title": "Shape Drop & Multiply",
-    "description": "Shapes that multiply, fall and fill the frame, exported as a seamless loop.",
+    "description": "Shapes appear, multiply and fall with real gravity until they fill the frame without overlapping. Use your own SVG or PNG and export a loop.",
     "cover": "shared/covers/shape-drop.svg",
     "href": "tools/shape-drop/"
   },
   {
     "title": "Text & Shape Trace and Fill",
-    "description": "Draw the outline of text or SVG logos like a pen stroke, then fill it, as a seamless loop.",
+    "description": "Type a word or load an SVG logo and watch its outline get drawn like a pen stroke before the color fills in. Export it as a seamless loop.",
     "cover": "shared/covers/line-draw.svg",
     "href": "tools/line-draw/"
   },
   {
     "title": "Text Orbit Sphere",
-    "description": "Wrap any text around a sphere and export a seamless spinning loop.",
+    "description": "Wrap any text around a sphere and set its axis and spin. Export a seamless MP4 loop, a PNG frame or standalone HTML code.",
     "cover": "shared/covers/text-orbit.svg",
     "href": "tools/text-orbit/"
   },

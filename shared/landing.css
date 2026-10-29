@@ -40,21 +40,32 @@
 .dot[data-p="midnight"] { background: #2a4079; }
 .tools {
   grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
-  align-content: start; row-gap: 36px; padding: var(--gap) var(--gap) 120px;
+  align-content: start; row-gap: var(--gap); padding: var(--gap) var(--gap) 120px;
 }
-.tool { display: block; min-width: 0; }
-.tool .title { display: block; font-size: 24px; font-weight: 700; line-height: 1em; height: 1em; padding-block: .09em; box-sizing: content-box; margin-bottom: var(--gap);   /* same metrics as the header boxes: first-row titles share the logotype's baseline, and the cover sits 5px under the title */
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tool__cover { display: block; aspect-ratio: 470 / 454; overflow: hidden; background: var(--cover, var(--c1)); }
+/* A card is one block of the tool's color with two bands of its dark tone (see scripts/card-tones.py):
+   title on top (the title row is as tall as the header boxes, so the first row lines up with the logo and logotype),
+   description at the bottom (fixed height, so every card is the same whatever the text). Both bands sit --inset from the card's edges. */
+.tool { display: flex; flex-direction: column; min-width: 0; container-type: inline-size; background: var(--cover, var(--c1)); color: var(--on, var(--ink)); }
+.tool .title { flex: none; margin: var(--inset) var(--inset) 0; padding: 0 var(--inset); box-sizing: border-box;
+  height: calc(var(--bar-row) - var(--inset)); line-height: calc(var(--bar-row) - var(--inset));   /* bottom edge = bottom edge of the header boxes */
+  font-size: clamp(15px, 5.5cqw, 24px); font-weight: 700;                                           /* 24px as the logotype; only shrinks on narrow cards so the longest title still fits */
+  background: var(--band, var(--d1)); color: var(--on, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tool__cover { display: block; flex: none; aspect-ratio: 470 / 454; overflow: hidden; }
 .tool__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tool__desc { margin-top: 8px; line-height: 1.2; }
-a.tool:hover .tool__cover { filter: brightness(.96); }
-.tool:nth-child(4n+1) .tool__cover { --cover: var(--c1); }
-.tool:nth-child(4n+2) .tool__cover { --cover: var(--c2); }
-.tool:nth-child(4n+3) .tool__cover { --cover: var(--c3); }
-.tool:nth-child(4n)   .tool__cover { --cover: var(--c4); }
-.tool:nth-child(5) .tool__cover { --cover: var(--c5); }
-.tool:nth-child(6) .tool__cover { --cover: var(--c6); }
+.tool__desc { --lines: 2; flex: none; margin: 0 var(--inset) var(--inset); padding: 8px; box-sizing: border-box; overflow: hidden;
+  font-size: var(--fs-s); line-height: 1.2; background: var(--band, var(--d1)); color: var(--on, var(--ink));
+  height: calc(var(--lines) * 1.2 * var(--fs-s) + 16px); }   /* fixed: N lines of text + padding. N depends only on the card's width, never on the text */
+@container (max-width: 599px) { .tool__desc { --lines: 3; } }   /* lines per card width: calibrated with the longest description in DejaVu Sans Bold (the widest fallback font), cards from 240 to 1250px wide */
+@container (max-width: 419px) { .tool__desc { --lines: 4; } }
+@container (max-width: 319px) { .tool__desc { --lines: 5; } }
+@container (max-width: 259px) { .tool__desc { --lines: 6; } }
+a.tool:hover { filter: brightness(.96); }
+.tool:nth-child(4n+1) { --cover: var(--c1); --band: var(--d1); --on: var(--o1); }
+.tool:nth-child(4n+2) { --cover: var(--c2); --band: var(--d2); --on: var(--o2); }
+.tool:nth-child(4n+3) { --cover: var(--c3); --band: var(--d3); --on: var(--o3); }
+.tool:nth-child(4n)   { --cover: var(--c4); --band: var(--d4); --on: var(--o4); }
+.tool:nth-child(5) { --cover: var(--c5); --band: var(--d5); --on: var(--o5); }
+.tool:nth-child(6) { --cover: var(--c6); --band: var(--d6); --on: var(--o6); }
 
 /* transition names (see theme.css) */
 .head__logo, .head__title, .head__a, .head__b, .head__c { animation: rise-in .8s var(--vt-ease) .35s both; }
@@ -65,6 +76,8 @@ a.tool:hover .tool__cover { filter: brightness(.96); }
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
   .side { position: relative; top: 0; height: auto; min-height: max(60vh, 560px); }
+  .credits { position: absolute; }   /* the credits stay at the bottom of the dark panel (on a phone it is shorter than the screen: fixed, they floated over the first card) */
+  .dots { bottom: 100px; }           /* keep the dots clear of the credits */
   .tools { padding: var(--gap); }
   .tools { grid-column: 1; grid-template-columns: 1fr 1fr; }
 }

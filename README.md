@@ -7,6 +7,7 @@ Plain HTML + CSS + JS, no build step: works on GitHub Pages and with any static 
 index.html          landing (6-column grid of tool cards)
 tools.json          list of tools -> add an object here to add a card
 shared/theme.css    shared identity (Helvetica Neue, the 12 palettes, credits bar)
+scripts/card-tones.py  the rule for the dark tone of each card color (see below)
 shared/palette.js   palette picked on the landing (the dots), saved per browser
 shared/tool.css     tool screen: dark panel with controls (1/3) + stage with the artwork (2/3)
 shared/tool.js      tool name, workspace on/off (crop marks), frame background helper
@@ -23,6 +24,11 @@ fonts/              (not used since the switch to Helvetica Neue)
    Call `setFrameBg(css)` when the artwork background changes (it shows when the workspace is off).
    Add the `<script src="../../shared/palette.js">` in <head> and `tool.js` at the end of <body>.
 2. Add `{ "title": "...", "description": "...", "cover": "tools/<name>/cover.jpg", "href": "tools/<name>/" }` to `tools.json`.
+
+## Card colors
+Each card (and each tool's title band) has two colors: the palette's card color `--c1..--c6`, and a darker tone of it `--d1..--d6` for the title and description bands, with `--o1..--o6` as the text color on top.
+The dark tone is a rule, not a hand-picked value: in OKLCH, same hue, lightness x 0.82 and chroma x 0.82. If the palette's text color would read worse than 3:1 on that tone, the text flips to black or white.
+To add or change a palette: edit its `--c1..--c6` in `shared/theme.css`, then run `python3 scripts/card-tones.py --write`. It prints the contrast of every card and rewrites the `--d` / `--o` values.
 
 ## Run locally
 `python3 -m http.server 3000` and open http://localhost:3000 (`tools.json` needs http, not `file://`).

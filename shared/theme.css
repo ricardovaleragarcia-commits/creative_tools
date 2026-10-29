@@ -8,24 +8,73 @@
   --fs-s: 14px;          /* small text, also menu text */
   --fs-l: 36px;          /* titles */
   --fs-foot: 14px;       /* credits bar (name and data): same as the small text */
-  --cover-top: calc(var(--gap) * 2 + 1.18 * 24px);   /* = 5px + header box (1.18em of 24px) + 5px: the top of the first row of covers on the landing = top of the card color in a tool */
+  --bar-row: calc(1.18 * 24px);   /* height of the title row: the same as the header boxes (logo, logotype), so the first row of cards lines up with them */
+  --inset: 3px;                   /* margin between a card's edge and its title / description band (the green guides of the Figma sample) */
+  --cover-top: var(--gap);        /* the card color starts at the very top, 5px from the window edge, like the cards on the landing */
   /* red (default, from Figma) */
   --main: #ff0004; --dark: #806532; --ink: #ffffff;
   --c1: #f587ff; --c2: #2270ff; --c3: #cba900; --c4: #00c893; --c5: #ff8f35; --c6: #9b7bf0;
   --block: color-mix(in srgb, var(--dark) 84%, #000);   /* controls blocks: a shade darker than the panel */
   --frame-bg: #000;                                       /* artwork background when the workspace is off */
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #bc66c4; --d2: #1754c4; --d3: #9b8100; --d4: #009970; --d5: #c46d26; --d6: #765db8;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
 }
-html[data-palette="green"]  { --main: #00c893; --dark: #00573f; --ink: #ffffff; --c1: #f587ff; --c2: #ff0004; --c3: #2270ff; --c4: #cba900; --c5: #ff6b4a; --c6: #7ad7ff; }
-html[data-palette="purple"] { --main: #9b7bf0; --dark: #3f2e73; --ink: #ffffff; --c1: #00c893; --c2: #ff0004; --c3: #cba900; --c4: #ff8f35; --c5: #2270ff; --c6: #f587ff; }
-html[data-palette="orange"] { --main: #ff8f35; --dark: #7a3d12; --ink: #ffffff; --c1: #2270ff; --c2: #00c893; --c3: #9b7bf0; --c4: #f587ff; --c5: #ff0004; --c6: #cba900; }
-html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #9be564; --c6: #19d3da; }
-html[data-palette="white"]  { --main: #ffffff; --dark: #d9d9d9; --ink: #000000; --c1: #ececec; --c2: #c9c9c9; --c3: #a6a6a6; --c4: #7d7d7d; --c5: #dadada; --c6: #939393; }
-html[data-palette="black"]  { --main: #000000; --dark: #2a2a2a; --ink: #ffffff; --c1: #4a4a4a; --c2: #6e6e6e; --c3: #9a9a9a; --c4: #d0d0d0; --c5: #5c5c5c; --c6: #bcbcbc; }
-html[data-palette="pink"]     { --main: #ff4fa0; --dark: #6e1f46; --ink: #ffffff; --c1: #ffe14d; --c2: #3b5bff; --c3: #00d1a0; --c4: #8e5bff; --c5: #ff9a3c; --c6: #5ad8ff; }
-html[data-palette="yellow"]   { --main: #ffd400; --dark: #dcae00; --ink: #111111; --c1: #ff5a36; --c2: #2f5bff; --c3: #14b58a; --c4: #b36bff; --c5: #ff7fb5; --c6: #111111; }
-html[data-palette="teal"]     { --main: #0e9aa7; --dark: #06444a; --ink: #ffffff; --c1: #bdeff2; --c2: #0a6f7a; --c3: #6fd3da; --c4: #04363c; --c5: #dff8fa; --c6: #3fb5c0; }
-html[data-palette="sand"]     { --main: #d8c3a5; --dark: #c4a97f; --ink: #2a1f12; --c1: #f1e4cf; --c2: #a88a60; --c3: #7a5f3c; --c4: #e6d3b3; --c5: #8f7650; --c6: #5e4729; }
-html[data-palette="midnight"] { --main: #14213d; --dark: #0a1226; --ink: #ffffff; --c1: #fca311; --c2: #7b9cff; --c3: #ff6b6b; --c4: #5bc0be; --c5: #9d8cff; --c6: #ffd6a5; }
+html[data-palette="green"]  { --main: #00c893; --dark: #00573f; --ink: #ffffff; --c1: #f587ff; --c2: #ff0004; --c3: #2270ff; --c4: #cba900; --c5: #ff6b4a; --c6: #7ad7ff;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #bc66c4; --d2: #c40002; --d3: #1754c4; --d4: #9b8100; --d5: #c45037; --d6: #5ca5c4;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
+}
+html[data-palette="purple"] { --main: #9b7bf0; --dark: #3f2e73; --ink: #ffffff; --c1: #00c893; --c2: #ff0004; --c3: #cba900; --c4: #ff8f35; --c5: #2270ff; --c6: #f587ff;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #009970; --d2: #c40002; --d3: #9b8100; --d4: #c46d26; --d5: #1754c4; --d6: #bc66c4;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
+}
+html[data-palette="orange"] { --main: #ff8f35; --dark: #7a3d12; --ink: #ffffff; --c1: #2270ff; --c2: #00c893; --c3: #9b7bf0; --c4: #f587ff; --c5: #ff0004; --c6: #cba900;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #1754c4; --d2: #009970; --d3: #765db8; --d4: #bc66c4; --d5: #c40002; --d6: #9b8100;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #ffffff;
+}
+html[data-palette="blue"]   { --main: #2270ff; --dark: #0e2f73; --ink: #ffffff; --c1: #ff0004; --c2: #cba900; --c3: #f587ff; --c4: #00c893; --c5: #9be564; --c6: #19d3da;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #c40002; --d2: #9b8100; --d3: #bc66c4; --d4: #009970; --d5: #76b04b; --d6: #10a2a7;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #000000; --o6: #ffffff;
+}
+html[data-palette="white"]  { --main: #ffffff; --dark: #d9d9d9; --ink: #000000; --c1: #ececec; --c2: #c9c9c9; --c3: #a6a6a6; --c4: #7d7d7d; --c5: #dadada; --c6: #939393;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #b5b5b5; --d2: #9a9a9a; --d3: #7e7e7e; --d4: #5e5e5e; --d5: #a7a7a7; --d6: #707070;
+  --o1: #000000; --o2: #000000; --o3: #000000; --o4: #000000; --o5: #000000; --o6: #000000;
+}
+html[data-palette="black"]  { --main: #000000; --dark: #2a2a2a; --ink: #ffffff; --c1: #4a4a4a; --c2: #6e6e6e; --c3: #9a9a9a; --c4: #d0d0d0; --c5: #5c5c5c; --c6: #bcbcbc;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #373737; --d2: #535353; --d3: #757575; --d4: #9f9f9f; --d5: #454545; --d6: #909090;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #000000; --o5: #ffffff; --o6: #ffffff;
+}
+html[data-palette="pink"]     { --main: #ff4fa0; --dark: #6e1f46; --ink: #ffffff; --c1: #ffe14d; --c2: #3b5bff; --c3: #00d1a0; --c4: #8e5bff; --c5: #ff9a3c; --c6: #5ad8ff;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #c4ac39; --d2: #2b44c4; --d3: #00a07a; --d4: #6c44c4; --d5: #c4752c; --d6: #43a5c4;
+  --o1: #000000; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
+}
+html[data-palette="yellow"]   { --main: #ffd400; --dark: #dcae00; --ink: #111111; --c1: #ff5a36; --c2: #2f5bff; --c3: #14b58a; --c4: #b36bff; --c5: #ff7fb5; --c6: #111111;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #c44327; --d2: #2244c4; --d3: #0d8a69; --d4: #8950c4; --d5: #c4608a; --d6: #0a0a0a;
+  --o1: #111111; --o2: #ffffff; --o3: #111111; --o4: #111111; --o5: #111111; --o6: #ffffff;
+}
+html[data-palette="teal"]     { --main: #0e9aa7; --dark: #06444a; --ink: #ffffff; --c1: #bdeff2; --c2: #0a6f7a; --c3: #6fd3da; --c4: #04363c; --c5: #dff8fa; --c6: #3fb5c0;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #90b7ba; --d2: #06545c; --d3: #54a2a7; --d4: #02272c; --d5: #abbec0; --d6: #2e8a93;
+  --o1: #000000; --o2: #ffffff; --o3: #000000; --o4: #ffffff; --o5: #000000; --o6: #ffffff;
+}
+html[data-palette="sand"]     { --main: #d8c3a5; --dark: #c4a97f; --ink: #2a1f12; --c1: #f1e4cf; --c2: #a88a60; --c3: #7a5f3c; --c4: #e6d3b3; --c5: #8f7650; --c6: #5e4729;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #b9af9e; --d2: #806948; --d3: #5c472c; --d4: #b0a289; --d5: #6d593b; --d6: #46341d;
+  --o1: #2a1f12; --o2: #2a1f12; --o3: #ffffff; --o4: #2a1f12; --o5: #ffffff; --o6: #ffffff;
+}
+html[data-palette="midnight"] { --main: #14213d; --dark: #0a1226; --ink: #ffffff; --c1: #fca311; --c2: #7b9cff; --c3: #ff6b6b; --c4: #5bc0be; --c5: #9d8cff; --c6: #ffd6a5;
+  /* card tones (scripts/card-tones.py): d = dark band, o = text on it */
+  --d1: #c27c0a; --d2: #5d77c4; --d3: #c45050; --d4: #449391; --d5: #776ac4; --d6: #c4a47e;
+  --o1: #ffffff; --o2: #ffffff; --o3: #ffffff; --o4: #ffffff; --o5: #ffffff; --o6: #000000;
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }

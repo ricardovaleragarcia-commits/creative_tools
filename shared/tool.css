@@ -10,10 +10,13 @@
 .toolhead__side { grid-column: 1; grid-row: 1; background: var(--dark); padding: var(--gap) 10px; }
 .toolhead .back { display: inline-block; font-size: 24px; font-weight: 700; line-height: 32px; height: 32px; }   /* same size as the tool title */
 .toolhead .instructions { margin-top: 12px; max-width: 470px; line-height: 1.25; }
+/* The tool's title is the same band as on its card on the landing: the card's dark tone, --inset from the card's top, left and right,
+   and its bottom edge level with the header boxes of the landing (--bar-row). */
 .toolhead__title {
-  grid-column: 2; grid-row: 1; align-self: start; justify-self: start; position: relative; z-index: 1;
-  margin: var(--gap) var(--gap) 0 var(--gap); font-size: 24px; font-weight: 700; line-height: 32px; height: 32px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 2 * var(--gap));
+  grid-column: 2; grid-row: 1; align-self: start; justify-self: stretch; position: relative; z-index: 1; box-sizing: border-box;
+  margin: calc(var(--gap) + var(--inset)) calc(var(--gap) + var(--inset)) 0; padding: 0 var(--inset);
+  height: calc(var(--bar-row) - var(--inset)); line-height: calc(var(--bar-row) - var(--inset)); font-size: 24px; font-weight: 700;
+  background: var(--band, var(--d1)); color: var(--on, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toolgrid { display: contents; }
 .menu {
@@ -27,13 +30,14 @@
 .block label { display: block; font-size: var(--fs-s); line-height: 1; }
 .menu, .menu button, .menu select, .menu input { font: 700 var(--fs-s)/1.2 var(--font); color: var(--ink); }
 /* Card color of each tool (tools 1..4 = c1..c4 of the palette) */
-html[data-card="1"] { --card: var(--c1); }
-html[data-card="2"] { --card: var(--c2); }
-html[data-card="3"] { --card: var(--c3); }
-html[data-card="4"] { --card: var(--c4); }
+html[data-card="1"] { --card: var(--c1); --band: var(--d1); --on: var(--o1); }
+html[data-card="2"] { --card: var(--c2); --band: var(--d2); --on: var(--o2); }
+html[data-card="3"] { --card: var(--c3); --band: var(--d3); --on: var(--o3); }
+html[data-card="4"] { --card: var(--c4); --band: var(--d4); --on: var(--o4); }
 .stage {
   grid-column: 2; grid-row: 1 / span 2; margin: var(--cover-top) var(--gap) var(--gap); background: var(--card, var(--main));
   min-height: 0; overflow: hidden; position: relative; container-type: size; display: grid; place-items: center;
+  padding-top: var(--bar-row);   /* room for the title band; the artwork is centred in what is left (phones: no band, see below) */
 }
 .artwork {
   --pad-x: 17.6cqw; --pad-y: 8.6cqh;   /* matches the Figma margins (168px / 80px) */
