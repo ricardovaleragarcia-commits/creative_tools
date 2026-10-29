@@ -27,7 +27,7 @@ fonts/              (not used since the switch to Helvetica Neue)
 
 ## Card colors
 Each card (and each tool's title band) has two colors: the palette's card color `--c1..--c6`, and a darker tone of it `--d1..--d6` for the title and description bands, with `--o1..--o6` as the text color on top.
-The dark tone is a rule, not a hand-picked value: in OKLCH, same hue, lightness x 0.82 and chroma x 0.82. If the palette's text color would read worse than 3:1 on that tone, the text flips to black or white.
+The dark tone is a rule, not a hand-picked value: in OKLCH, same hue, lightness x 0.82 and chroma x 0.82. Text inside the cards is always white, so every card color must be dark enough for 3:1 (titles) and ideally 4.5:1 (descriptions) on its tone. The white and black palettes use one gray for all six cards.
 To add or change a palette: edit its `--c1..--c6` in `shared/theme.css`, then run `python3 scripts/card-tones.py --write`. It prints the contrast of every card and rewrites the `--d` / `--o` values.
 
 ## Run locally

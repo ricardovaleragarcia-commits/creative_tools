@@ -3,8 +3,7 @@
 
 RULE  (OKLCH, same hue):   dark = card color with lightness x 0.82 and chroma x 0.82.
       Measured from the Figma samples (pink, blue, yellow, green): L x0.80-0.85, C x0.76-0.89, hue unchanged.
-TEXT  on a dark band = the palette's --ink. If that gives less than 3:1 (WCAG large text, titles are 24px bold)
-      the text flips to black or white, whichever reads better.
+TEXT  on a band is always white; pick card colors dark enough that it reaches 3:1 (titles) / 4.5:1 (descriptions).
 
 Usage:  python3 scripts/card-tones.py          prints the table + the CSS lines to paste in shared/theme.css
         python3 scripts/card-tones.py --write  rewrites the --d1..--d6 / --o1..--o6 values inside shared/theme.css
@@ -72,12 +71,10 @@ for name, ink, cs in rows:
     ds, os_ = [], []
     for i, c in enumerate(cs, 1):
         d = darken(c)
-        o = ink
-        if contrast(ink, d) < MIN_LARGE:
-            o = max(("#000000", "#ffffff"), key=lambda t: contrast(t, d))
+        o = "#ffffff"                              # text inside the cards is always white
         ds.append(d); os_.append(o)
         cr = contrast(o, d)
-        flag = ("OK" if cr >= MIN_SMALL else ("title only" if cr >= MIN_LARGE else "FAIL")) + (" (flipped)" if o != ink else "")
+        flag = ("OK" if cr >= MIN_SMALL else ("title only" if cr >= MIN_LARGE else "FAIL")) + ""
         print("%-9s %s -> %s  %s  %5.2f  %s" % (name if i == 1 else "", c, d, o, cr, flag))
     lines[name] = (ds, os_)
 if "--write" in sys.argv:
