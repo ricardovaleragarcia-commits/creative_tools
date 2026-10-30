@@ -627,11 +627,13 @@ function paintPaper(size){   // grain size 0 = the finest grain the texture can 
       x.beginPath(); x.arc(mid, mid, r + d, 0, Math.PI*2); x.stroke();
     }
   };
-  ridge(0.31*mid, 1.4*K, 0.32);                           // the pressed ring
+  const rw = +$('lpw').value;                              // ring width slider
+  ridge(0.31*mid, rw*K, Math.min(0.5, 0.32*Math.sqrt(rw/1.4)));   // the pressed ring (a wider ridge gets a touch more height so it stays visible)
   ridge(LP.HOLE/LP.LABEL*mid + 2*K, 1.1*K, 0.14);         // faint lip where the paper meets the spindle hole
   lpBump.needsUpdate = true;
 }
 function applyPaper(){
+  $('lpwv').textContent = (+$('lpw').value).toFixed(1);
   const a = +$('lp').value; $('lpv').textContent = a.toFixed(2); $('lpsv').textContent = (+$('lps').value).toFixed(1);
   for(const m of [labelFrontMat, labelBackMat]){ if(m.bumpMap !== lpBump){ m.bumpMap = lpBump; m.needsUpdate = true; } m.bumpScale = a*PAPER_K; }
 }
@@ -639,6 +641,7 @@ const PAPER_K = 0.1;
 paintPaper(+$('lps').value); applyPaper();
 $('lp').oninput = applyPaper;
 $('lps').oninput = () => { paintPaper(+$('lps').value); applyPaper(); };
+$('lpw').oninput = () => { $('lpwv').textContent = (+$('lpw').value).toFixed(1); paintPaper(+$('lps').value); applyPaper(); };
 $('dust').oninput = e => { $('dustv').textContent = (+e.target.value).toFixed(2); dustMat.uniforms.uAmt.value = +e.target.value; };
 $('grv').oninput = e => { $('grvv').textContent = (+e.target.value).toFixed(2); grooveMat.uniforms.uAmt.value = +e.target.value; };
 $('refl').oninput = e => { $('reflv').textContent = (+e.target.value).toFixed(2); applyGloss(+e.target.value); };
