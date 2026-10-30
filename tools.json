@@ -24,9 +24,10 @@
     "href": "tools/text-orbit/"
   },
   {
-    "title": "Next tool",
-    "description": "Coming soon",
-    "cover": "shared/covers/coming-soon.svg"
+    "title": "Compound Blur Controller",
+    "description": "Type a word or load a PNG, JPG or SVG and move a blur controller over it: the blur travels as far as you set, from a soft halo to the whole frame. Recolor your SVG and export a seamless loop.",
+    "cover": "shared/covers/compound-blur.svg",
+    "href": "tools/compound-blur/"
   },
   {
     "title": "Next tool",

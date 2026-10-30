@@ -1,0 +1,7 @@
+.menu textarea { min-height: 64px; resize: vertical; line-height: 1.3; }
+.menu .block { justify-content: flex-start; }
+.artwork { cursor: crosshair; touch-action: none; }
+.artwork .guide { position: absolute; inset: 0; pointer-events: none; }
+.artwork.drop { outline: 3px solid var(--ink); outline-offset: -3px; }
+.menu .svgcols { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 4px; }
+.menu .svgcols input[type=color] { height: 28px; }

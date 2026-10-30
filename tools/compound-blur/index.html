@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" class="is-tool" data-card="5">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff5959">
+<script src="../../shared/palette.js"></script>
+<title>Compound Blur Controller — Shake &amp; Settle</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../shared/favicon-32.png">
+<link rel="icon" type="image/svg+xml" href="../../shared/favicon.svg">
+<link rel="apple-touch-icon" href="../../shared/site-icon-180.png">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../../shared/tool.css">
+<link rel="stylesheet" href="../../shared/tool-controls.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="toolpage">
+<header class="toolhead">
+  <div class="toolhead__side">
+    <a class="title back" href="../../">← Back</a>
+    <p class="small instructions">Type a text or load a PNG, JPG or SVG (you can recolor an SVG). The dashed circle is the blur controller: drag it over the artwork and the blur spreads from it as far as you set. Choose a format, a motion and a loop duration, and export a seamless MP4 loop for stories and reels, or a PNG frame.</p>
+  </div>
+  <h1 class="title toolhead__title"></h1>
+</header>
+
+<div class="toolgrid grid6">
+  <aside class="menu" aria-label="Controls">
+    <div class="block full" data-sec="Subject" data-open><div class="t">Text <span>Enter = new line</span></div><textarea id="text" data-k="text" rows="2">a</textarea></div>
+    <div class="block full"><div class="t">Typeface</div><select id="font" data-k="font"></select></div>
+    <div class="block full"><div class="t">Text size <output></output></div><input type="range" id="tsize" data-k="tsize" min="10" max="140"></div>
+    <div class="block full"><div class="t">Image <span>PNG, JPG, SVG</span></div>
+      <input type="file" id="imgfile" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" aria-label="Image">
+      <button type="button" class="btn" id="useText">Back to text</button></div>
+    <div class="block full"><div class="t">Image size <output></output></div><input type="range" id="isize" data-k="isize" min="10" max="100"></div>
+    <div class="block full" id="svgBlock" hidden><div class="t">SVG colors <span>click one to change it</span></div>
+      <div class="svgcols" id="svgList"></div>
+      <div class="pair"><input type="color" id="svgAll" value="#ffffff" aria-label="One color for the whole SVG"><button type="button" class="btn" id="svgApply">Apply to all</button></div>
+      <div class="btns fill"><button type="button" id="svgReset">Reset colors</button></div></div>
+
+    <div class="block full" data-sec="Format &amp; colors" data-open><div class="t">Format</div>
+      <div class="btns fill" id="ratios"><button data-r="1:1">1:1</button><button data-r="3:4" class="on">3:4</button><button data-r="4:5">4:5</button><button data-r="9:16">9:16</button><button data-r="16:9">16:9</button><button data-r="custom">Custom</button></div></div>
+    <div class="block full" id="customSize" hidden><div class="t">Custom size (px)</div><div class="sizerow"><input type="number" id="cw" min="64" max="4096" step="2" value="1080" inputmode="numeric" aria-label="Width in pixels"><span aria-hidden="true">×</span><input type="number" id="ch" min="64" max="4096" step="2" value="1350" inputmode="numeric" aria-label="Height in pixels"></div><div class="note">Exported at exactly this size (even numbers, 64 to 4096 px). Quality is not used here.</div></div>
+    <div class="block"><div class="t">Background</div><input type="color" id="bg" data-k="bg"></div>
+    <div class="block"><div class="t">Text color</div><input type="color" id="tc" data-k="tc"></div>
+
+    <div class="block" data-sec="Blur" data-open><div class="t">Blur amount <output></output></div><input type="range" id="amount" data-k="amount" min="0" max="100"></div>
+    <div class="block"><div class="t">Core size <output></output></div><input type="range" id="radius" data-k="radius" min="0" max="80"></div>
+    <div class="block full"><div class="t">Spread <output></output></div><input type="range" id="spread" data-k="spread" min="0" max="400"></div>
+    <div class="block"><div class="t">Falloff <output></output></div><input type="range" id="falloff" data-k="falloff" min="0.3" max="3" step="0.05"></div>
+    <div class="block"><div class="t">Grain <output></output></div><input type="range" id="grain" data-k="grain" min="0" max="10" step="0.5"></div>
+    <div class="block"><label class="chk"><input type="checkbox" id="invert" data-k="invert">Sharp inside, blur outside</label></div>
+    <div class="block"><label class="chk"><input type="checkbox" id="guide" data-k="guide">Show controller</label></div>
+
+    <div class="block full" data-sec="Motion" data-open><div class="t">Motion</div>
+      <select id="mode" data-k="mode">
+        <option value="still">Still</option>
+        <option value="orbit">Orbit</option>
+        <option value="eight">Figure eight</option>
+        <option value="sweep">Sweep</option>
+        <option value="pendulum">Pendulum</option>
+        <option value="wander">Wander</option>
+        <option value="breathe">Breathe</option>
+        <option value="focus">Rack focus</option>
+      </select></div>
+    <div class="block"><div class="t">Direction</div><select id="dir" data-k="dir"><option value="1">Clockwise</option><option value="-1">Counter-clockwise</option></select></div>
+    <div class="block"><div class="t">Path size <output></output></div><input type="range" id="amp" data-k="amp" min="0" max="60"></div>
+    <div class="block full"><div class="t">Loop duration <output></output></div><input type="range" id="T" data-k="T" min="2" max="20" step="0.5"></div>
+    <div class="block"><div class="t">Radius pulse <output></output></div><input type="range" id="pulseR" data-k="pulseR" min="0" max="100"></div>
+    <div class="block"><div class="t">Blur pulse <output></output></div><input type="range" id="pulseB" data-k="pulseB" min="0" max="100"></div>
+    <div class="block full"><div class="btns fill"><button type="button" id="rand">Random motion</button><button type="button" id="play">Pause</button></div></div>
+
+    <div class="block" data-sec="Export"><div class="t">Quality</div>
+      <select id="quality" data-k="quality" aria-label="Quality (short side)"><option value="1080" selected>1080 · Full HD</option><option value="1440">1440 · 2K</option></select></div>
+    <div class="block"><div class="t">Frame rate</div>
+      <select id="fps" aria-label="Frame rate"><option value="60" selected>60 fps · as preview</option><option value="30">30 fps · lighter</option></select></div>
+    <div class="block full">
+      <button type="button" class="btn solid" id="vid">Export loop (MP4)</button>
+      <div class="btns fill"><button type="button" id="png">PNG · this frame</button></div>
+      <div class="note" id="status"></div>
+      <div class="note" id="specs"></div>
+    </div>
+  </aside>
+
+  <section class="stage" aria-label="Artwork">
+    <div class="artwork" id="art" style="--ar:.75"><canvas id="cv"></canvas><canvas class="guide" id="guideCv"></canvas></div>
+  </section>
+</div>
+
+<script src="../../shared/tool.js"></script>
+<script src="../../shared/persist.js"></script>
+<script src="../../shared/vendor/mp4-muxer-5.1.3.js"></script>
+<script src="../../shared/video-export.js"></script>
+<script src="blur.js"></script>
+<script src="../../shared/leave.js"></script>
+<script src="../../shared/smooth-scroll.js"></script>
+</body>
+</html>

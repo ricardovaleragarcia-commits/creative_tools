@@ -40,6 +40,7 @@ To add or change a palette: edit its `--c1..--c6` in `shared/theme.css`, then ru
 | Shape Drop & Multiply | `tools/shape-drop/` |
 | Text & Shape Trace and Fill | `tools/line-draw/` |
 | Text Orbit Sphere | `tools/text-orbit/` |
+| Compound Blur Controller | `tools/compound-blur/` |
 
 ## Publish
 Settings -> Pages -> Deploy from a branch -> `main` / root.
