@@ -72,7 +72,7 @@ function placeholderCover(back){
 function placeholderLabel(back){
   // drawn darker on purpose: the default lights brighten it by ~1.42x, so it reads as the plain-colors label gray (#eaeaea) with gray text
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
-  x.fillStyle = '#a4a4a4'; x.beginPath(); x.arc(256,256,250,0,Math.PI*2); x.fill();
+  x.fillStyle = '#9e9e9e'; x.beginPath(); x.arc(256,256,250,0,Math.PI*2); x.fill();
   x.fillStyle = '#6c6c6c'; x.font = 'bold 64px "Helvetica Neue", Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.fillText(back ? 'SIDE B' : 'SIDE A', 256, 372);   // below the spindle hole
   return c;
@@ -613,15 +613,22 @@ function paintPaper(size){   // grain size 0 = the finest grain the texture can 
   const layer = (cell, alpha) => {                                   // random noise at low resolution, smoothly enlarged = grain of that size
     const n = Math.max(8, Math.round(N/cell)), t = document.createElement('canvas'); t.width = t.height = n;
     const tx = t.getContext('2d'), d = tx.createImageData(n, n);
-    for(let i = 0; i < n*n; i++){ const v = 128 + (Math.random() - 0.5) * 176 * 0.4; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }   // 0.4 = softer texture (less contrast)
+    for(let i = 0; i < n*n; i++){ const v = 128 + (Math.random() - 0.5) * 176 * 0.12; d.data[i*4] = d.data[i*4+1] = d.data[i*4+2] = v; d.data[i*4+3] = 255; }   // 0.22 = very soft, like the almost smooth paper of a real label
     tx.putImageData(d, 0, 0); x.globalAlpha = alpha; x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(t, 0, 0, N, N);
   };
   layer(g*K, 1); layer(g*2.6*K, 0.3);
   x.globalAlpha = 1;
-  // pressed ring around the spindle area, as on a real label
-  const R = 0.33*N/2, mid = N/2; x.lineWidth = 5*K;
-  x.strokeStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(mid, mid, R, 0, Math.PI*2); x.stroke();
-  x.strokeStyle = 'rgba(0,0,0,0.9)'; x.beginPath(); x.arc(mid, mid, R + 6*K, 0, Math.PI*2); x.stroke();
+  // Embossed ring around the spindle area, as on a real label: ONE thin soft ridge (no hard double line). Lit from above it gets a bright
+  // edge on one side and a faint shadow on the other, which is what the real photo shows.
+  const mid = N/2, ridge = (r, w, peak) => {
+    for(let d = -3.5*w; d <= 3.5*w; d += 0.35*K){
+      const a = peak*Math.exp(-(d*d)/(w*w));            // soft bell-shaped profile across the ridge
+      x.lineWidth = 0.5*K; x.strokeStyle = `rgba(255,255,255,${a})`;
+      x.beginPath(); x.arc(mid, mid, r + d, 0, Math.PI*2); x.stroke();
+    }
+  };
+  ridge(0.31*mid, 1.4*K, 0.32);                           // the pressed ring
+  ridge(LP.HOLE/LP.LABEL*mid + 2*K, 1.1*K, 0.14);         // faint lip where the paper meets the spindle hole
   lpBump.needsUpdate = true;
 }
 function applyPaper(){
