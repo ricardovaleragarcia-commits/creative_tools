@@ -392,36 +392,47 @@ function svgReset() { svgSt.map = {}; svgSt.list.forEach(c => { svgSt.map[c] = c
 $('#svgApply').onclick = () => { const v = $('#svgAll').value; svgSt.list.forEach(c => { svgSt.map[c] = v; }); svgBuildList(); svgApply(); };
 $('#svgReset').onclick = svgReset;
 
+/* what is kept between visits: the SVG source or a downscaled copy of the raster image (ToolPersist drops it first if the browser's storage is full) */
+let savedImg = null;
+async function loadSvgText(text, savedMap) {
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml'), svg = doc.documentElement;
+  if (!svg || svg.nodeName.toLowerCase() !== 'svg' || doc.querySelector('parsererror')) throw new Error('not an SVG');
+  doc.querySelectorAll('script, foreignObject').forEach(n => n.remove());   // only the drawing is used
+  const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+  const num = a => parseFloat(svg.getAttribute(a));
+  const w = vb.length === 4 && vb[2] > 0 ? vb[2] : num('width') || 1000;
+  const h = vb.length === 4 && vb[3] > 0 ? vb[3] : num('height') || 1000;
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  if (!svg.getAttribute('xmlns')) svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  Object.assign(svgSt, { doc, w, h, list: svgCollect(doc) });
+  svgSt.map = {}; svgSt.list.forEach(c => { svgSt.map[c] = savedMap && /^#[0-9a-f]{6}$/i.test(savedMap[c]) ? savedMap[c] : c; });
+  svgBuildList();
+  if (svgSt.list[0]) $('#svgAll').value = svgSt.list[0];
+  await svgApply();
+  savedImg = { kind: 'svg', text };
+}
+async function loadRaster(url, mime) {
+  const el = new Image(); el.src = url;
+  await (el.decode ? el.decode() : new Promise((ok, no) => { el.onload = ok; el.onerror = no; }));
+  const w = el.naturalWidth, h = el.naturalHeight;
+  if (!w || !h) throw new Error('empty image');
+  svgSt.doc = null; svgSt.list = []; svgBuildList();
+  ctrl.setImage({ el, w, h });
+  if (mime) {   // a copy no bigger than 1600 px to remember it
+    const k = Math.min(1, 1600 / Math.max(w, h)), cc = document.createElement('canvas');
+    cc.width = Math.round(w * k); cc.height = Math.round(h * k); cc.getContext('2d').drawImage(el, 0, 0, cc.width, cc.height);
+    savedImg = { kind: 'raster', url: /jpe?g/.test(mime) ? cc.toDataURL('image/jpeg', 0.9) : cc.toDataURL('image/png') };
+  }
+}
 async function loadImage(file) {
   if (!file) return;
   const isSvg = /svg/.test(file.type) || /\.svg$/i.test(file.name);
-  let url, w = 0, h = 0;
   try {
-    if (isSvg) {
-      const doc = new DOMParser().parseFromString(await file.text(), 'image/svg+xml'), svg = doc.documentElement;
-      if (!svg || svg.nodeName.toLowerCase() !== 'svg' || doc.querySelector('parsererror')) throw new Error('not an SVG');
-      doc.querySelectorAll('script, foreignObject').forEach(n => n.remove());   // only the drawing is used
-      const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
-      const num = a => parseFloat(svg.getAttribute(a));
-      w = vb.length === 4 && vb[2] > 0 ? vb[2] : num('width') || 1000;
-      h = vb.length === 4 && vb[3] > 0 ? vb[3] : num('height') || 1000;
-      svg.setAttribute('width', w); svg.setAttribute('height', h);
-      if (!svg.getAttribute('xmlns')) svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      Object.assign(svgSt, { doc, w, h, list: svgCollect(doc) });
-      svgSt.map = {}; svgSt.list.forEach(c => { svgSt.map[c] = c; });
-      svgBuildList();
-      if (svgSt.list[0]) $('#svgAll').value = svgSt.list[0];
-      await svgApply(); ctrl.update({ useImage: true }); status('');
-      return;
-    }
-    svgSt.doc = null; svgSt.list = []; svgBuildList();
-    url = URL.createObjectURL(file);
-    const el = new Image(); el.src = url;
-    await (el.decode ? el.decode() : new Promise((ok, no) => { el.onload = ok; el.onerror = no; }));
-    w = el.naturalWidth; h = el.naturalHeight;
-    if (!w || !h) throw new Error('empty image');
-    ctrl.setImage({ el, w, h }); ctrl.update({ useImage: true });
-    status('');
+    if (isSvg) await loadSvgText(await file.text());
+    else await loadRaster(URL.createObjectURL(file), file.type || 'image/png');
+    ctrl.update({ useImage: true }); status('');
+    $('#imgfile').dataset.empty = '';
+    ToolPersist.save();
   } catch (e) { status('Could not read that file. Use a PNG, JPG or SVG.'); }
 }
 $('#imgfile').addEventListener('change', e => loadImage(e.target.files[0]));
@@ -497,10 +508,20 @@ $('#vid').onclick = async () => {
 
 /* ---------- remember the settings between visits ---------- */
 ToolPersist.init('compound-blur', {
-  get: () => ({ cx: ctrl.cfg.cx, cy: ctrl.cfg.cy, ratio: ctrl.cfg.ratio, cw: ctrl.cfg.cw, ch: ctrl.cfg.ch }),
+  get: () => ({
+    cx: ctrl.cfg.cx, cy: ctrl.cfg.cy, ratio: ctrl.cfg.ratio, cw: ctrl.cfg.cw, ch: ctrl.cfg.ch,
+    useImage: !!ctrl.cfg.useImage, svgMap: svgSt.doc ? svgSt.map : null,
+    imgs: savedImg ? { src: savedImg } : {}
+  }),
   set: x => {
     if (typeof x.cx === 'number' && typeof x.cy === 'number') ctrl.update({ cx: x.cx, cy: x.cy });
     if (x.ratio && (/^\d+:\d+$/.test(x.ratio) || x.ratio === 'custom')) ctrl.update({ ratio: x.ratio, cw: ev2(x.cw), ch: ev2(x.ch) });
     sync(); syncFormat(); syncAr(); useFont(); paintReadouts(); specs();
+    const im = x.imgs && x.imgs.src;
+    if (im) {
+      $('#imgfile').dataset.empty = 'Saved image';
+      (im.kind === 'svg' && typeof im.text === 'string' ? loadSvgText(im.text, x.svgMap) : im.kind === 'raster' && typeof im.url === 'string' ? loadRaster(im.url, null).then(() => { savedImg = im; }) : Promise.reject())
+        .then(() => ctrl.update({ useImage: !!x.useImage }), () => {});
+    }
   }
 });
