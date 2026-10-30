@@ -496,8 +496,8 @@ function buildPlain(T, R, holeF, labelF, labelIn = holeF){
   g.add(face(annulus(holeF, 1), plainBodyMat, -h - 0.002, true));
   g.add(face(annulus(labelIn, labelF), plainLabelFrontMat, h + 0.004, false));
   g.add(face(annulus(labelIn, labelF), plainLabelBackMat, -h - 0.004, true));
-  // spin marker: a short dark tick on the top face, shown only in "Playing" (a plain disc turning on its own axis would look still otherwise)
-  const mark = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.26), new THREE.MeshBasicMaterial({color: linearHex('#806532'), toneMapped: false}));
+  // spin marker: a short dark tick on the top face, shown only in "Playing" and only while the front label has no image (a plain blank disc turning on its own axis would look still otherwise)
+  const mark = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.26), new THREE.MeshBasicMaterial({color: linearHex(getComputedStyle(document.documentElement).getPropertyValue('--dark').trim() || '#806532'), toneMapped: false}));   // the panel's dark tone, so it follows the palette
   mark.position.set(0, 0.7, h + 0.006); mark.visible = false; g.add(mark); g.userData.mark = mark;
   return g;
 }
@@ -830,7 +830,7 @@ function applyLights(){
 }
 function renderAt(t){
   const p = pose(animName, t), spinning = spinOn;
-  plainVinyl.userData.mark.visible = plainCD.userData.mark.visible = spinning;
+  plainVinyl.userData.mark.visible = plainCD.userData.mark.visible = spinning && !plainLabelFrontMat.map;   // only on a blank label: with a front image the turning image already shows the spin
   disc.rotation.set(p.x + userRx, p.y + userRy, p.z);
   disc.scale.setScalar(zoomV);
   U.uCam.value.copy(camera.position);
